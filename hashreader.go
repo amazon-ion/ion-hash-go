@@ -21,6 +21,7 @@ import (
 )
 
 type HashReader interface {
+	HashValue
 	// Extend interface of Ion reader.
 	ion.Reader
 
@@ -140,5 +141,23 @@ func (hashReader *hashReader) ByteValue() ([]byte, error) {
 }
 
 func (hashReader *hashReader) Sum(b []byte) []byte {
+	panic("implement me")
+}
+
+// The following implements HashValue interface.
+
+func (hashReader hashReader) GetFieldName() string {
+	panic("implement me")
+}
+
+func (hashReader hashReader) GetAnnotations() []string {
+	panic("implement me")
+}
+
+func (hashReader *hashReader) Value() interface{} {
+	panic("implement me")
+}
+
+func (hashReader *hashReader) IsInStruct() bool {
 	panic("implement me")
 }

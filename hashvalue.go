@@ -18,9 +18,9 @@ import ion "ion-go"
 
 //TODO add docstrings
 type HashValue interface {
-	FieldName() string
+	GetFieldName() string
 
-	Annotations() []string
+	GetAnnotations() []string
 
 	// SymbolTokens are not available right now.
 	//FieldNameSymbol() ion.FieldNameSymbol
