@@ -14,7 +14,18 @@
  */
 package ionhash
 
-type IonHashProvider interface {
-	// Return a new IonHasher object.
-	newHasher() IonHasher
+type scalarSerializer struct {
+	serializer
+}
+
+func newScalarSerializer(hashFunction IonHasher, depth int) Serializer {
+	return &scalarSerializer{serializer{hashFunction: hashFunction, depth: depth}}
+}
+
+func (scalarSerializer *scalarSerializer)scalar(ionValue interface{}) {
+	panic("implement me")
+}
+
+func (scalarSerializer *scalarSerializer)stepOut() {
+	panic("implement me")
 }

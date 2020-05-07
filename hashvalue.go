@@ -14,7 +14,22 @@
  */
 package ionhash
 
-type IonHashProvider interface {
-	// Return a new IonHasher object.
-	newHasher() IonHasher
+import ion "ion-go"
+
+//TODO add docstrings
+type HashValue interface {
+	FieldName() string
+
+	Annotations() []string
+
+	// SymbolTokens are not available right now.
+	//FieldNameSymbol() ion.FieldNameSymbol
+
+	IsNull() bool
+
+	Type() ion.Type
+
+	Value() interface{}
+
+	IsInStruct() bool
 }
