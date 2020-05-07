@@ -17,14 +17,14 @@ package ionhash
 type hasher struct {
 	hasherProvider IonHashProvider
 	currentHasher Serializer
-	hasherStack []Serializer
+	hasherStack stack
 }
 
 func newHasher (hasherProvider IonHashProvider) *hasher{
 	currentHasher := newScalarSerializer(hasherProvider.newHasher(), 0)
 
-	var hasherStack []Serializer
-	hasherStack = append(hasherStack, currentHasher)
+	var hasherStack stack
+	hasherStack.push(currentHasher)
 
 	return &hasher{hasherProvider, currentHasher, hasherStack}
 }
