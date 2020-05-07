@@ -12,6 +12,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package ionhash
 
 // An InvalidOperationError is returned when a method call is invalid for the struct's current state.
