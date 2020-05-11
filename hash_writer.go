@@ -16,9 +16,10 @@
 package ionhash
 
 import (
-	"ion-go"
 	"math/big"
 	"time"
+
+	"ion-go"
 )
 
 type HashWriter interface {
@@ -33,10 +34,10 @@ type HashWriter interface {
 
 type hashWriter struct {
 	ionWriter ion.Writer
-	hasherProvider IonHashProvider
+	hasherProvider IonHasherProvider
 }
 
-func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHashProvider) HashWriter {
+func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) HashWriter {
 	hashWriter := &hashWriter{ionWriter, hasherProvider}
 
 	return hashWriter

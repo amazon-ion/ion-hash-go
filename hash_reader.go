@@ -16,9 +16,10 @@
 package ionhash
 
 import (
-	"ion-go"
 	"math/big"
 	"time"
+
+	"ion-go"
 )
 
 type HashReader interface {

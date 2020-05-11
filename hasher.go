@@ -16,12 +16,12 @@
 package ionhash
 
 type hasher struct {
-	hasherProvider IonHashProvider
+	hasherProvider IonHasherProvider
 	currentHasher Serializer
 	hasherStack stack
 }
 
-func newHasher (hasherProvider IonHashProvider) *hasher {
+func newHasher (hasherProvider IonHasherProvider) *hasher {
 	currentHasher := newScalarSerializer(hasherProvider.newHasher(), 0)
 
 	var hasherStack stack
