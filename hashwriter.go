@@ -23,7 +23,7 @@ import (
 
 type HashWriter interface {
 	HashValue
-	// Extend interface of Ion writer.
+	// Embed interface of Ion writer.
 	ion.Writer
 
 	// Sum appends the current hash to b and returns the resulting slice.

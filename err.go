@@ -15,11 +15,23 @@
 
 package ionhash
 
+import "fmt"
+
 // An InvalidOperationError is returned when a method call is invalid for the struct's current state.
 type InvalidOperationError struct {
-	message string
+	structName string
+	methodName string
 }
 
 func (e *InvalidOperationError) Error() string {
-	return e.message
+	return fmt.Sprintf("ionhash: invalid operation error on %v.%v", e.structName, e.methodName)
+}
+
+// A SyntaxError is returned when a crypto hasher encounters invalid input.
+type SyntaxError struct {
+	Msg string
+}
+
+func (e *SyntaxError) Error() string {
+	return fmt.Sprintf("ionhash: syntax error: %v", e.Msg)
 }

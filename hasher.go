@@ -21,11 +21,11 @@ type hasher struct {
 	hasherStack stack
 }
 
-func newHasher (hasherProvider IonHashProvider) *hasher{
+func newHasher (hasherProvider IonHashProvider) *hasher {
 	currentHasher := newScalarSerializer(hasherProvider.newHasher(), 0)
 
 	var hasherStack stack
-	hasherStack.push(currentHasher)
+	hasherStack.Push(currentHasher)
 
 	return &hasher{hasherProvider, currentHasher, hasherStack}
 }

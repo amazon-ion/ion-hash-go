@@ -28,15 +28,15 @@ func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionprovider
 		scalarSerializer: newScalarSerializer(hashFunctionprovider.newHasher(), depth + 1)}
 	}
 
-func (structSerializer *structSerializer)scalar(ionValue interface{}) {
+func (structSerializer *structSerializer) scalar(ionValue interface{}) {
 	panic("implement me")
 }
 
-func (structSerializer *structSerializer)stepOut() {
+func (structSerializer *structSerializer) stepOut() {
 	panic("implement me")
 }
 
-func (structSerializer *structSerializer)appendFieldHash() {
+func (structSerializer *structSerializer) appendFieldHash() {
 	panic("implement me")
 }
 

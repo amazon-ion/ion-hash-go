@@ -57,47 +57,47 @@ type serializer struct {
 	hasContainerAnnotation bool
 }
 
-func (serializer *serializer)stepIn(ionValue interface{}) {
+func (serializer *serializer) stepIn(ionValue interface{}) {
 	panic("implement me")
 }
 
-func (serializer *serializer)digest() []byte{
+func (serializer *serializer) digest() []byte {
 	panic("implement me")
 }
 
-func (serializer *serializer)handleFieldName(ionValue interface{}) {
+func (serializer *serializer) handleFieldName(ionValue interface{}) {
 	panic("implement me")
 }
 
-func (serializer *serializer)update(bytes []byte) {
+func (serializer *serializer) update(bytes []byte) {
 	panic("implement me")
 }
 
-func (serializer *serializer)beginMarker() {
+func (serializer *serializer) beginMarker() {
 	panic("implement me")
 }
 
-func (serializer *serializer)endMarker() {
+func (serializer *serializer) endMarker() {
 	panic("implement me")
 }
 
-func (serializer *serializer)handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
+func (serializer *serializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
 	panic("implement me")
 }
 
-func (serializer *serializer)handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
+func (serializer *serializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
 	panic("implement me")
 }
 
-func (serializer *serializer)writeSymbol(token string) {
+func (serializer *serializer) writeSymbol(token string) {
 	panic("implement me")
 }
 
-func (serializer *serializer)getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
+func (serializer *serializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
 	panic("implement me")
 }
 
-func (serializer *serializer)getLengthLength(bytes []byte) int {
+func (serializer *serializer) getLengthLength(bytes []byte) int {
 	panic("implement me")
 }
 
@@ -106,7 +106,7 @@ func (serializer *serializer)getLengthLength(bytes []byte) int {
 //	panic("implement me")
 //}
 
-func escape(bytes []byte) []byte{
+func escape(bytes []byte) []byte {
 	panic("implement me")
 }
 

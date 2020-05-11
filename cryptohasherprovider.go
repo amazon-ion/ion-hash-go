@@ -18,13 +18,13 @@ package ionhash
 type cryptoHasherProvider struct {
 	IonHashProvider
 
-	algorithm string
+	algorithm algorithm
 }
 
-func NewCryptoHasherProvider(algorithm string) *cryptoHasherProvider{
+func NewCryptoHasherProvider(algorithm algorithm) *cryptoHasherProvider {
 	return &cryptoHasherProvider{algorithm: algorithm}
 }
 
-func (chp *cryptoHasherProvider) newHasher() IonHasher{
+func (chp *cryptoHasherProvider) newHasher() (IonHasher, error) {
 	return NewCryptoHasher(chp.algorithm)
 }

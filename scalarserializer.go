@@ -23,10 +23,10 @@ func newScalarSerializer(hashFunction IonHasher, depth int) Serializer {
 	return &scalarSerializer{serializer{hashFunction: hashFunction, depth: depth}}
 }
 
-func (scalarSerializer *scalarSerializer)scalar(ionValue interface{}) {
+func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) {
 	panic("implement me")
 }
 
-func (scalarSerializer *scalarSerializer)stepOut() {
+func (scalarSerializer *scalarSerializer) stepOut() {
 	panic("implement me")
 }

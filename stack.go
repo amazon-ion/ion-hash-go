@@ -23,14 +23,14 @@ func (s *stack) IsEmpty() bool {
 }
 
 // Push element into stack
-func (s *stack) push(element interface{}) {
+func (s *stack) Push(element interface{}) {
 	*s = append(*s, element)
 }
 
 // Remove and return top element of stack. Return false if stack is empty.
 func (s *stack) Pop() (interface{}, error) {
 	if s.IsEmpty() {
-		return nil, &InvalidOperationError{"The stack is empty and cannot retrieve elements."}
+		return nil, &InvalidOperationError{"stack", "Pop"}
 	} else {
 		index := len(*s) - 1 // Get the index of the top most element.
 		element := (*s)[index] // Index into the slice and obtain the element.

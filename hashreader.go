@@ -23,7 +23,7 @@ import (
 
 type HashReader interface {
 	HashValue
-	// Extend interface of Ion reader.
+	// Embed interface of Ion reader.
 	ion.Reader
 
 	// Sum appends the current hash to b and returns the resulting slice.
