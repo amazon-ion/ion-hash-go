@@ -16,7 +16,7 @@
 package ionhash
 
 type cryptoHasherProvider struct {
-	IonHashProvider
+	IonHasherProvider
 
 	algorithm algorithm
 }
