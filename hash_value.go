@@ -18,19 +18,19 @@ package ionhash
 import ion "ion-go"
 
 //TODO add docstrings
-type HashValue interface {
-	GetFieldName() string
+type hashValue interface {
+	getFieldName() string
 
-	GetAnnotations() []string
+	getAnnotations() []string
 
 	// SymbolTokens are not available right now.
-	//FieldNameSymbol() ion.FieldNameSymbol
+	//fieldNameSymbol() ion.FieldNameSymbol
 
-	IsNull() bool
+	isNull() bool
 
-	Type() ion.Type
+	ionType() ion.Type
 
-	Value() interface{}
+	value() interface{}
 
-	IsInStruct() bool
+	isInStruct() bool
 }

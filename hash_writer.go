@@ -23,7 +23,7 @@ import (
 )
 
 type HashWriter interface {
-	HashValue
+	hashValue
 	// Embed interface of Ion writer.
 	ion.Writer
 
@@ -165,26 +165,26 @@ func (hashWriter *hashWriter) Sum(b []byte) []byte {
 
 // The following implements HashValue interface.
 
-func (hashWriter hashWriter) GetFieldName() string {
+func (hashWriter hashWriter) getFieldName() string {
 	panic("implement me")
 }
 
-func (hashWriter hashWriter) GetAnnotations() []string {
+func (hashWriter hashWriter) getAnnotations() []string {
 	panic("implement me")
 }
 
-func (hashWriter hashWriter) IsNull() bool {
+func (hashWriter hashWriter) isNull() bool {
 	panic("implement me")
 }
 
-func (hashWriter hashWriter) Type() ion.Type {
+func (hashWriter hashWriter) ionType() ion.Type {
 	panic("implement me")
 }
 
-func (hashWriter hashWriter) Value() interface{} {
+func (hashWriter hashWriter) value() interface{} {
 	panic("implement me")
 }
 
-func (hashWriter hashWriter) IsInStruct() bool {
+func (hashWriter hashWriter) isInStruct() bool {
 	panic("implement me")
 }
