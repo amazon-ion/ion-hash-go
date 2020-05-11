@@ -22,7 +22,7 @@ type structSerializer struct {
 	fieldHashes [][]byte
 }
 
-func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionprovider IonHashProvider) Serializer {
+func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionprovider IonHasherProvider) Serializer {
 	return &structSerializer{
 		serializer:serializer{hashFunction: hashFunction, depth: depth},
 		scalarSerializer: newScalarSerializer(hashFunctionprovider.newHasher(), depth + 1)}

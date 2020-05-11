@@ -34,10 +34,10 @@ type HashReader interface {
 
 type hashReader struct {
 	ionReader ion.Reader
-	hasherProvider IonHashProvider
+	hasherProvider IonHasherProvider
 }
 
-func NewHashReader(ionReader ion.Reader, hasherProvider IonHashProvider) HashReader {
+func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) HashReader {
 	hashReader := &hashReader{ionReader, hasherProvider}
 
 	return hashReader
