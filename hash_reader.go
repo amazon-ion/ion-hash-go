@@ -45,101 +45,101 @@ func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) HashR
 
 func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 	panic("implement me")
-	return hashReader.SymbolTable()
+	return hashReader.ionReader.SymbolTable()
 }
 
 func (hashReader *hashReader) Next() bool {
 	panic("implement me")
-	return hashReader.Next()
+	return hashReader.ionReader.Next()
 }
 
 func (hashReader *hashReader) Err() error {
 	panic("implement me")
-	return hashReader.Err()
+	return hashReader.ionReader.Err()
 }
 
 func (hashReader *hashReader) Type() ion.Type {
 	panic("implement me")
-	return hashReader.Type()
+	return hashReader.ionReader.Type()
 }
 
 func (hashReader *hashReader) IsNull() bool {
 	panic("implement me")
-	return hashReader.IsNull()
+	return hashReader.ionReader.IsNull()
 }
 
 func (hashReader *hashReader) FieldName() string {
 	panic("implement me")
-	return hashReader.FieldName()
+	return hashReader.ionReader.FieldName()
 }
 
 func (hashReader *hashReader) Annotations() []string {
 	panic("implement me")
-	return hashReader.Annotations()
+	return hashReader.ionReader.Annotations()
 }
 
 func (hashReader *hashReader) StepIn() error {
 	panic("implement me")
-	return hashReader.StepIn()
+	return hashReader.ionReader.StepIn()
 }
 
 func (hashReader *hashReader) StepOut() error {
 	panic("implement me")
-	return hashReader.StepOut()
+	return hashReader.ionReader.StepOut()
 }
 
 func (hashReader *hashReader) BoolValue() (bool, error) {
 	panic("implement me")
-	return hashReader.BoolValue()
+	return hashReader.ionReader.BoolValue()
 }
 
 func (hashReader *hashReader) IntSize() (ion.IntSize, error) {
 	panic("implement me")
-	return hashReader.IntSize()
+	return hashReader.ionReader.IntSize()
 }
 
 func (hashReader *hashReader) IntValue() (int, error) {
 	panic("implement me")
-	return hashReader.IntValue()
+	return hashReader.ionReader.IntValue()
 }
 
 func (hashReader *hashReader) Int64Value() (int64, error) {
 	panic("implement me")
-	return hashReader.Int64Value()
+	return hashReader.ionReader.Int64Value()
 }
 
 func (hashReader *hashReader) Uint64Value() (uint64, error) {
 	panic("implement me")
-	return hashReader.Uint64Value()
+	return hashReader.ionReader.Uint64Value()
 }
 
 func (hashReader *hashReader) BigIntValue() (*big.Int, error) {
 	panic("implement me")
-	return hashReader.BigIntValue()
+	return hashReader.ionReader.BigIntValue()
 }
 
 func (hashReader *hashReader) FloatValue() (float64, error) {
 	panic("implement me")
-	return hashReader.FloatValue()
+	return hashReader.ionReader.FloatValue()
 }
 
 func (hashReader *hashReader) DecimalValue() (*ion.Decimal, error) {
 	panic("implement me")
-	return hashReader.DecimalValue()
+	return hashReader.ionReader.DecimalValue()
 }
 
 func (hashReader *hashReader) TimeValue() (time.Time, error) {
-	return hashReader.TimeValue()
+	return hashReader.ionReader.TimeValue()
 }
 
 func (hashReader *hashReader) StringValue() (string, error) {
 	panic("implement me")
-	return hashReader.StringValue()
+	return hashReader.ionReader.StringValue()
 }
 
 func (hashReader *hashReader) ByteValue() ([]byte, error) {
 	panic("implement me")
-	return hashReader.ByteValue()
+	return hashReader.ionReader.ByteValue()
 }
 
 func (hashReader *hashReader) Sum(b []byte) []byte {
