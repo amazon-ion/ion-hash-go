@@ -28,27 +28,27 @@ import (
 	"hash"
 )
 
-type algorithm int
+type algorithm string
 
 const (
-	MD4 algorithm = iota
-	MD5
-	SHA1
-	SHA224
-	SHA256
-	SHA384
-	SHA512
-	RIPEMD160
-	SHA3_224
-	SHA3_256
-	SHA3_384
-	SHA3_512
-	SHA512_224
-	SHA512_256
-	BLAKE2s_256
-	BLAKE2b_256
-	BLAKE2b_384
-	BLAKE2b_512
+	MD4         algorithm = "MD4"
+	MD5                   = "MD5"
+	SHA1                  = "SHA1"
+	SHA224                = "SHA224"
+	SHA256                = "SHA256"
+	SHA384                = "SHA384"
+	SHA512                = "SHA512"
+	RIPEMD160             = "RIPMD160"
+	SHA3_224              = "SHA3_224"
+	SHA3_256              = "SHA3_256"
+	SHA3_384              = "SHA3_384"
+	SHA3_512              = "SHA3_512"
+	SHA512_224            = "SHA512_224"
+	SHA512_256            = "SHA512_256"
+	BLAKE2s_256           = "BLAKE2s_256"
+	BLAKE2b_256           = "BLAKE2b_256"
+	BLAKE2b_384           = "BLAKE2b_384"
+	BLAKE2b_512           = "BLAKE2b_512"
 )
 
 type cryptoHasher struct {
@@ -96,7 +96,7 @@ func newCryptoHasher(algorithm algorithm) (IonHasher, error) {
 	case BLAKE2b_512:
 		hashAlgorithm, _ = blake2b.New512(nil)
 	default:
-		return nil, &SyntaxError{"Hashing algorithm is invalid"}
+		return nil, &InvalidArgumentError{"algorithm", algorithm}
 	}
 
 	ch := &cryptoHasher{hashAlgorithm}
