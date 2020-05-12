@@ -18,18 +18,18 @@ package ionhash
 type stack []interface{}
 
 // Check if stack is empty
-func (s *stack) IsEmpty() bool {
+func (s *stack) isEmpty() bool {
 	return len(*s) == 0
 }
 
 // Push element into stack
-func (s *stack) Push(element interface{}) {
+func (s *stack) push(element interface{}) {
 	*s = append(*s, element)
 }
 
 // Remove and return top element of stack. Return false if stack is empty.
-func (s *stack) Pop() (interface{}, error) {
-	if s.IsEmpty() {
+func (s *stack) pop() (interface{}, error) {
+	if s.isEmpty() {
 		return nil, &InvalidOperationError{"stack", "Pop"}
 	} else {
 		index := len(*s) - 1   // Get the index of the top most element.
