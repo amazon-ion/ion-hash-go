@@ -25,7 +25,7 @@ func newHasher(hasherProvider IonHasherProvider) *hasher {
 	currentHasher := newScalarSerializer(hasherProvider.newHasher(), 0)
 
 	var hasherStack stack
-	hasherStack.Push(currentHasher)
+	hasherStack.push(currentHasher)
 
 	return &hasher{hasherProvider, currentHasher, hasherStack}
 }
