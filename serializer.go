@@ -18,7 +18,7 @@ package ionhash
 import ion "ion-go"
 
 //TODO add docstrings
-type Serializer interface {
+type serializer interface {
 
 	scalar(ionValue interface{})
 
@@ -48,72 +48,4 @@ type Serializer interface {
 
 // SymbolToken is currently not available
 // scalarOrNullSplitParts(ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes byte[]) (byte, []byte)
-}
-
-// Holds the commonalities between struct and non-struct serializers.
-type serializer struct {
-	hashFunction IonHasher
-	depth int
-	hasContainerAnnotation bool
-}
-
-func (serializer *serializer) stepIn(ionValue interface{}) {
-	panic("implement me")
-}
-
-func (serializer *serializer) digest() []byte {
-	panic("implement me")
-}
-
-func (serializer *serializer) handleFieldName(ionValue interface{}) {
-	panic("implement me")
-}
-
-func (serializer *serializer) update(bytes []byte) {
-	panic("implement me")
-}
-
-func (serializer *serializer) beginMarker() {
-	panic("implement me")
-}
-
-func (serializer *serializer) endMarker() {
-	panic("implement me")
-}
-
-func (serializer *serializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
-	panic("implement me")
-}
-
-func (serializer *serializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
-	panic("implement me")
-}
-
-func (serializer *serializer) writeSymbol(token string) {
-	panic("implement me")
-}
-
-func (serializer *serializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
-	panic("implement me")
-}
-
-func (serializer *serializer) getLengthLength(bytes []byte) int {
-	panic("implement me")
-}
-
-// SymbolToken is currently not available
-//func (serializer *serializer)scalarOrNullSplitParts(ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes byte[]) (byte, []byte) {
-//	panic("implement me")
-//}
-
-func escape(bytes []byte) []byte {
-	panic("implement me")
-}
-
-func serializers(ionType ion.Type, ionValue interface{}, writer HashWriter) {
-	panic("implement me")
-}
-
-func tq(ionValue interface{}) []byte {
-	panic("implement me")
 }

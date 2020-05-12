@@ -16,17 +16,17 @@
 package ionhash
 
 type structSerializer struct {
-	serializer
+	baseSerializer
 
-	scalarSerializer Serializer
+	scalarSerializer serializer
 	fieldHashes [][]byte
 }
 
-func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionprovider IonHasherProvider) Serializer {
+func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionprovider IonHasherProvider) serializer {
 	return &structSerializer{
-		serializer:serializer{hashFunction: hashFunction, depth: depth},
+		baseSerializer: baseSerializer{hashFunction: hashFunction, depth: depth},
 		scalarSerializer: newScalarSerializer(hashFunctionprovider.newHasher(), depth + 1)}
-	}
+}
 
 func (structSerializer *structSerializer) scalar(ionValue interface{}) {
 	panic("implement me")

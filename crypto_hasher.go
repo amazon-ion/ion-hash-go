@@ -55,7 +55,7 @@ type cryptoHasher struct {
 	hashAlgorithm hash.Hash
 }
 
-func NewCryptoHasher(algorithm algorithm) (IonHasher, error) {
+func newCryptoHasher(algorithm algorithm) (IonHasher, error) {
 	var hashAlgorithm hash.Hash
 
 	switch algorithm {

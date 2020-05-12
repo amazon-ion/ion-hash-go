@@ -17,7 +17,7 @@ package ionhash
 
 type hasher struct {
 	hasherProvider IonHasherProvider
-	currentHasher Serializer
+	currentHasher serializer
 	hasherStack stack
 }
 

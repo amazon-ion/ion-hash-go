@@ -16,11 +16,11 @@
 package ionhash
 
 type scalarSerializer struct {
-	serializer
+	baseSerializer
 }
 
-func newScalarSerializer(hashFunction IonHasher, depth int) Serializer {
-	return &scalarSerializer{serializer{hashFunction: hashFunction, depth: depth}}
+func newScalarSerializer(hashFunction IonHasher, depth int) serializer {
+	return &scalarSerializer{baseSerializer{hashFunction: hashFunction, depth: depth}}
 }
 
 func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) {
