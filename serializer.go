@@ -19,7 +19,6 @@ import ion "ion-go"
 
 //TODO add docstrings
 type serializer interface {
-
 	scalar(ionValue interface{})
 
 	stepIn(ionValue interface{})
@@ -46,6 +45,6 @@ type serializer interface {
 
 	getLengthLength(bytes []byte) int
 
-// SymbolToken is currently not available
-// scalarOrNullSplitParts(ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes byte[]) (byte, []byte)
+	// SymbolToken is currently not available
+	// scalarOrNullSplitParts(ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes byte[]) (byte, []byte)
 }

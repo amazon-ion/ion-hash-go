@@ -17,11 +17,11 @@ package ionhash
 
 type hasher struct {
 	hasherProvider IonHasherProvider
-	currentHasher serializer
-	hasherStack stack
+	currentHasher  serializer
+	hasherStack    stack
 }
 
-func newHasher (hasherProvider IonHasherProvider) *hasher {
+func newHasher(hasherProvider IonHasherProvider) *hasher {
 	currentHasher := newScalarSerializer(hasherProvider.newHasher(), 0)
 
 	var hasherStack stack

@@ -33,7 +33,7 @@ type HashWriter interface {
 }
 
 type hashWriter struct {
-	ionWriter ion.Writer
+	ionWriter      ion.Writer
 	hasherProvider IonHasherProvider
 }
 

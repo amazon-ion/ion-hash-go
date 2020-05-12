@@ -33,7 +33,7 @@ type HashReader interface {
 }
 
 type hashReader struct {
-	ionReader ion.Reader
+	ionReader      ion.Reader
 	hasherProvider IonHasherProvider
 }
 

@@ -19,8 +19,8 @@ import ion "ion-go"
 
 // Holds the commonalities between scalar and struct serializers.
 type baseSerializer struct {
-	hashFunction IonHasher
-	depth int
+	hashFunction           IonHasher
+	depth                  int
 	hasContainerAnnotation bool
 }
 

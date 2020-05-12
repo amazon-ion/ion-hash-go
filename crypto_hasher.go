@@ -31,7 +31,7 @@ import (
 type algorithm int
 
 const (
-	MD4  algorithm = iota
+	MD4 algorithm = iota
 	MD5
 	SHA1
 	SHA224

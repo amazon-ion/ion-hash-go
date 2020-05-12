@@ -19,13 +19,13 @@ type structSerializer struct {
 	baseSerializer
 
 	scalarSerializer serializer
-	fieldHashes [][]byte
+	fieldHashes      [][]byte
 }
 
 func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionprovider IonHasherProvider) serializer {
 	return &structSerializer{
-		baseSerializer: baseSerializer{hashFunction: hashFunction, depth: depth},
-		scalarSerializer: newScalarSerializer(hashFunctionprovider.newHasher(), depth + 1)}
+		baseSerializer:   baseSerializer{hashFunction: hashFunction, depth: depth},
+		scalarSerializer: newScalarSerializer(hashFunctionprovider.newHasher(), depth+1)}
 }
 
 func (structSerializer *structSerializer) scalar(ionValue interface{}) {
