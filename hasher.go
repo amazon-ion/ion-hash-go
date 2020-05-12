@@ -34,7 +34,7 @@ func (h *hasher) scalar() {
 	panic("implement me")
 }
 
-func (h *hasher) stepIn() {
+func (h *hasher) stepIn(ionValue hashValue) {
 	panic("implement me")
 }
 

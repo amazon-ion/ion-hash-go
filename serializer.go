@@ -17,7 +17,6 @@ package ionhash
 
 import ion "ion-go"
 
-//TODO add docstrings
 type serializer interface {
 	scalar(ionValue interface{})
 
