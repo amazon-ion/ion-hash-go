@@ -24,14 +24,15 @@ type InvalidOperationError struct {
 }
 
 func (e *InvalidOperationError) Error() string {
-	return fmt.Sprintf("ionhash: invalid operation error on %v.%v", e.structName, e.methodName)
+	return fmt.Sprintf(`ionhash: invalid operation error on %v.%v`, e.structName, e.methodName)
 }
 
-// A SyntaxError is returned when a crypto hasher encounters invalid input.
-type SyntaxError struct {
-	Msg string
+// InvalidArgumentError is returned when one of the arguments given to a function was not valid.
+type InvalidArgumentError struct {
+	argumentName string
+	argumentValue interface{}
 }
 
-func (e *SyntaxError) Error() string {
-	return fmt.Sprintf("ionhash: syntax error: %v", e.Msg)
+func (e *InvalidArgumentError) Error() string {
+	return fmt.Sprintf(`ionhash: invalid value: "%v" specified for argument: %s`, e.argumentValue, e.argumentName)
 }
