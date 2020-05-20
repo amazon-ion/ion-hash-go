@@ -52,7 +52,9 @@ func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 func (hashReader *hashReader) Next() bool {
 	switch hashReader.typeIon {
 	case ion.ListType:
+		fallthrough
 	case ion.SexpType:
+		fallthrough
 	case ion.StructType:
 		if hashReader.IsNull() {
 			hashReader.hasher.scalar()
@@ -73,14 +75,23 @@ func (hashReader *hashReader) Next() bool {
 			}
 		}
 	case ion.NullType:
+		fallthrough
 	case ion.BoolType:
+		fallthrough
 	case ion.IntType:
+		fallthrough
 	case ion.FloatType:
+		fallthrough
 	case ion.DecimalType:
+		fallthrough
 	case ion.TimestampType:
+		fallthrough
 	case ion.SymbolType:
+		fallthrough
 	case ion.StringType:
+		fallthrough
 	case ion.ClobType:
+		fallthrough
 	case ion.BlobType:
 		hashReader.hasher.scalar()
 	}
@@ -187,7 +198,9 @@ func (hashReader *hashReader) traverse() error {
 	for hashReader.Next() {
 		switch hashReader.typeIon {
 		case ion.ListType:
+			fallthrough
 		case ion.SexpType:
+			fallthrough
 		case ion.StructType:
 			if !hashReader.IsNull() {
 				err := hashReader.StepIn()
