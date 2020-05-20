@@ -19,7 +19,7 @@ import (
 	"math/big"
 	"time"
 
-	"ion-go"
+	"github.com/amzn/ion-go/ion"
 )
 
 type HashWriter interface {

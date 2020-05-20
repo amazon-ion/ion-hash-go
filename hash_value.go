@@ -15,7 +15,7 @@
 
 package ionhash
 
-import ion "ion-go"
+import "github.com/amzn/ion-go/ion"
 
 type hashValue interface {
 	getFieldName() string
