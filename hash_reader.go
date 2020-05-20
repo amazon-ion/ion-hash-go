@@ -131,9 +131,7 @@ func (hashReader *hashReader) StepOut() error {
 		return err
 	}
 
-	hashReader.hasher.stepOut()
-
-	return nil
+	return hashReader.hasher.stepOut()
 }
 
 func (hashReader *hashReader) BoolValue() (bool, error) {
@@ -181,7 +179,7 @@ func (hashReader *hashReader) ByteValue() ([]byte, error) {
 }
 
 func (hashReader *hashReader) Sum(b []byte) []byte {
-	hashReader.hasher.digest()
+	hashReader.hasher.sum()
 }
 
 func (hashReader *hashReader) traverse() error {
@@ -222,39 +220,31 @@ func (hashReader hashReader) getAnnotations() []string {
 	return hashReader.Annotations()
 }
 
-func (hashReader *hashReader) value() interface{} {
-	var value interface{}
-	var err error
-
+func (hashReader *hashReader) value() (interface{}, error) {
 	switch hashReader.typeIon {
 	case ion.BoolType:
-		value, err = hashReader.BoolValue()
+		return hashReader.BoolValue()
 	case ion.BlobType:
+		return hashReader.ionReader.ByteValue()
 	case ion.ClobType:
-		value, err = hashReader.ionReader.ByteValue()
+		return hashReader.ionReader.ByteValue()
 	case ion.DecimalType:
-		value, err = hashReader.DecimalValue()
+		return hashReader.DecimalValue()
 	case ion.FloatType:
-		value, err = hashReader.FloatValue()
+		return hashReader.FloatValue()
 	case ion.IntType:
-		value, err = hashReader.IntValue()
+		return hashReader.IntValue()
 	case ion.StringType:
-		value, err = hashReader.StringValue()
+		return hashReader.StringValue()
 	case ion.SymbolType:
-		value = hashReader.SymbolTable()
-		err = nil
+		return hashReader.SymbolTable(), nil
 	case ion.TimestampType:
-		value, err = hashReader.TimeValue()
+		return hashReader.TimeValue()
 	case ion.NoType:
-		value = ion.NoType
-		err = nil
+		return ion.NoType, nil
 	}
 
-	if err == nil {
-		return value
-	}
-
-	return nil
+	return nil, fmt.Errorf("Unexpected type")
 }
 
 func (hashReader *hashReader) isInStruct() bool {
