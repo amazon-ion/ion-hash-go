@@ -38,11 +38,11 @@ func (h *hasher) stepIn(ionValue hashValue) {
 	panic("implement me")
 }
 
-func (h *hasher) stepOut() {
+func (h *hasher) stepOut() error {
 	panic("implement me")
 }
 
-func (h *hasher) digest() []byte {
+func (h *hasher) sum() []byte {
 	panic("implement me")
 }
 
