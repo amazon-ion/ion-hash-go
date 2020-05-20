@@ -1,4 +1,4 @@
-/*
+	/*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -15,7 +15,7 @@
 
 package ionhash
 
-import ion "ion-go"
+import "github.com/amzn/ion-go/ion"
 
 type hashValue interface {
 	getFieldName() string

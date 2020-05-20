@@ -15,7 +15,7 @@
 
 package ionhash
 
-import ion "ion-go"
+import "github.com/amzn/ion-go/ion"
 
 // Holds the commonalities between scalar and struct serializers.
 type baseSerializer struct {
