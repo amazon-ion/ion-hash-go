@@ -33,9 +33,9 @@ type HashReader interface {
 }
 
 type hashReader struct {
-	ionReader ion.Reader
-	hasher    hasher
-	typeIon   ion.Type
+	ionReader   ion.Reader
+	hasher      hasher
+	currentType ion.Type
 }
 
 func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) HashReader {
@@ -49,7 +49,7 @@ func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 }
 
 func (hashReader *hashReader) Next() bool {
-	switch hashReader.typeIon {
+	switch hashReader.currentType {
 	case ion.ListType:
 		fallthrough
 	case ion.SexpType:
@@ -101,7 +101,10 @@ func (hashReader *hashReader) Next() bool {
 		}
 	}
 
-	return hashReader.ionReader.Next()
+	moveNext := hashReader.ionReader.Next()
+	hashReader.currentType = hashReader.ionReader.Type()
+
+	return moveNext
 }
 
 func (hashReader *hashReader) Err() error {
@@ -135,7 +138,7 @@ func (hashReader *hashReader) StepIn() error {
 		return err
 	}
 
-	hashReader.typeIon = ion.NoType
+	hashReader.currentType = ion.NoType
 
 	return nil
 }
@@ -204,7 +207,7 @@ func (hashReader *hashReader) Sum(b []byte) []byte {
 
 func (hashReader *hashReader) traverse() error {
 	for hashReader.Next() {
-		switch hashReader.typeIon {
+		switch hashReader.currentType {
 		case ion.ListType:
 			fallthrough
 		case ion.SexpType:
@@ -234,16 +237,16 @@ func (hashReader *hashReader) traverse() error {
 
 // The following implements HashValue interface.
 
-func (hashReader hashReader) getFieldName() string {
+func (hashReader *hashReader) getFieldName() string {
 	return hashReader.FieldName()
 }
 
-func (hashReader hashReader) getAnnotations() []string {
+func (hashReader *hashReader) getAnnotations() []string {
 	return hashReader.Annotations()
 }
 
 func (hashReader *hashReader) value() (interface{}, error) {
-	switch hashReader.typeIon {
+	switch hashReader.currentType {
 	case ion.BoolType:
 		return hashReader.BoolValue()
 	case ion.BlobType:
@@ -266,11 +269,11 @@ func (hashReader *hashReader) value() (interface{}, error) {
 		return ion.NoType, nil
 	}
 
-	return nil, fmt.Errorf("Unexpected type")
+	return nil, &InvalidIonTypeError{hashReader.currentType}
 }
 
 func (hashReader *hashReader) isInStruct() bool {
-	return hashReader.typeIon == ion.StructType
+	return hashReader.currentType == ion.StructType
 }
 
 func (hashReader *hashReader) ionType() ion.Type {
