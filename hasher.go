@@ -30,11 +30,11 @@ func newHasher(hasherProvider IonHasherProvider) *hasher {
 	return &hasher{hasherProvider, currentHasher, hasherStack}
 }
 
-func (h *hasher) scalar() {
+func (h *hasher) scalar(ionValue hashValue) error {
 	panic("implement me")
 }
 
-func (h *hasher) stepIn(ionValue hashValue) {
+func (h *hasher) stepIn(ionValue hashValue) error {
 	panic("implement me")
 }
 
