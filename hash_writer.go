@@ -175,8 +175,7 @@ func (hashWriter *hashWriter) BeginList() error {
 		return error
 	}
 
-	hashWriter.ionWriter.BeginList()
-	panic("implement me")
+	return hashWriter.ionWriter.BeginList()
 }
 
 func (hashWriter *hashWriter) EndList() error {
@@ -194,8 +193,7 @@ func (hashWriter *hashWriter) BeginSexp() error {
 		return error
 	}
 
-	hashWriter.ionWriter.BeginSexp()
-	panic("implement me")
+	return hashWriter.ionWriter.BeginSexp()
 }
 
 func (hashWriter *hashWriter) EndSexp() error {
@@ -213,8 +211,7 @@ func (hashWriter *hashWriter) BeginStruct() error {
 		return error
 	}
 
-	hashWriter.ionWriter.BeginStruct()
-	panic("implement me")
+	return hashWriter.ionWriter.BeginStruct()
 }
 
 func (hashWriter *hashWriter) EndStruct() error {
