@@ -42,7 +42,7 @@ func (h *hasher) stepOut() error {
 	panic("implement me")
 }
 
-func (h *hasher) digest() []byte {
+func (h *hasher) sum() []byte {
 	panic("implement me")
 }
 
