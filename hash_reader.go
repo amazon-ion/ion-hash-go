@@ -57,7 +57,10 @@ func (hashReader *hashReader) Next() bool {
 		fallthrough
 	case ion.StructType:
 		if hashReader.IsNull() {
-			hashReader.hasher.scalar()
+			err := hashReader.hasher.scalar(hashReader)
+			if err != nil {
+				return false
+			}
 		} else {
 			err := hashReader.StepIn()
 			if err != nil {
@@ -93,7 +96,10 @@ func (hashReader *hashReader) Next() bool {
 	case ion.ClobType:
 		fallthrough
 	case ion.BlobType:
-		hashReader.hasher.scalar()
+		err := hashReader.hasher.scalar(hashReader)
+		if err != nil {
+			return false
+		}
 	}
 
 	return hashReader.ionReader.Next()
@@ -120,9 +126,12 @@ func (hashReader *hashReader) Annotations() []string {
 }
 
 func (hashReader *hashReader) StepIn() error {
-	hashReader.hasher.stepIn(hashReader)
+	err := hashReader.hasher.stepIn(hashReader)
+	if err != nil {
+		return err
+	}
 
-	err := hashReader.ionReader.StepIn()
+	err = hashReader.ionReader.StepIn()
 	if err != nil {
 		return err
 	}
