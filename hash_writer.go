@@ -33,157 +33,249 @@ type HashWriter interface {
 }
 
 type hashWriter struct {
-	ionWriter      ion.Writer
-	hasherProvider IonHasherProvider
+	ionWriter ion.Writer
+	hasher    hasher
+
+	currentFieldName string
+	currentType      ion.Type
+	currentValue     interface{}
+	currentIsNull    bool
+	annotations      []string
 }
 
 func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) HashWriter {
-	hashWriter := &hashWriter{ionWriter, hasherProvider}
+	hasher := newHasher(hasherProvider)
+	hashWriter := &hashWriter{ionWriter: ionWriter, hasher: *hasher}
 
 	return hashWriter
 }
 
 func (hashWriter *hashWriter) FieldName(val string) error {
-	hashWriter.ionWriter.FieldName(val)
-	panic("implement me")
+	hashWriter.currentFieldName = val
+	return hashWriter.ionWriter.FieldName(val)
 }
 
 func (hashWriter *hashWriter) Annotation(val string) error {
-	hashWriter.ionWriter.Annotations(val)
-	panic("implement me")
+	hashWriter.annotations = append(hashWriter.annotations, val)
+	return hashWriter.ionWriter.Annotations(val)
 }
 
 func (hashWriter *hashWriter) Annotations(vals ...string) error {
-	hashWriter.ionWriter.Annotations(vals...)
-	panic("implement me")
+	hashWriter.annotations = append(hashWriter.annotations, vals...)
+	return hashWriter.ionWriter.Annotations(vals...)
 }
 
 func (hashWriter *hashWriter) WriteNull() error {
-	hashWriter.ionWriter.WriteNull()
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.NullType, nil)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteNull()
 }
 
-func (hashWriter *hashWriter) WriteNullType(t ion.Type) error {
-	hashWriter.ionWriter.WriteNullType(t)
-	panic("implement me")
+func (hashWriter *hashWriter) WriteNullType(ionType ion.Type) error {
+	error := hashWriter.hashScalar(ionType, nil)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteNullType(ionType)
 }
 
 func (hashWriter *hashWriter) WriteBool(val bool) error {
-	hashWriter.ionWriter.WriteBool(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.BoolType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteBool(val)
 }
 
 func (hashWriter *hashWriter) WriteInt(val int64) error {
-	hashWriter.ionWriter.WriteInt(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.IntType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteInt(val)
 }
 
 func (hashWriter *hashWriter) WriteUint(val uint64) error {
-	hashWriter.ionWriter.WriteUint(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.IntType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteUint(val)
 }
 
 func (hashWriter *hashWriter) WriteBigInt(val *big.Int) error {
-	hashWriter.ionWriter.WriteBigInt(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.IntType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteBigInt(val)
 }
 
 func (hashWriter *hashWriter) WriteFloat(val float64) error {
-	hashWriter.ionWriter.WriteFloat(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.FloatType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteFloat(val)
 }
 
 func (hashWriter *hashWriter) WriteDecimal(val *ion.Decimal) error {
-	hashWriter.ionWriter.WriteDecimal(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.DecimalType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteDecimal(val)
 }
 
 func (hashWriter *hashWriter) WriteTimestamp(val time.Time) error {
-	hashWriter.ionWriter.WriteTimestamp(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.TimestampType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteTimestamp(val)
 }
 
 func (hashWriter *hashWriter) WriteSymbol(val string) error {
-	hashWriter.ionWriter.WriteSymbol(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.SymbolType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteSymbol(val)
 }
 
 func (hashWriter *hashWriter) WriteString(val string) error {
-	hashWriter.ionWriter.WriteString(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.StringType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteString(val)
 }
 
 func (hashWriter *hashWriter) WriteClob(val []byte) error {
-	hashWriter.ionWriter.WriteClob(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.ClobType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteClob(val)
 }
 
 func (hashWriter *hashWriter) WriteBlob(val []byte) error {
-	hashWriter.ionWriter.WriteBlob(val)
-	panic("implement me")
+	error := hashWriter.hashScalar(ion.BlobType, val)
+	if error != nil {
+		return error
+	}
+	return hashWriter.ionWriter.WriteBlob(val)
 }
 
 func (hashWriter *hashWriter) BeginList() error {
+	error := hashWriter.stepIn(ion.ListType)
+	if error != nil {
+		return error
+	}
+
 	hashWriter.ionWriter.BeginList()
 	panic("implement me")
 }
 
 func (hashWriter *hashWriter) EndList() error {
-	hashWriter.ionWriter.EndList()
-	panic("implement me")
+	error := hashWriter.hasher.stepOut()
+	if error != nil {
+		return error
+	}
+
+	return hashWriter.ionWriter.EndList()
 }
 
 func (hashWriter *hashWriter) BeginSexp() error {
+	error := hashWriter.stepIn(ion.SexpType)
+	if error != nil {
+		return error
+	}
+
 	hashWriter.ionWriter.BeginSexp()
 	panic("implement me")
 }
 
 func (hashWriter *hashWriter) EndSexp() error {
-	hashWriter.ionWriter.EndSexp()
-	panic("implement me")
+	error := hashWriter.hasher.stepOut()
+	if error != nil {
+		return error
+	}
+
+	return hashWriter.ionWriter.EndSexp()
 }
 
 func (hashWriter *hashWriter) BeginStruct() error {
+	error := hashWriter.stepIn(ion.StructType)
+	if error != nil {
+		return error
+	}
+
 	hashWriter.ionWriter.BeginStruct()
 	panic("implement me")
 }
 
 func (hashWriter *hashWriter) EndStruct() error {
-	hashWriter.ionWriter.EndStruct()
-	panic("implement me")
+	error := hashWriter.hasher.stepOut()
+	if error != nil {
+		return error
+	}
+
+	return hashWriter.ionWriter.EndStruct()
 }
 
 func (hashWriter *hashWriter) Finish() error {
-	hashWriter.ionWriter.Finish()
-	panic("implement me")
+	return hashWriter.ionWriter.Finish()
 }
 
 func (hashWriter *hashWriter) Sum(b []byte) []byte {
-	panic("implement me")
+	return hashWriter.hasher.digest()
 }
 
 // The following implements HashValue interface.
 
-func (hashWriter hashWriter) getFieldName() string {
-	panic("implement me")
+func (hashWriter *hashWriter) getFieldName() string {
+	return hashWriter.currentFieldName
 }
 
-func (hashWriter hashWriter) getAnnotations() []string {
-	panic("implement me")
+func (hashWriter *hashWriter) getAnnotations() []string {
+	return hashWriter.annotations
 }
 
-func (hashWriter hashWriter) isNull() bool {
-	panic("implement me")
+func (hashWriter *hashWriter) isNull() bool {
+	return hashWriter.currentIsNull
 }
 
-func (hashWriter hashWriter) ionType() ion.Type {
-	panic("implement me")
+func (hashWriter *hashWriter) ionType() ion.Type {
+	return hashWriter.currentType
 }
 
-func (hashWriter hashWriter) value() interface{} {
-	panic("implement me")
+func (hashWriter *hashWriter) value() interface{} {
+	return hashWriter.currentValue
 }
 
-func (hashWriter hashWriter) isInStruct() bool {
-	panic("implement me")
+func (hashWriter *hashWriter) isInStruct() bool {
+	return hashWriter.currentType == ion.StructType
+}
+
+func (hashWriter *hashWriter) hashScalar(ionType ion.Type, value interface{}) error {
+	hashWriter.currentType = ionType
+	hashWriter.currentValue = value
+	hashWriter.currentIsNull = value == nil
+	hashWriter.currentFieldName = ""
+	hashWriter.annotations = nil
+
+	return hashWriter.hasher.scalar(hashWriter)
+}
+
+func (hashWriter *hashWriter) stepIn(ionType ion.Type) error {
+	hashWriter.currentType = ionType
+	hashWriter.currentValue = nil
+	hashWriter.currentIsNull = false
+	hashWriter.currentFieldName = ""
+	hashWriter.annotations = nil
+
+	return hashWriter.hasher.stepIn(hashWriter)
 }
