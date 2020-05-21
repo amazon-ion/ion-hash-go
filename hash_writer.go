@@ -66,158 +66,158 @@ func (hashWriter *hashWriter) Annotations(vals ...string) error {
 }
 
 func (hashWriter *hashWriter) WriteNull() error {
-	error := hashWriter.hashScalar(ion.NullType, nil)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.NullType, nil)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteNull()
 }
 
 func (hashWriter *hashWriter) WriteNullType(ionType ion.Type) error {
-	error := hashWriter.hashScalar(ionType, nil)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ionType, nil)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteNullType(ionType)
 }
 
 func (hashWriter *hashWriter) WriteBool(val bool) error {
-	error := hashWriter.hashScalar(ion.BoolType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.BoolType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteBool(val)
 }
 
 func (hashWriter *hashWriter) WriteInt(val int64) error {
-	error := hashWriter.hashScalar(ion.IntType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.IntType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteInt(val)
 }
 
 func (hashWriter *hashWriter) WriteUint(val uint64) error {
-	error := hashWriter.hashScalar(ion.IntType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.IntType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteUint(val)
 }
 
 func (hashWriter *hashWriter) WriteBigInt(val *big.Int) error {
-	error := hashWriter.hashScalar(ion.IntType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.IntType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteBigInt(val)
 }
 
 func (hashWriter *hashWriter) WriteFloat(val float64) error {
-	error := hashWriter.hashScalar(ion.FloatType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.FloatType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteFloat(val)
 }
 
 func (hashWriter *hashWriter) WriteDecimal(val *ion.Decimal) error {
-	error := hashWriter.hashScalar(ion.DecimalType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.DecimalType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteDecimal(val)
 }
 
 func (hashWriter *hashWriter) WriteTimestamp(val time.Time) error {
-	error := hashWriter.hashScalar(ion.TimestampType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.TimestampType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteTimestamp(val)
 }
 
 func (hashWriter *hashWriter) WriteSymbol(val string) error {
-	error := hashWriter.hashScalar(ion.SymbolType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.SymbolType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteSymbol(val)
 }
 
 func (hashWriter *hashWriter) WriteString(val string) error {
-	error := hashWriter.hashScalar(ion.StringType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.StringType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteString(val)
 }
 
 func (hashWriter *hashWriter) WriteClob(val []byte) error {
-	error := hashWriter.hashScalar(ion.ClobType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.ClobType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteClob(val)
 }
 
 func (hashWriter *hashWriter) WriteBlob(val []byte) error {
-	error := hashWriter.hashScalar(ion.BlobType, val)
-	if error != nil {
-		return error
+	err := hashWriter.hashScalar(ion.BlobType, val)
+	if err != nil {
+		return err
 	}
 	return hashWriter.ionWriter.WriteBlob(val)
 }
 
 func (hashWriter *hashWriter) BeginList() error {
-	error := hashWriter.stepIn(ion.ListType)
-	if error != nil {
-		return error
+	err := hashWriter.stepIn(ion.ListType)
+	if err != nil {
+		return err
 	}
 
 	return hashWriter.ionWriter.BeginList()
 }
 
 func (hashWriter *hashWriter) EndList() error {
-	error := hashWriter.hasher.stepOut()
-	if error != nil {
-		return error
+	err := hashWriter.hasher.stepOut()
+	if err != nil {
+		return err
 	}
 
 	return hashWriter.ionWriter.EndList()
 }
 
 func (hashWriter *hashWriter) BeginSexp() error {
-	error := hashWriter.stepIn(ion.SexpType)
-	if error != nil {
-		return error
+	err := hashWriter.stepIn(ion.SexpType)
+	if err != nil {
+		return err
 	}
 
 	return hashWriter.ionWriter.BeginSexp()
 }
 
 func (hashWriter *hashWriter) EndSexp() error {
-	error := hashWriter.hasher.stepOut()
-	if error != nil {
-		return error
+	err := hashWriter.hasher.stepOut()
+	if err != nil {
+		return err
 	}
 
 	return hashWriter.ionWriter.EndSexp()
 }
 
 func (hashWriter *hashWriter) BeginStruct() error {
-	error := hashWriter.stepIn(ion.StructType)
-	if error != nil {
-		return error
+	err := hashWriter.stepIn(ion.StructType)
+	if err != nil {
+		return err
 	}
 
 	return hashWriter.ionWriter.BeginStruct()
 }
 
 func (hashWriter *hashWriter) EndStruct() error {
-	error := hashWriter.hasher.stepOut()
-	if error != nil {
-		return error
+	err := hashWriter.hasher.stepOut()
+	if err != nil {
+		return err
 	}
 
 	return hashWriter.ionWriter.EndStruct()
