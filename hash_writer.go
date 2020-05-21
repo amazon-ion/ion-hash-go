@@ -180,7 +180,7 @@ func (hashWriter hashWriter) ionType() ion.Type {
 	panic("implement me")
 }
 
-func (hashWriter hashWriter) value() interface{} {
+func (hashWriter hashWriter) value() (interface{}, error) {
 	panic("implement me")
 }
 

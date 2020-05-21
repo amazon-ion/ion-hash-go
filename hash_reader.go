@@ -39,7 +39,7 @@ type hashReader struct {
 }
 
 func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) HashReader {
-	hashReader := &hashReader{ionReader, *newHasher(hasherProvider), ion.NoType}
+	hashReader := &hashReader{ionReader: ionReader, hasher: *newHasher(hasherProvider)}
 
 	return hashReader
 }
@@ -202,7 +202,7 @@ func (hashReader *hashReader) ByteValue() ([]byte, error) {
 }
 
 func (hashReader *hashReader) Sum(b []byte) []byte {
-	hashReader.hasher.sum()
+	return hashReader.hasher.sum()
 }
 
 func (hashReader *hashReader) traverse() error {
