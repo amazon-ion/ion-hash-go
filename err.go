@@ -19,8 +19,8 @@ import "fmt"
 
 // An InvalidOperationError is returned when a method call is invalid for the struct's current state.
 type InvalidOperationError struct {
-	structName string
-	methodName string
+	structName   string
+	methodName   string
 	errorMessage string
 }
 
@@ -34,7 +34,7 @@ func (e *InvalidOperationError) Error() string {
 
 // InvalidArgumentError is returned when one of the arguments given to a function was not valid.
 type InvalidArgumentError struct {
-	argumentName string
+	argumentName  string
 	argumentValue interface{}
 }
 
