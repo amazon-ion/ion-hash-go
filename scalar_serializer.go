@@ -15,6 +15,8 @@
 
 package ionhash
 
+import "github.com/amzn/ion-go/ion"
+
 type scalarSerializer struct {
 	baseSerializer
 }
@@ -23,10 +25,54 @@ func newScalarSerializer(hashFunction IonHasher, depth int) serializer {
 	return &scalarSerializer{baseSerializer{hashFunction: hashFunction, depth: depth}}
 }
 
-func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) {
+func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) {
 	panic("implement me")
 }
 
-func (scalarSerializer *scalarSerializer) stepOut() {
+func (scalarSerializer scalarSerializer) stepOut() {
 	panic("implement me")
+}
+
+func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) {
+	scalarSerializer.baseSerializer.stepIn(ionValue)
+}
+
+func (scalarSerializer scalarSerializer) digest() []byte {
+	return scalarSerializer.baseSerializer.digest()
+}
+
+func (scalarSerializer scalarSerializer) handleFieldName(ionValue interface{}) {
+	scalarSerializer.baseSerializer.stepIn(ionValue)
+}
+
+func (scalarSerializer scalarSerializer) update(bytes []byte) {
+	scalarSerializer.baseSerializer.update(bytes)
+}
+
+func (scalarSerializer scalarSerializer) beginMarker() {
+	scalarSerializer.baseSerializer.beginMarker()
+}
+
+func (scalarSerializer scalarSerializer) endMarker() {
+	scalarSerializer.baseSerializer.endMarker()
+}
+
+func (scalarSerializer scalarSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
+	scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue, isContainer)
+}
+
+func (scalarSerializer scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
+	scalarSerializer.baseSerializer.handleAnnotationsEnd(ionValue, isContainer)
+}
+
+func (scalarSerializer scalarSerializer) writeSymbol(token string) {
+	scalarSerializer.baseSerializer.writeSymbol(token)
+}
+
+func (scalarSerializer scalarSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
+	return scalarSerializer.baseSerializer.getBytes(ionType, ionValue, isNull)
+}
+
+func (scalarSerializer scalarSerializer) getLengthLength(bytes []byte) int {
+	return scalarSerializer.baseSerializer.getLengthLength(bytes)
 }

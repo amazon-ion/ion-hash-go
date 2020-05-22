@@ -24,47 +24,47 @@ type baseSerializer struct {
 	hasContainerAnnotation bool
 }
 
-func (baseSerializer *baseSerializer) stepIn(ionValue interface{}) {
+func (baseSerializer baseSerializer) stepIn(ionValue interface{}) {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) digest() []byte {
+func (baseSerializer baseSerializer) digest() []byte {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) handleFieldName(ionValue interface{}) {
+func (baseSerializer baseSerializer) handleFieldName(ionValue interface{}) {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) update(bytes []byte) {
+func (baseSerializer baseSerializer) update(bytes []byte) {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) beginMarker() {
+func (baseSerializer baseSerializer) beginMarker() {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) endMarker() {
+func (baseSerializer baseSerializer) endMarker() {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
+func (baseSerializer baseSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
+func (baseSerializer baseSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) writeSymbol(token string) {
+func (baseSerializer baseSerializer) writeSymbol(token string) {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
+func (baseSerializer baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) getLengthLength(bytes []byte) int {
+func (baseSerializer baseSerializer) getLengthLength(bytes []byte) int {
 	panic("implement me")
 }
 
