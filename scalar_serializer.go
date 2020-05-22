@@ -42,7 +42,7 @@ func (scalarSerializer scalarSerializer) digest() []byte {
 }
 
 func (scalarSerializer scalarSerializer) handleFieldName(ionValue interface{}) {
-	scalarSerializer.baseSerializer.stepIn(ionValue)
+	scalarSerializer.baseSerializer.handleFieldName(ionValue)
 }
 
 func (scalarSerializer scalarSerializer) update(bytes []byte) {

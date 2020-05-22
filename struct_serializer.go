@@ -47,7 +47,7 @@ func (structSerializer structSerializer) digest() []byte {
 }
 
 func (structSerializer structSerializer) handleFieldName(ionValue interface{}) {
-	structSerializer.baseSerializer.stepIn(ionValue)
+	structSerializer.baseSerializer.handleFieldName(ionValue)
 }
 
 func (structSerializer structSerializer) update(bytes []byte) {
