@@ -21,14 +21,14 @@ import "fmt"
 type InvalidOperationError struct {
 	structName   string
 	methodName   string
-	errorMessage string
+	message string
 }
 
 func (e *InvalidOperationError) Error() string {
-	if e.errorMessage != "" {
-		return fmt.Sprintf(`ionhash: %v.%v: %v`, e.structName, e.methodName, e.errorMessage)
+	if e.message != "" {
+		return fmt.Sprintf(`ionhash: %v.%v: %v`, e.structName, e.methodName, e.message)
 	} else {
-		return fmt.Sprintf(`ionhash: invalid operation error in %v.%v`, e.structName, e.methodName)
+		return fmt.Sprintf(`ionhash: Invalid operation error in %v.%v`, e.structName, e.methodName)
 	}
 }
 
