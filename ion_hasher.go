@@ -22,6 +22,8 @@ type IonHasher interface {
 	// It never returns an error.
 	io.Writer
 
+	Update(bytes []byte)
+
 	// Sum appends the current hash to b and returns the resulting slice.
 	// It does not change the underlying hash state.
 	Sum(b []byte) []byte

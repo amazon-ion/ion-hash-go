@@ -15,24 +15,51 @@
 
 package ionhash
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/amzn/ion-go/ion"
+)
 
 // An InvalidOperationError is returned when a method call is invalid for the struct's current state.
 type InvalidOperationError struct {
 	structName string
 	methodName string
+	message    string
 }
 
 func (e *InvalidOperationError) Error() string {
-	return fmt.Sprintf(`ionhash: invalid operation error on %v.%v`, e.structName, e.methodName)
+	if e.message != "" {
+		return fmt.Sprintf(`ionhash: %v.%v: %v`, e.structName, e.methodName, e.message)
+	} else {
+		return fmt.Sprintf(`ionhash: Invalid operation error in %v.%v`, e.structName, e.methodName)
+	}
 }
 
 // InvalidArgumentError is returned when one of the arguments given to a function was not valid.
 type InvalidArgumentError struct {
-	argumentName string
+	argumentName  string
 	argumentValue interface{}
 }
 
 func (e *InvalidArgumentError) Error() string {
-	return fmt.Sprintf(`ionhash: invalid value: "%v" specified for argument: %s`, e.argumentValue, e.argumentName)
+	return fmt.Sprintf(`ionhash: Invalid value: "%v" specified for argument: %s`, e.argumentValue, e.argumentName)
+}
+
+// An InvalidIonTypeError is returned when processing an unexpected ion type.
+type InvalidIonTypeError struct {
+	ionType ion.Type
+}
+
+func (e *InvalidIonTypeError) Error() string {
+	return fmt.Sprintf(`ionhash: Invalid Ion type: %s`, e.ionType.String())
+}
+
+// An UnknownSymbolError is returned when processing an unknown field name symbol.
+type UnknownSymbolError struct {
+	sid int
+}
+
+func (e *UnknownSymbolError) Error() string {
+	return fmt.Sprintf(`ionhash: Unknown text for sid %d`, e.sid)
 }
