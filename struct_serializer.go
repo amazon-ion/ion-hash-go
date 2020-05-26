@@ -15,6 +15,8 @@
 
 package ionhash
 
+import "github.com/amzn/ion-go/ion"
+
 type structSerializer struct {
 	baseSerializer
 
@@ -22,21 +24,65 @@ type structSerializer struct {
 	fieldHashes      [][]byte
 }
 
-func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionprovider IonHasherProvider) serializer {
+func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider IonHasherProvider) serializer {
 	return &structSerializer{
 		baseSerializer:   baseSerializer{hashFunction: hashFunction, depth: depth},
-		scalarSerializer: newScalarSerializer(hashFunctionprovider.newHasher(), depth+1)}
+		scalarSerializer: newScalarSerializer(hashFunctionProvider.newHasher(), depth+1)}
 }
 
-func (structSerializer *structSerializer) scalar(ionValue interface{}) {
+func (structSerializer structSerializer) scalar(ionValue interface{}) {
 	panic("implement me")
 }
 
-func (structSerializer *structSerializer) stepOut() {
+func (structSerializer structSerializer) stepOut() {
 	panic("implement me")
 }
 
-func (structSerializer *structSerializer) appendFieldHash() {
+func (structSerializer structSerializer) stepIn(ionValue interface{}) {
+	structSerializer.baseSerializer.stepIn(ionValue)
+}
+
+func (structSerializer structSerializer) digest() []byte {
+	return structSerializer.baseSerializer.digest()
+}
+
+func (structSerializer structSerializer) handleFieldName(ionValue interface{}) {
+	structSerializer.baseSerializer.handleFieldName(ionValue)
+}
+
+func (structSerializer structSerializer) update(bytes []byte) {
+	structSerializer.baseSerializer.update(bytes)
+}
+
+func (structSerializer structSerializer) beginMarker() {
+	structSerializer.baseSerializer.beginMarker()
+}
+
+func (structSerializer structSerializer) endMarker() {
+	structSerializer.baseSerializer.endMarker()
+}
+
+func (structSerializer structSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
+	structSerializer.baseSerializer.handleAnnotationsBegin(ionValue, isContainer)
+}
+
+func (structSerializer structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
+	structSerializer.baseSerializer.handleAnnotationsEnd(ionValue, isContainer)
+}
+
+func (structSerializer structSerializer) writeSymbol(token string) {
+	structSerializer.baseSerializer.writeSymbol(token)
+}
+
+func (structSerializer structSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
+	return structSerializer.baseSerializer.getBytes(ionType, ionValue, isNull)
+}
+
+func (structSerializer structSerializer) getLengthLength(bytes []byte) int {
+	return structSerializer.baseSerializer.getLengthLength(bytes)
+}
+
+func (structSerializer *structSerializer) appendFieldHash(digest []byte) {
 	panic("implement me")
 }
 

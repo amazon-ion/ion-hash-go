@@ -15,6 +15,8 @@
 
 package ionhash
 
+import "github.com/amzn/ion-go/ion"
+
 type hasher struct {
 	hasherProvider IonHasherProvider
 	currentHasher  serializer
@@ -30,22 +32,66 @@ func newHasher(hasherProvider IonHasherProvider) *hasher {
 	return &hasher{hasherProvider, currentHasher, hasherStack}
 }
 
-func (h *hasher) scalar(ionValue hashValue) error {
-	panic("implement me")
+func (h *hasher) scalar(ionValue hashValue) {
+	h.currentHasher.scalar(ionValue)
 }
 
-func (h *hasher) stepIn(ionValue hashValue) error {
-	panic("implement me")
+func (h *hasher) stepIn(ionValue hashValue) {
+	var hashFunction IonHasher
+
+	_, isStructSerializer := h.currentHasher.(structSerializer)
+	if isStructSerializer {
+		hashFunction = h.hasherProvider.newHasher()
+	} else {
+		hashFunction = h.currentHasher.(scalarSerializer).hashFunction
+	}
+
+	if ionValue.ionType() == ion.StructType {
+		h.currentHasher = newStructSerializer(hashFunction, 0, h.hasherProvider)
+	} else {
+		h.currentHasher = newScalarSerializer(hashFunction, 0)
+	}
+
+	h.hasherStack.push(h.currentHasher)
+	h.currentHasher.stepIn(ionValue)
 }
 
 func (h *hasher) stepOut() error {
-	panic("implement me")
+	if h.depth() == 0 {
+		return &InvalidOperationError{"hasher", "stepOut", "Depth is zero. Hasher cannot step out any further"}
+	}
+
+	h.currentHasher.stepOut()
+
+	poppedHasher, err := h.hasherStack.pop()
+	if err != nil {
+		return err
+	}
+	peekedHasher, err := h.hasherStack.peek()
+	if err != nil {
+		return err
+	}
+
+	h.currentHasher = peekedHasher.(serializer)
+
+	structHasher, isStructSerializer := h.currentHasher.(structSerializer)
+	if isStructSerializer {
+		digest := poppedHasher.(serializer).digest()
+		structHasher.appendFieldHash(digest)
+	}
+
+	return nil
 }
 
-func (h *hasher) sum() []byte {
-	panic("implement me")
+func (h *hasher) digest() ([]byte, error) {
+	if h.depth() != 0 {
+		return nil, &InvalidOperationError{
+			"hasher", "digest", "A digest may only be provided at the same depth hashing started"}
+	}
+
+	return h.currentHasher.digest(), nil
 }
 
 func (h *hasher) depth() int {
-	panic("implement me")
+	return h.hasherStack.size() - 1
 }
