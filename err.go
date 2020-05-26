@@ -15,7 +15,11 @@
 
 package ionhash
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/amzn/ion-go/ion"
+)
 
 // An InvalidOperationError is returned when a method call is invalid for the struct's current state.
 type InvalidOperationError struct {
@@ -24,15 +28,24 @@ type InvalidOperationError struct {
 }
 
 func (e *InvalidOperationError) Error() string {
-	return fmt.Sprintf(`ionhash: invalid operation error on %v.%v`, e.structName, e.methodName)
+	return fmt.Sprintf(`ionhash: Invalid operation error on %v.%v`, e.structName, e.methodName)
 }
 
 // InvalidArgumentError is returned when one of the arguments given to a function was not valid.
 type InvalidArgumentError struct {
-	argumentName string
+	argumentName  string
 	argumentValue interface{}
 }
 
 func (e *InvalidArgumentError) Error() string {
-	return fmt.Sprintf(`ionhash: invalid value: "%v" specified for argument: %s`, e.argumentValue, e.argumentName)
+	return fmt.Sprintf(`ionhash: Invalid value: "%v" specified for argument: %s`, e.argumentValue, e.argumentName)
+}
+
+// An InvalidIonTypeError is returned when processing an unexpected ion type.
+type InvalidIonTypeError struct {
+	ionType ion.Type
+}
+
+func (e *InvalidIonTypeError) Error() string {
+	return fmt.Sprintf(`ionhash: Invalid Ion type: %s`, e.ionType.String())
 }
