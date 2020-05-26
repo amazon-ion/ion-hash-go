@@ -49,55 +49,34 @@ func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 }
 
 func (hashReader *hashReader) Next() bool {
-	switch hashReader.currentType {
-	case ion.ListType:
-		fallthrough
-	case ion.SexpType:
-		fallthrough
-	case ion.StructType:
-		if hashReader.IsNull() {
+	if hashReader.currentType != ion.NoType {
+		if ion.IsContainer(hashReader.currentType) {
+			if hashReader.IsNull() {
+				err := hashReader.hasher.scalar(hashReader)
+				if err != nil {
+					return false
+				}
+			} else {
+				err := hashReader.StepIn()
+				if err != nil {
+					return false
+				}
+
+				err = hashReader.traverse()
+				if err != nil {
+					return false
+				}
+
+				err = hashReader.StepOut()
+				if err != nil {
+					return false
+				}
+			}
+		} else if ion.IsScalar(hashReader.currentType) {
 			err := hashReader.hasher.scalar(hashReader)
 			if err != nil {
 				return false
 			}
-		} else {
-			err := hashReader.StepIn()
-			if err != nil {
-				return false
-			}
-
-			err = hashReader.traverse()
-			if err != nil {
-				return false
-			}
-
-			err = hashReader.StepOut()
-			if err != nil {
-				return false
-			}
-		}
-	case ion.NullType:
-		fallthrough
-	case ion.BoolType:
-		fallthrough
-	case ion.IntType:
-		fallthrough
-	case ion.FloatType:
-		fallthrough
-	case ion.DecimalType:
-		fallthrough
-	case ion.TimestampType:
-		fallthrough
-	case ion.SymbolType:
-		fallthrough
-	case ion.StringType:
-		fallthrough
-	case ion.ClobType:
-		fallthrough
-	case ion.BlobType:
-		err := hashReader.hasher.scalar(hashReader)
-		if err != nil {
-			return false
 		}
 	}
 
@@ -207,27 +186,20 @@ func (hashReader *hashReader) Sum(b []byte) []byte {
 
 func (hashReader *hashReader) traverse() error {
 	for hashReader.Next() {
-		switch hashReader.currentType {
-		case ion.ListType:
-			fallthrough
-		case ion.SexpType:
-			fallthrough
-		case ion.StructType:
-			if !hashReader.IsNull() {
-				err := hashReader.StepIn()
-				if err != nil {
-					return err
-				}
+		if ion.IsContainer(hashReader.currentType) && !hashReader.IsNull(){
+			err := hashReader.StepIn()
+			if err != nil {
+				return err
+			}
 
-				err = hashReader.traverse()
-				if err != nil {
-					return err
-				}
+			err = hashReader.traverse()
+			if err != nil {
+				return err
+			}
 
-				err = hashReader.StepOut()
-				if err != nil {
-					return err
-				}
+			err = hashReader.StepOut()
+			if err != nil {
+				return err
 			}
 		}
 	}
