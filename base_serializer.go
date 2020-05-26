@@ -59,7 +59,7 @@ func (baseSerializer *baseSerializer) Sum(b []byte) []byte {
 
 func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if baseSerializer.depth > 0 && ionValue.isInStruct() {
-		// SymbolTokens are not available right now.
+		// TODO: Rework this once SymbolTokens become available
 		/*if ionValue.fieldNameSymbol().Text == null && ionValue.fieldNameSymbol().Sid != 0 {
 			return &UnknownSymbolError{ionValue.fieldNameSymbol().Sid}
 		}
@@ -115,7 +115,7 @@ func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue hashValue, i
 func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 	baseSerializer.beginMarker()
 
-	// SymbolTokens are not available right now.
+	// TODO: Rework this once SymbolTokens become available
 	/*var sid int
 	if token == "" {
 		sid = 0
@@ -126,10 +126,13 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 	symbolToken := &ion.SymbolToken{token, sid}
 	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, symbolToken, false);
 	if err != nil {
-		return nil
+		return err
 	}
 
-	tq, representation := baseSerializer.scalarOrNullSplitParts(ion.SymbolType, symbolToken, false, scalarBytes)
+	tq, representation, err := baseSerializer.scalarOrNullSplitParts(ion.SymbolType, symbolToken, false, scalarBytes)
+	if err != nil {
+		return err
+	}
 
 	baseSerializer.update([]byte{tq})
 	if len(representation) > 0 {
@@ -181,10 +184,43 @@ func (baseSerializer *baseSerializer) getLengthLength(bytes []byte) (int, error)
 	return 0, nil
 }
 
-// SymbolToken is currently not available
-//func (baseSerializer *baseSerializer)scalarOrNullSplitParts(ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes byte[]) (byte, []byte) {
-//	panic("implement me")
-//}
+// TODO: Rework this once SymbolTokens become available
+/*func (baseSerializer *baseSerializer)scalarOrNullSplitParts(
+	ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
+
+	offset, err := baseSerializer.getLengthLength(bytes)
+	if err != nil {
+		return byte(0), nil, err
+	}
+	offset++
+
+	if ionType == ion.IntType && len(bytes) > offset {
+		// ignore sign byte when the magnitude ends at byte boundary
+		if (bytes[offset] & 0xFF) == 0 {
+			offset++
+		}
+	}
+
+	// the representation is everything after TL (first byte) and length
+	representation := bytes[offset:]
+	tq := bytes[0]
+
+	if ionType == ion.SymbolType {
+		// symbols are serialized as strings; use the correct TQ:
+		tq = 0x70
+		if isNull {
+			tq = tq | 0x0F
+		} else if symbolToken != nil && symbolToken.Value.Text == nil && symbolToken.Value.Sid == 0 {
+			tq = 0x71
+		}
+	// not a symbol, bool, or null value
+	} else if ionType != ion.BoolType && (tq & 0x0F) != 0x0F {
+		// zero - out the L nibble
+		tq = tq & 0xF0
+	}
+
+	return tq, representation, nil
+}*/
 
 func escape(bytes []byte) []byte {
 	if bytes == nil {
