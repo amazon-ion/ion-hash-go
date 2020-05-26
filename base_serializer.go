@@ -43,7 +43,7 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 
 	baseSerializer.beginMarker()
 
-	tq := tq(ionValue)
+	tq := typeQualifier(ionValue)
 	if ionValue.isNull() {
 		tq = tq | 0x0F
 	}
@@ -82,6 +82,10 @@ func (baseSerializer *baseSerializer) endMarker() {
 }
 
 func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer bool) error {
+	if ionValue == nil {
+		return &InvalidArgumentError{"ionValue", ionValue}
+	}
+
 	annotations := ionValue.getAnnotations()
 	if len(annotations) > 0 {
 		baseSerializer.beginMarker()
@@ -222,6 +226,15 @@ func (baseSerializer *baseSerializer) getLengthLength(bytes []byte) (int, error)
 	return tq, representation, nil
 }*/
 
+func needsEscape(b byte) bool {
+	switch b {
+	case BeginMarkerByte, EndMarkerByte, EscapeByte:
+		return true
+	}
+
+	return false
+}
+
 func escape(bytes []byte) []byte {
 	if bytes == nil {
 		return nil
@@ -229,14 +242,14 @@ func escape(bytes []byte) []byte {
 
 	for i := 0; i < len(bytes); i++ {
 		b := bytes[i]
-		if b == BeginMarkerByte || b == EndMarkerByte || b == EscapeByte {
+		if needsEscape(b) {
 			// found a byte that needs to be escaped; build a new byte array that
 			// escapes that byte as well as any others
 			var escapedBytes []byte
 
 			for j := 0; j < len(bytes); j++ {
 				c := bytes[j]
-				if c == BeginMarkerByte || c == EndMarkerByte || c == EscapeByte {
+				if needsEscape(c) {
 					escapedBytes = append(escapedBytes, EscapeByte)
 				}
 
@@ -277,7 +290,7 @@ func serializers(ionType ion.Type, ionValue interface{}, writer HashWriter) erro
 	return &InvalidIonTypeError{ionType}
 }
 
-func tq(ionValue hashValue) byte {
+func typeQualifier(ionValue hashValue) byte {
 	typeCode := byte(ionValue.ionType())
 	return typeCode << 4
 }
