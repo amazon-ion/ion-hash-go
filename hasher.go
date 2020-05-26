@@ -58,7 +58,7 @@ func (h *hasher) stepIn(ionValue hashValue) {
 
 func (h *hasher) stepOut() error {
 	if h.depth() == 0 {
-		return &InvalidOperationError{"hasher", "stepOut", "Hasher cannot step out any further"}
+		return &InvalidOperationError{"hasher", "stepOut", "Depth is zero. Hasher cannot step out any further"}
 	}
 
 	h.currentHasher.stepOut()
@@ -84,9 +84,9 @@ func (h *hasher) stepOut() error {
 }
 
 func (h *hasher) digest() ([]byte, error) {
-	if h.depth() == 0 {
+	if h.depth() != 0 {
 		return nil, &InvalidOperationError{
-			"hasher", "stepOut", "A digest may only be provided at the same depth hashing started"}
+			"hasher", "digest", "A digest may only be provided at the same depth hashing started"}
 	}
 
 	return h.currentHasher.digest(), nil

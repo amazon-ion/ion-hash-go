@@ -30,7 +30,7 @@ func (s *stack) push(element interface{}) {
 // Remove and return top element of stack. Return error if stack is empty.
 func (s *stack) pop() (interface{}, error) {
 	if s.isEmpty() {
-		return nil, &InvalidOperationError{structName: "stack", methodName: "pop"}
+		return nil, &InvalidOperationError{"stack", "pop", "stack is empty"}
 	} else {
 		index := len(*s) - 1   // Get the index of the top most element.
 		element := (*s)[index] // Index into the slice and obtain the element.
@@ -42,7 +42,7 @@ func (s *stack) pop() (interface{}, error) {
 // Return top element of stack. Return error if stack is empty.
 func (s *stack) peek() (interface{}, error) {
 	if s.isEmpty() {
-		return nil, &InvalidOperationError{structName: "stack", methodName: "peek"}
+		return nil, &InvalidOperationError{"stack", "pop", "stack is empty"}
 	} else {
 		index := len(*s) - 1   // Get the index of the top most element.
 		element := (*s)[index] // Index into the slice and obtain the element.

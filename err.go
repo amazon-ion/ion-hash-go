@@ -30,7 +30,7 @@ type InvalidOperationError struct {
 
 func (e *InvalidOperationError) Error() string {
 	if e.message != "" {
-		return fmt.Sprintf(`ionhash: %v.%v: %v`, e.structName, e.methodName, e.message)
+		return fmt.Sprintf(`ionhash: Invalid operation at %v.%v: %v`, e.structName, e.methodName, e.message)
 	} else {
 		return fmt.Sprintf(`ionhash: Invalid operation error in %v.%v`, e.structName, e.methodName)
 	}
