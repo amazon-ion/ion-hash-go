@@ -31,7 +31,8 @@ func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) {
 	scalarSerializer.handleAnnotationsBegin(ionHashValue, false)
 	scalarSerializer.beginMarker()
 
-	var ionVal interface{}
+	// TODO: Rework this once SymbolTokens become available
+	/*var ionVal interface{}
 	var ionType ion.Type
 	if ionHashValue.isNull() {
 		ionVal = nil
@@ -47,8 +48,7 @@ func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) {
 		ionVal = nil
 	}
 
-	// TODO: Rework this once SymbolTokens become available
-	/*tq, representation :=
+	tq, representation :=
 		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionVal, ionHashValue.isNull(), scalarBytes)
 
 	scalarSerializer.update([]byte{tq})
