@@ -34,7 +34,6 @@ func (scalarSerializer scalarSerializer) stepOut() {
 }
 
 func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) {
-	scalarSerializer.baseSerializer.stepIn(ionValue)
 	scalarSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
