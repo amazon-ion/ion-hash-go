@@ -51,10 +51,12 @@ func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 func (hashReader *hashReader) Next() bool {
 	if hashReader.currentType != ion.NoType {
 		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
-			err := hashReader.hasher.scalar(hashReader)
-			if err != nil {
-				return false
-			}
+			panic("Not Implemented Yet")
+			// FIXME: hashReader.hasher.scalar() does not return anything
+			//err := hashReader.hasher.scalar(hashReader)
+			//if err != nil {
+			//	return false
+			//}
 		} else {
 			err := hashReader.StepIn()
 			if err != nil {
@@ -100,19 +102,25 @@ func (hashReader *hashReader) Annotations() []string {
 }
 
 func (hashReader *hashReader) StepIn() error {
-	err := hashReader.hasher.stepIn(hashReader)
-	if err != nil {
-		return err
-	}
+	panic("Not Implemented Yet")
+	// FIXME: hashReader.hasher.stepIn() does not return a value
+	/*
+		err := hashReader.hasher.stepIn(hashReader)
 
-	err = hashReader.ionReader.StepIn()
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	hashReader.currentType = ion.NoType
+		err = hashReader.ionReader.StepIn()
+		if err != nil {
+			return err
+		}
 
-	return nil
+		hashReader.currentType = ion.NoType
+
+		return nil
+
+	*/
 }
 
 func (hashReader *hashReader) StepOut() error {
@@ -174,7 +182,8 @@ func (hashReader *hashReader) ByteValue() ([]byte, error) {
 }
 
 func (hashReader *hashReader) Sum(b []byte) []byte {
-	return hashReader.hasher.sum()
+	// FIXME: return hashReader.hasher.sum()
+	panic("Not Implemented Yet")
 }
 
 func (hashReader *hashReader) traverse() error {
