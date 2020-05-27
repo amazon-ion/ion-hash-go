@@ -15,7 +15,11 @@
 
 package ionhash
 
-import "github.com/amzn/ion-go/ion"
+import (
+	"sort"
+
+	"github.com/amzn/ion-go/ion"
+)
 
 type structSerializer struct {
 	baseSerializer
@@ -31,11 +35,22 @@ func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider
 }
 
 func (structSerializer structSerializer) scalar(ionValue interface{}) {
-	panic("implement me")
+	structSerializer.scalarSerializer.handleFieldName(ionValue)
+	structSerializer.scalarSerializer.scalar(ionValue)
+
+	digest := structSerializer.scalarSerializer.digest()
+	structSerializer.appendFieldHash(digest)
 }
 
 func (structSerializer structSerializer) stepOut() {
-	panic("implement me")
+	// Sort fieldHashes using the sortableBytes sorting interface
+	sort.Sort(sortableBytes(structSerializer.fieldHashes))
+
+	for _, digest := range structSerializer.fieldHashes {
+		structSerializer.update(escape(digest))
+	}
+
+	structSerializer.baseSerializer.stepOut()
 }
 
 func (structSerializer structSerializer) stepIn(ionValue interface{}) {
@@ -83,9 +98,35 @@ func (structSerializer structSerializer) getLengthLength(bytes []byte) int {
 }
 
 func (structSerializer *structSerializer) appendFieldHash(digest []byte) {
-	panic("implement me")
+	structSerializer.fieldHashes = append(structSerializer.fieldHashes, digest)
 }
 
-func compareBytes(bs1, bs2 []byte) []int16 {
-	panic("implement me")
+func compareBytes(bytes1, bytes2 []byte) int {
+	for i := 0; i < len(bytes1) && i < len(bytes2); i++ {
+		byte1 := bytes1[i]
+		byte2 := bytes2[i]
+		if byte1 != byte2 {
+			return int(byte1 - byte2)
+		}
+	}
+
+	return len(bytes1) - len(bytes2)
+}
+
+// sortableBytes implements the sort.Interface so we can sort fieldHashes in stepOut()
+type sortableBytes [][]byte
+
+func (sb sortableBytes) Len() int {
+	return len(sb)
+}
+
+func (sb sortableBytes) Less(i, j int) bool {
+	bytes1 := sb[i]
+	bytes2 := sb[j]
+
+	return compareBytes(bytes1, bytes2) < 0
+}
+
+func (sb sortableBytes) Swap(i, j int) {
+	sb[i], sb[j] = sb[j], sb[i]
 }

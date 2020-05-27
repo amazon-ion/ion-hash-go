@@ -24,6 +24,11 @@ type baseSerializer struct {
 	hasContainerAnnotation bool
 }
 
+func (baseSerializer *baseSerializer) stepOut() {
+	baseSerializer.endMarker()
+	baseSerializer.handleAnnotationsEnd(nil, true)
+}
+
 func (baseSerializer *baseSerializer) stepIn(ionValue interface{}) {
 	panic("implement me")
 }

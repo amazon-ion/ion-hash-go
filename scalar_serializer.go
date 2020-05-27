@@ -26,11 +26,42 @@ func newScalarSerializer(hashFunction IonHasher, depth int) serializer {
 }
 
 func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) {
-	panic("implement me")
+	ionHashValue := ionValue.(hashValue)
+
+	scalarSerializer.handleAnnotationsBegin(ionHashValue, false)
+	scalarSerializer.beginMarker()
+
+	var ionVal interface{}
+	var ionType ion.Type
+	if ionHashValue.isNull() {
+		ionVal = nil
+		ionType = ion.NoType
+	} else {
+		ionVal = ionHashValue
+		ionType = ionHashValue.ionType()
+	}
+
+	scalarBytes := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
+
+	if ionHashValue.ionType() != ion.SymbolType {
+		ionVal = nil
+	}
+
+	// TODO: Rework this once SymbolTokens become available
+	/*tq, representation :=
+		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionVal, ionHashValue.isNull(), scalarBytes)
+
+	scalarSerializer.update([]byte{tq})
+	if len(representation) > 0 {
+		scalarSerializer.update(escape(representation))
+	}*/
+
+	scalarSerializer.endMarker()
+	scalarSerializer.handleAnnotationsEnd(ionHashValue, false)
 }
 
 func (scalarSerializer scalarSerializer) stepOut() {
-	panic("implement me")
+	scalarSerializer.baseSerializer.stepOut()
 }
 
 func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) {
