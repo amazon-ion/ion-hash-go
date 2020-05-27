@@ -135,22 +135,22 @@ func (hashReader *hashReader) StepIn() error {
 	panic("Not Implemented Yet")
 	// FIXME: hashReader.hasher.stepIn() does not return a value
 	/*
-	err := hashReader.hasher.stepIn(hashReader)
+		err := hashReader.hasher.stepIn(hashReader)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	err = hashReader.ionReader.StepIn()
-	if err != nil {
-		return err
-	}
+		err = hashReader.ionReader.StepIn()
+		if err != nil {
+			return err
+		}
 
-	hashReader.currentType = ion.NoType
+		hashReader.currentType = ion.NoType
 
-	return nil
+		return nil
 
-	 */
+	*/
 }
 
 func (hashReader *hashReader) StepOut() error {
