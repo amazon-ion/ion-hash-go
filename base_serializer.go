@@ -30,6 +30,11 @@ type baseSerializer struct {
 	hasContainerAnnotation bool
 }
 
+func (baseSerializer *baseSerializer) stepOut() {
+	baseSerializer.endMarker()
+	baseSerializer.handleAnnotationsEnd(nil, true)
+}
+
 func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 	err := baseSerializer.handleFieldName(ionValue)
 	if err != nil {
