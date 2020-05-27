@@ -35,6 +35,7 @@ func (scalarSerializer scalarSerializer) stepOut() {
 
 func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) {
 	scalarSerializer.baseSerializer.stepIn(ionValue)
+	scalarSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
 func (scalarSerializer scalarSerializer) digest() []byte {
@@ -42,7 +43,7 @@ func (scalarSerializer scalarSerializer) digest() []byte {
 }
 
 func (scalarSerializer scalarSerializer) handleFieldName(ionValue interface{}) {
-	scalarSerializer.baseSerializer.handleFieldName(ionValue)
+	scalarSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
 func (scalarSerializer scalarSerializer) update(bytes []byte) {
@@ -58,11 +59,11 @@ func (scalarSerializer scalarSerializer) endMarker() {
 }
 
 func (scalarSerializer scalarSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
-	scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue, isContainer)
+	scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), isContainer)
 }
 
 func (scalarSerializer scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
-	scalarSerializer.baseSerializer.handleAnnotationsEnd(ionValue, isContainer)
+	scalarSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
 }
 
 func (scalarSerializer scalarSerializer) writeSymbol(token string) {
@@ -70,9 +71,11 @@ func (scalarSerializer scalarSerializer) writeSymbol(token string) {
 }
 
 func (scalarSerializer scalarSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
-	return scalarSerializer.baseSerializer.getBytes(ionType, ionValue, isNull)
+	bytes, _ := scalarSerializer.baseSerializer.getBytes(ionType, ionValue, isNull)
+	return bytes
 }
 
 func (scalarSerializer scalarSerializer) getLengthLength(bytes []byte) int {
-	return scalarSerializer.baseSerializer.getLengthLength(bytes)
+	length, _ := scalarSerializer.baseSerializer.getLengthLength(bytes)
+	return length
 }

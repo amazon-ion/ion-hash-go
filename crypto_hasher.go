@@ -108,6 +108,10 @@ func (ch *cryptoHasher) Write(p []byte) (n int, err error) {
 	return ch.hashAlgorithm.Write(p)
 }
 
+func (ch *cryptoHasher) Update(bytes []byte) {
+	panic("implement me")
+}
+
 func (ch *cryptoHasher) Sum(b []byte) []byte {
 	return ch.hashAlgorithm.Sum(b)
 }

@@ -39,15 +39,16 @@ func (structSerializer structSerializer) stepOut() {
 }
 
 func (structSerializer structSerializer) stepIn(ionValue interface{}) {
-	structSerializer.baseSerializer.stepIn(ionValue)
+	structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
+// TODO: Remove digest() once we've fully sorted out how Sum(b []bytes) can replace all instances of digest()
 func (structSerializer structSerializer) digest() []byte {
 	return structSerializer.baseSerializer.digest()
 }
 
 func (structSerializer structSerializer) handleFieldName(ionValue interface{}) {
-	structSerializer.baseSerializer.handleFieldName(ionValue)
+	structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
 func (structSerializer structSerializer) update(bytes []byte) {
@@ -63,11 +64,11 @@ func (structSerializer structSerializer) endMarker() {
 }
 
 func (structSerializer structSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
-	structSerializer.baseSerializer.handleAnnotationsBegin(ionValue, isContainer)
+	structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), isContainer)
 }
 
 func (structSerializer structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
-	structSerializer.baseSerializer.handleAnnotationsEnd(ionValue, isContainer)
+	structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
 }
 
 func (structSerializer structSerializer) writeSymbol(token string) {
@@ -75,11 +76,13 @@ func (structSerializer structSerializer) writeSymbol(token string) {
 }
 
 func (structSerializer structSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
-	return structSerializer.baseSerializer.getBytes(ionType, ionValue, isNull)
+	bytes, _ := structSerializer.baseSerializer.getBytes(ionType, ionValue, isNull)
+	return bytes
 }
 
 func (structSerializer structSerializer) getLengthLength(bytes []byte) int {
-	return structSerializer.baseSerializer.getLengthLength(bytes)
+	length, _ := structSerializer.baseSerializer.getLengthLength(bytes)
+	return length
 }
 
 func (structSerializer *structSerializer) appendFieldHash(digest []byte) {

@@ -17,5 +17,5 @@ package ionhash
 
 type IonHasherProvider interface {
 	// Return a new IonHasher object.
-	newHasher() (IonHasher, error)
+	newHasher() IonHasher
 }

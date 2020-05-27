@@ -62,6 +62,11 @@ func (baseSerializer *baseSerializer) Sum(b []byte) []byte {
 	return baseSerializer.hashFunction.Sum(b)
 }
 
+// TODO: Remove digest() once we've fully sorted out how Sum(b []bytes) can replace all instances of digest()
+func (baseSerializer *baseSerializer) digest() []byte {
+	panic("placeholder function to implement serializer interface")
+}
+
 func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if baseSerializer.depth > 0 && ionValue.isInStruct() {
 		// TODO: Rework this once SymbolTokens become available
