@@ -12,7 +12,19 @@ TBD
 
 ## Development
 
-TBD
+### Build 
+
+```
+go build -v ./
+```
+
+### Format 
+
+Use `goimports` 
+
+```
+goimports -w ./
+```
 
 ## Known Issues
 
