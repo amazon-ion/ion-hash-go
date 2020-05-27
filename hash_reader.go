@@ -56,10 +56,12 @@ func (hashReader *hashReader) Next() bool {
 		fallthrough
 	case ion.StructType:
 		if hashReader.IsNull() {
-			err := hashReader.hasher.scalar(hashReader)
-			if err != nil {
-				return false
-			}
+			panic("Not Implemented Yet")
+			// FIXME: hashReader.hasher.scalar() does not return anything
+			//err := hashReader.hasher.scalar(hashReader)
+			//if err != nil {
+			//	return false
+			//}
 		} else {
 			err := hashReader.StepIn()
 			if err != nil {
@@ -95,10 +97,12 @@ func (hashReader *hashReader) Next() bool {
 	case ion.ClobType:
 		fallthrough
 	case ion.BlobType:
-		err := hashReader.hasher.scalar(hashReader)
-		if err != nil {
-			return false
-		}
+		panic("Not Implemented Yet")
+		// FIXME: hashreader.hasher.scalar() does not return a value
+		//err := hashReader.hasher.scalar(hashReader)
+		//if err != nil {
+		//	return false
+		//}
 	}
 
 	moveNext := hashReader.ionReader.Next()
@@ -128,7 +132,11 @@ func (hashReader *hashReader) Annotations() []string {
 }
 
 func (hashReader *hashReader) StepIn() error {
+	panic("Not Implemented Yet")
+	// FIXME: hashReader.hasher.stepIn() does not return a value
+	/*
 	err := hashReader.hasher.stepIn(hashReader)
+
 	if err != nil {
 		return err
 	}
@@ -141,6 +149,8 @@ func (hashReader *hashReader) StepIn() error {
 	hashReader.currentType = ion.NoType
 
 	return nil
+
+	 */
 }
 
 func (hashReader *hashReader) StepOut() error {
@@ -202,7 +212,8 @@ func (hashReader *hashReader) ByteValue() ([]byte, error) {
 }
 
 func (hashReader *hashReader) Sum(b []byte) []byte {
-	return hashReader.hasher.sum()
+	// FIXME: return hashReader.hasher.sum()
+	panic("Not Implemented Yet")
 }
 
 func (hashReader *hashReader) traverse() error {
