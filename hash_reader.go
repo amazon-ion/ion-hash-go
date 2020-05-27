@@ -50,30 +50,23 @@ func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 
 func (hashReader *hashReader) Next() bool {
 	if hashReader.currentType != ion.NoType {
-		if ion.IsContainer(hashReader.currentType) {
-			if hashReader.IsNull() {
-				err := hashReader.hasher.scalar(hashReader)
-				if err != nil {
-					return false
-				}
-			} else {
-				err := hashReader.StepIn()
-				if err != nil {
-					return false
-				}
-
-				err = hashReader.traverse()
-				if err != nil {
-					return false
-				}
-
-				err = hashReader.StepOut()
-				if err != nil {
-					return false
-				}
-			}
-		} else if ion.IsScalar(hashReader.currentType) {
+		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
 			err := hashReader.hasher.scalar(hashReader)
+			if err != nil {
+				return false
+			}
+		} else {
+			err := hashReader.StepIn()
+			if err != nil {
+				return false
+			}
+
+			err = hashReader.traverse()
+			if err != nil {
+				return false
+			}
+
+			err = hashReader.StepOut()
 			if err != nil {
 				return false
 			}
