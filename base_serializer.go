@@ -24,52 +24,61 @@ type baseSerializer struct {
 	hasContainerAnnotation bool
 }
 
-func (baseSerializer *baseSerializer) stepOut() {
-	baseSerializer.endMarker()
-	baseSerializer.handleAnnotationsEnd(nil, true)
+func (baseSerializer *baseSerializer) stepOut() error {
+	err := baseSerializer.endMarker()
+	if err != nil {
+		return err
+	}
+
+	err = baseSerializer.handleAnnotationsEnd(nil, true)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (baseSerializer *baseSerializer) stepIn(ionValue interface{}) {
+func (baseSerializer *baseSerializer) stepIn(ionValue interface{}) error {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) digest() []byte {
+func (baseSerializer *baseSerializer) sum(b []byte) []byte {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) handleFieldName(ionValue interface{}) {
+func (baseSerializer *baseSerializer) handleFieldName(ionValue interface{}) error {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) update(bytes []byte) {
+func (baseSerializer *baseSerializer) update(bytes []byte) error {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) beginMarker() {
+func (baseSerializer *baseSerializer) beginMarker() error {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) endMarker() {
+func (baseSerializer *baseSerializer) endMarker() error {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
+func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue interface{}) error {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
+func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) writeSymbol(token string) {
+func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {
+func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
 	panic("implement me")
 }
 
-func (baseSerializer *baseSerializer) getLengthLength(bytes []byte) int {
+func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 	panic("implement me")
 }
 
