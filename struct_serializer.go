@@ -42,9 +42,8 @@ func (structSerializer structSerializer) stepIn(ionValue interface{}) {
 	structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
-// TODO: Remove digest() once we've fully sorted out how Sum(b []bytes) can replace all instances of digest()
-func (structSerializer structSerializer) digest() []byte {
-	return structSerializer.baseSerializer.digest()
+func (structSerializer structSerializer) sum(b []byte) []byte {
+	return structSerializer.baseSerializer.sum(b)
 }
 
 func (structSerializer structSerializer) handleFieldName(ionValue interface{}) {
@@ -85,7 +84,7 @@ func (structSerializer structSerializer) getLengthLength(bytes []byte) int {
 	return length
 }
 
-func (structSerializer *structSerializer) appendFieldHash(digest []byte) {
+func (structSerializer *structSerializer) appendFieldHash(sum []byte) {
 	panic("implement me")
 }
 

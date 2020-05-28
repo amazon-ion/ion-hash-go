@@ -25,8 +25,8 @@ import (
 
 // Holds the commonalities between scalar and struct serializers.
 type baseSerializer struct {
-	hashFunction           IonHasher
-	depth                  int
+	hashFunction IonHasher
+	depth        int
 }
 
 func (baseSerializer *baseSerializer) stepOut() {
@@ -57,13 +57,8 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 	return nil
 }
 
-func (baseSerializer *baseSerializer) Sum(b []byte) []byte {
+func (baseSerializer *baseSerializer) sum(b []byte) []byte {
 	return baseSerializer.hashFunction.Sum(b)
-}
-
-// TODO: Remove digest() once we've fully sorted out how Sum(b []bytes) can replace all instances of digest()
-func (baseSerializer *baseSerializer) digest() []byte {
-	panic("placeholder function to implement serializer interface")
 }
 
 func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {

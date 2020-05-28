@@ -24,7 +24,7 @@ type serializer interface {
 
 	stepOut()
 
-	digest() []byte
+	sum(b []byte) []byte
 
 	handleFieldName(ionValue interface{})
 

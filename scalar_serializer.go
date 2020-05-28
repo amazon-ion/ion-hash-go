@@ -37,8 +37,8 @@ func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) {
 	scalarSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
-func (scalarSerializer scalarSerializer) digest() []byte {
-	return scalarSerializer.baseSerializer.digest()
+func (scalarSerializer scalarSerializer) sum(b []byte) []byte {
+	return scalarSerializer.baseSerializer.sum(b)
 }
 
 func (scalarSerializer scalarSerializer) handleFieldName(ionValue interface{}) {

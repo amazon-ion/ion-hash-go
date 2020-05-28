@@ -76,20 +76,20 @@ func (h *hasher) stepOut() error {
 
 	structHasher, isStructSerializer := h.currentHasher.(structSerializer)
 	if isStructSerializer {
-		digest := poppedHasher.(serializer).digest()
-		structHasher.appendFieldHash(digest)
+		sum := poppedHasher.(serializer).sum(nil)
+		structHasher.appendFieldHash(sum)
 	}
 
 	return nil
 }
 
-func (h *hasher) digest() ([]byte, error) {
+func (h *hasher) sum(b []byte) ([]byte, error) {
 	if h.depth() != 0 {
 		return nil, &InvalidOperationError{
-			"hasher", "digest", "A digest may only be provided at the same depth hashing started"}
+			"hasher", "sum", "A sum may only be provided at the same depth hashing started"}
 	}
 
-	return h.currentHasher.digest(), nil
+	return h.currentHasher.sum(b), nil
 }
 
 func (h *hasher) depth() int {
