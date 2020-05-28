@@ -38,40 +38,40 @@ func (structSerializer structSerializer) stepOut() {
 	panic("implement me")
 }
 
-func (structSerializer structSerializer) stepIn(ionValue interface{}) {
-	structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
+func (structSerializer structSerializer) stepIn(ionValue interface{}) error {
+	return structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
 func (structSerializer structSerializer) sum(b []byte) []byte {
 	return structSerializer.baseSerializer.sum(b)
 }
 
-func (structSerializer structSerializer) handleFieldName(ionValue interface{}) {
-	structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
+func (structSerializer structSerializer) handleFieldName(ionValue interface{}) error {
+	return structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
-func (structSerializer structSerializer) update(bytes []byte) {
-	structSerializer.baseSerializer.update(bytes)
+func (structSerializer structSerializer) update(bytes []byte) error {
+	return structSerializer.baseSerializer.update(bytes)
 }
 
-func (structSerializer structSerializer) beginMarker() {
-	structSerializer.baseSerializer.beginMarker()
+func (structSerializer structSerializer) beginMarker() error {
+	return structSerializer.baseSerializer.beginMarker()
 }
 
-func (structSerializer structSerializer) endMarker() {
-	structSerializer.baseSerializer.endMarker()
+func (structSerializer structSerializer) endMarker() error {
+	return structSerializer.baseSerializer.endMarker()
 }
 
-func (structSerializer structSerializer) handleAnnotationsBegin(ionValue interface{}) {
-	structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
+func (structSerializer structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
+	return structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
 }
 
-func (structSerializer structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {
-	structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
+func (structSerializer structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
+	return structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
 }
 
-func (structSerializer structSerializer) writeSymbol(token string) {
-	structSerializer.baseSerializer.writeSymbol(token)
+func (structSerializer structSerializer) writeSymbol(token string) error {
+	return structSerializer.baseSerializer.writeSymbol(token)
 }
 
 func (structSerializer structSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte {

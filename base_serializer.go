@@ -29,9 +29,18 @@ type baseSerializer struct {
 	depth        int
 }
 
-func (baseSerializer *baseSerializer) stepOut() {
-	baseSerializer.endMarker()
-	baseSerializer.handleAnnotationsEnd(nil, true)
+func (baseSerializer *baseSerializer) stepOut() error {
+	err := baseSerializer.endMarker()
+	if err != nil {
+		return err
+	}
+
+	err = baseSerializer.handleAnnotationsEnd(nil, true)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
@@ -45,14 +54,20 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 		return err
 	}
 
-	baseSerializer.beginMarker()
+	err = baseSerializer.beginMarker()
+	if err != nil {
+		return err
+	}
 
 	tq := typeQualifier(ionValue)
 	if ionValue.isNull() {
 		tq = tq | 0x0F
 	}
 
-	baseSerializer.update([]byte{tq})
+	err = baseSerializer.update([]byte{tq})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -73,16 +88,19 @@ func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error 
 	return nil
 }
 
-func (baseSerializer *baseSerializer) update(bytes []byte) {
-	baseSerializer.hashFunction.Write(bytes)
+func (baseSerializer *baseSerializer) update(bytes []byte) error {
+	_, err := baseSerializer.hashFunction.Write(bytes)
+	return err
 }
 
-func (baseSerializer *baseSerializer) beginMarker() {
-	baseSerializer.hashFunction.Write([]byte{BeginMarkerByte})
+func (baseSerializer *baseSerializer) beginMarker() error {
+	_, err := baseSerializer.hashFunction.Write([]byte{BeginMarkerByte})
+	return err
 }
 
-func (baseSerializer *baseSerializer) endMarker() {
-	baseSerializer.hashFunction.Write([]byte{EndMarkerByte})
+func (baseSerializer *baseSerializer) endMarker() error {
+	_, err := baseSerializer.hashFunction.Write([]byte{EndMarkerByte})
+	return err
 }
 
 func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue) error {
@@ -92,10 +110,18 @@ func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue)
 
 	annotations := ionValue.getAnnotations()
 	if len(annotations) > 0 {
-		baseSerializer.beginMarker()
-		baseSerializer.update([]byte{TqValue})
+		err := baseSerializer.beginMarker()
+		if err != nil {
+			return err
+		}
+
+		err = baseSerializer.update([]byte{TqValue})
+		if err != nil {
+			return err
+		}
+
 		for _, annotation := range annotations {
-			err := baseSerializer.writeSymbol(annotation)
+			err = baseSerializer.writeSymbol(annotation)
 			if err != nil {
 				return err
 			}
@@ -105,14 +131,22 @@ func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue)
 	return nil
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) {
+func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) error {
 	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) || isContainer {
-		baseSerializer.endMarker()
+		err := baseSerializer.endMarker()
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 func (baseSerializer *baseSerializer) writeSymbol(token string) error {
-	baseSerializer.beginMarker()
+	err := baseSerializer.beginMarker()
+	if err != nil {
+		return err
+	}
 
 	// TODO: Rework this once SymbolTokens become available
 	/*var sid int
@@ -138,7 +172,10 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 		baseSerializer.update(escape(representation))
 	}*/
 
-	baseSerializer.endMarker()
+	err = baseSerializer.endMarker()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

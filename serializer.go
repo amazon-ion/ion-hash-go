@@ -20,25 +20,25 @@ import "github.com/amzn/ion-go/ion"
 type serializer interface {
 	scalar(ionValue interface{})
 
-	stepIn(ionValue interface{})
+	stepIn(ionValue interface{}) error
 
 	stepOut()
 
 	sum(b []byte) []byte
 
-	handleFieldName(ionValue interface{})
+	handleFieldName(ionValue interface{}) error
 
-	update(bytes []byte)
+	update(bytes []byte) error
 
-	beginMarker()
+	beginMarker() error
 
-	endMarker()
+	endMarker() error
 
-	handleAnnotationsBegin(ionValue interface{})
+	handleAnnotationsBegin(ionValue interface{}) error
 
-	handleAnnotationsEnd(ionValue interface{}, isContainer bool)
+	handleAnnotationsEnd(ionValue interface{}, isContainer bool) error
 
-	writeSymbol(token string)
+	writeSymbol(token string) error
 
 	getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte
 
