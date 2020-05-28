@@ -34,7 +34,7 @@ type serializer interface {
 
 	endMarker()
 
-	handleAnnotationsBegin(ionValue interface{}, isContainer bool)
+	handleAnnotationsBegin(ionValue interface{})
 
 	handleAnnotationsEnd(ionValue interface{}, isContainer bool)
 

@@ -27,7 +27,6 @@ import (
 type baseSerializer struct {
 	hashFunction           IonHasher
 	depth                  int
-	hasContainerAnnotation bool
 }
 
 func (baseSerializer *baseSerializer) stepOut() {
@@ -41,7 +40,7 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 		return err
 	}
 
-	err = baseSerializer.handleAnnotationsBegin(ionValue, true)
+	err = baseSerializer.handleAnnotationsBegin(ionValue)
 	if err != nil {
 		return err
 	}
@@ -80,18 +79,18 @@ func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error 
 }
 
 func (baseSerializer *baseSerializer) update(bytes []byte) {
-	baseSerializer.hashFunction.Update(bytes)
+	baseSerializer.hashFunction.Write(bytes)
 }
 
 func (baseSerializer *baseSerializer) beginMarker() {
-	baseSerializer.hashFunction.Update([]byte{BeginMarkerByte})
+	baseSerializer.hashFunction.Write([]byte{BeginMarkerByte})
 }
 
 func (baseSerializer *baseSerializer) endMarker() {
-	baseSerializer.hashFunction.Update([]byte{EndMarkerByte})
+	baseSerializer.hashFunction.Write([]byte{EndMarkerByte})
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer bool) error {
+func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue) error {
 	if ionValue == nil {
 		return &InvalidArgumentError{"ionValue", ionValue}
 	}
@@ -106,23 +105,14 @@ func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue,
 				return err
 			}
 		}
-
-		if isContainer {
-			baseSerializer.hasContainerAnnotation = true
-		}
 	}
 
 	return nil
 }
 
 func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) {
-	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) ||
-		(isContainer && baseSerializer.hasContainerAnnotation) {
+	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) || isContainer {
 		baseSerializer.endMarker()
-
-		if isContainer {
-			baseSerializer.hasContainerAnnotation = false
-		}
 	}
 }
 

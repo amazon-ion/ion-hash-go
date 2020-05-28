@@ -57,8 +57,8 @@ func (scalarSerializer scalarSerializer) endMarker() {
 	scalarSerializer.baseSerializer.endMarker()
 }
 
-func (scalarSerializer scalarSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
-	scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), isContainer)
+func (scalarSerializer scalarSerializer) handleAnnotationsBegin(ionValue interface{}) {
+	scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
 }
 
 func (scalarSerializer scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {

@@ -104,12 +104,8 @@ func newCryptoHasher(algorithm algorithm) (IonHasher, error) {
 	return ch, nil
 }
 
-func (ch *cryptoHasher) Write(p []byte) (n int, err error) {
-	return ch.hashAlgorithm.Write(p)
-}
-
-func (ch *cryptoHasher) Update(bytes []byte) {
-	panic("implement me")
+func (ch *cryptoHasher) Write(bytes []byte) (n int, err error) {
+	return ch.hashAlgorithm.Write(bytes)
 }
 
 func (ch *cryptoHasher) Sum(b []byte) []byte {

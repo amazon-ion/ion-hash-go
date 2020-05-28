@@ -63,8 +63,8 @@ func (structSerializer structSerializer) endMarker() {
 	structSerializer.baseSerializer.endMarker()
 }
 
-func (structSerializer structSerializer) handleAnnotationsBegin(ionValue interface{}, isContainer bool) {
-	structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), isContainer)
+func (structSerializer structSerializer) handleAnnotationsBegin(ionValue interface{}) {
+	structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
 }
 
 func (structSerializer structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) {

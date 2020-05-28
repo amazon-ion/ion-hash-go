@@ -19,11 +19,7 @@ import "io"
 
 type IonHasher interface {
 	// Write (via the embedded io.Writer interface) adds more data to the running hash.
-	// It never returns an error.
 	io.Writer
-
-	// Updates the hash with the specified array of bytes.
-	Update(bytes []byte)
 
 	// Sum appends the current hash to b and returns the resulting slice.
 	// It does not change the underlying hash state.
