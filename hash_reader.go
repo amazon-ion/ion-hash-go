@@ -174,7 +174,7 @@ func (hashReader *hashReader) Sum(b []byte) []byte {
 
 func (hashReader *hashReader) traverse() error {
 	for hashReader.Next() {
-		if ion.IsContainer(hashReader.currentType) && !hashReader.IsNull(){
+		if ion.IsContainer(hashReader.currentType) && !hashReader.IsNull() {
 			err := hashReader.StepIn()
 			if err != nil {
 				return err
