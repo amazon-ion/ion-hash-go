@@ -79,9 +79,8 @@ func (structSerializer structSerializer) getBytes(ionType ion.Type, ionValue int
 	return bytes
 }
 
-func (structSerializer structSerializer) getLengthLength(bytes []byte) int {
-	length, _ := structSerializer.baseSerializer.getLengthLength(bytes)
-	return length
+func (structSerializer structSerializer) getLengthFieldLength(bytes []byte) (int, error) {
+	return structSerializer.baseSerializer.getLengthFieldLength(bytes)
 }
 
 func (structSerializer *structSerializer) appendFieldHash(sum []byte) {

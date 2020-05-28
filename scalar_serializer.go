@@ -74,7 +74,6 @@ func (scalarSerializer scalarSerializer) getBytes(ionType ion.Type, ionValue int
 	return bytes
 }
 
-func (scalarSerializer scalarSerializer) getLengthLength(bytes []byte) int {
-	length, _ := scalarSerializer.baseSerializer.getLengthLength(bytes)
-	return length
+func (scalarSerializer scalarSerializer) getLengthFieldLength(bytes []byte) (int, error) {
+	return scalarSerializer.baseSerializer.getLengthFieldLength(bytes)
 }

@@ -205,7 +205,7 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 	}
 }
 
-func (baseSerializer *baseSerializer) getLengthLength(bytes []byte) (int, error) {
+func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 	if (bytes[0] & 0x0F) == 0x0E {
 		// read subsequent byte(s) as the "length" field
 		for i := 1; i < len(bytes); i++ {
@@ -224,7 +224,7 @@ func (baseSerializer *baseSerializer) getLengthLength(bytes []byte) (int, error)
 /*func (baseSerializer *baseSerializer)scalarOrNullSplitParts(
 	ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
 
-	offset, err := baseSerializer.getLengthLength(bytes)
+	offset, err := baseSerializer.getLengthFieldLength(bytes)
 	if err != nil {
 		return byte(0), nil, err
 	}
