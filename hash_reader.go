@@ -84,10 +84,14 @@ func (hashReader *hashReader) Next() bool {
 		}
 	}
 
-	moveNext := hashReader.ionReader.Next()
+	next := hashReader.ionReader.Next()
+	if !next {
+		hashReader.err = hashReader.ionReader.Err()
+	}
+
 	hashReader.currentType = hashReader.ionReader.Type()
 
-	return moveNext
+	return next
 }
 
 func (hashReader *hashReader) Err() error {
