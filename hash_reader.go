@@ -54,6 +54,8 @@ func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 }
 
 func (hashReader *hashReader) Next() bool {
+	hashReader.err = nil
+
 	if hashReader.currentType != ion.NoType {
 		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
 			err := hashReader.hasher.scalar(hashReader)
