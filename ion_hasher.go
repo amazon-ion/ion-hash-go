@@ -19,7 +19,6 @@ import "io"
 
 type IonHasher interface {
 	// Write (via the embedded io.Writer interface) adds more data to the running hash.
-	// It never returns an error.
 	io.Writer
 
 	// Sum appends the current hash to b and returns the resulting slice.

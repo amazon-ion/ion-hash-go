@@ -29,19 +29,24 @@ type HashReader interface {
 
 	// Sum appends the current hash to b and returns the resulting slice.
 	// It does not change the underlying hash state.
-	Sum(b []byte) []byte
+	Sum(b []byte) ([]byte, error)
 }
 
 type hashReader struct {
 	ionReader   ion.Reader
 	hasher      hasher
 	currentType ion.Type
+	err         error
 }
 
-func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) HashReader {
-	hashReader := &hashReader{ionReader: ionReader, hasher: *newHasher(hasherProvider)}
+func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) (HashReader, error) {
+	hasher, err := newHasher(hasherProvider)
+	if err != nil {
+		return nil, err
+	}
+	hashReader := &hashReader{ionReader: ionReader, hasher: *hasher}
 
-	return hashReader
+	return hashReader, nil
 }
 
 func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
@@ -51,20 +56,27 @@ func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 func (hashReader *hashReader) Next() bool {
 	if hashReader.currentType != ion.NoType {
 		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
-			hashReader.hasher.scalar(hashReader)
+			err := hashReader.hasher.scalar(hashReader)
+			if err != nil {
+				hashReader.err = err
+				return false
+			}
 		} else {
 			err := hashReader.StepIn()
 			if err != nil {
+				hashReader.err = err
 				return false
 			}
 
 			err = hashReader.traverse()
 			if err != nil {
+				hashReader.err = err
 				return false
 			}
 
 			err = hashReader.StepOut()
 			if err != nil {
+				hashReader.err = err
 				return false
 			}
 		}
@@ -77,7 +89,7 @@ func (hashReader *hashReader) Next() bool {
 }
 
 func (hashReader *hashReader) Err() error {
-	return hashReader.ionReader.Err()
+	return hashReader.err
 }
 
 func (hashReader *hashReader) Type() ion.Type {
@@ -97,9 +109,12 @@ func (hashReader *hashReader) Annotations() []string {
 }
 
 func (hashReader *hashReader) StepIn() error {
-	hashReader.hasher.stepIn(hashReader)
+	err := hashReader.hasher.stepIn(hashReader)
+	if err != nil {
+		return err
+	}
 
-	err := hashReader.ionReader.StepIn()
+	err = hashReader.ionReader.StepIn()
 	if err != nil {
 		return err
 	}
@@ -120,7 +135,12 @@ func (hashReader *hashReader) StepOut() error {
 		return err
 	}
 
-	return hashReader.hasher.stepOut()
+	err = hashReader.hasher.stepOut()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (hashReader *hashReader) BoolValue() (bool, error) {
@@ -167,9 +187,8 @@ func (hashReader *hashReader) ByteValue() ([]byte, error) {
 	return hashReader.ionReader.ByteValue()
 }
 
-func (hashReader *hashReader) Sum(b []byte) []byte {
-	// FIXME: return hashReader.hasher.sum()
-	panic("Not Implemented Yet")
+func (hashReader *hashReader) Sum(b []byte) ([]byte, error) {
+	return hashReader.hasher.sum(b)
 }
 
 func (hashReader *hashReader) traverse() error {
@@ -192,7 +211,7 @@ func (hashReader *hashReader) traverse() error {
 		}
 	}
 
-	return nil
+	return hashReader.Err()
 }
 
 // The following implements HashValue interface.
