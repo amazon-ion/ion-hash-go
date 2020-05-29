@@ -49,19 +49,9 @@ func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
 }
 
 func (hashReader *hashReader) Next() bool {
-	switch hashReader.currentType {
-	case ion.ListType:
-		fallthrough
-	case ion.SexpType:
-		fallthrough
-	case ion.StructType:
-		if hashReader.IsNull() {
-			panic("Not Implemented Yet")
-			// FIXME: hashReader.hasher.scalar() does not return anything
-			//err := hashReader.hasher.scalar(hashReader)
-			//if err != nil {
-			//	return false
-			//}
+	if hashReader.currentType != ion.NoType {
+		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
+			hashReader.hasher.scalar(hashReader)
 		} else {
 			err := hashReader.StepIn()
 			if err != nil {
@@ -78,31 +68,6 @@ func (hashReader *hashReader) Next() bool {
 				return false
 			}
 		}
-	case ion.NullType:
-		fallthrough
-	case ion.BoolType:
-		fallthrough
-	case ion.IntType:
-		fallthrough
-	case ion.FloatType:
-		fallthrough
-	case ion.DecimalType:
-		fallthrough
-	case ion.TimestampType:
-		fallthrough
-	case ion.SymbolType:
-		fallthrough
-	case ion.StringType:
-		fallthrough
-	case ion.ClobType:
-		fallthrough
-	case ion.BlobType:
-		panic("Not Implemented Yet")
-		// FIXME: hashreader.hasher.scalar() does not return a value
-		//err := hashReader.hasher.scalar(hashReader)
-		//if err != nil {
-		//	return false
-		//}
 	}
 
 	moveNext := hashReader.ionReader.Next()
@@ -132,25 +97,16 @@ func (hashReader *hashReader) Annotations() []string {
 }
 
 func (hashReader *hashReader) StepIn() error {
-	panic("Not Implemented Yet")
-	// FIXME: hashReader.hasher.stepIn() does not return a value
-	/*
-		err := hashReader.hasher.stepIn(hashReader)
+	hashReader.hasher.stepIn(hashReader)
 
-		if err != nil {
-			return err
-		}
+	err := hashReader.ionReader.StepIn()
+	if err != nil {
+		return err
+	}
 
-		err = hashReader.ionReader.StepIn()
-		if err != nil {
-			return err
-		}
+	hashReader.currentType = ion.NoType
 
-		hashReader.currentType = ion.NoType
-
-		return nil
-
-	*/
+	return nil
 }
 
 func (hashReader *hashReader) StepOut() error {
@@ -218,27 +174,20 @@ func (hashReader *hashReader) Sum(b []byte) []byte {
 
 func (hashReader *hashReader) traverse() error {
 	for hashReader.Next() {
-		switch hashReader.currentType {
-		case ion.ListType:
-			fallthrough
-		case ion.SexpType:
-			fallthrough
-		case ion.StructType:
-			if !hashReader.IsNull() {
-				err := hashReader.StepIn()
-				if err != nil {
-					return err
-				}
+		if ion.IsContainer(hashReader.currentType) && !hashReader.IsNull() {
+			err := hashReader.StepIn()
+			if err != nil {
+				return err
+			}
 
-				err = hashReader.traverse()
-				if err != nil {
-					return err
-				}
+			err = hashReader.traverse()
+			if err != nil {
+				return err
+			}
 
-				err = hashReader.StepOut()
-				if err != nil {
-					return err
-				}
+			err = hashReader.StepOut()
+			if err != nil {
+				return err
 			}
 		}
 	}
