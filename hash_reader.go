@@ -33,98 +33,125 @@ type HashReader interface {
 }
 
 type hashReader struct {
-	ionReader      ion.Reader
-	hasherProvider IonHasherProvider
+	ionReader   ion.Reader
+	hasher      hasher
+	currentType ion.Type
 }
 
 func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) HashReader {
-	hashReader := &hashReader{ionReader, hasherProvider}
+	hashReader := &hashReader{ionReader: ionReader, hasher: *newHasher(hasherProvider)}
 
 	return hashReader
 }
 
 func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
-	panic("implement me")
 	return hashReader.ionReader.SymbolTable()
 }
 
 func (hashReader *hashReader) Next() bool {
-	panic("implement me")
-	return hashReader.ionReader.Next()
+	if hashReader.currentType != ion.NoType {
+		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
+			hashReader.hasher.scalar(hashReader)
+		} else {
+			err := hashReader.StepIn()
+			if err != nil {
+				return false
+			}
+
+			err = hashReader.traverse()
+			if err != nil {
+				return false
+			}
+
+			err = hashReader.StepOut()
+			if err != nil {
+				return false
+			}
+		}
+	}
+
+	moveNext := hashReader.ionReader.Next()
+	hashReader.currentType = hashReader.ionReader.Type()
+
+	return moveNext
 }
 
 func (hashReader *hashReader) Err() error {
-	panic("implement me")
 	return hashReader.ionReader.Err()
 }
 
 func (hashReader *hashReader) Type() ion.Type {
-	panic("implement me")
 	return hashReader.ionReader.Type()
 }
 
 func (hashReader *hashReader) IsNull() bool {
-	panic("implement me")
 	return hashReader.ionReader.IsNull()
 }
 
 func (hashReader *hashReader) FieldName() string {
-	panic("implement me")
 	return hashReader.ionReader.FieldName()
 }
 
 func (hashReader *hashReader) Annotations() []string {
-	panic("implement me")
 	return hashReader.ionReader.Annotations()
 }
 
 func (hashReader *hashReader) StepIn() error {
-	panic("implement me")
-	return hashReader.ionReader.StepIn()
+	hashReader.hasher.stepIn(hashReader)
+
+	err := hashReader.ionReader.StepIn()
+	if err != nil {
+		return err
+	}
+
+	hashReader.currentType = ion.NoType
+
+	return nil
 }
 
 func (hashReader *hashReader) StepOut() error {
-	panic("implement me")
-	return hashReader.ionReader.StepOut()
+	err := hashReader.traverse()
+	if err != nil {
+		return err
+	}
+
+	err = hashReader.ionReader.StepOut()
+	if err != nil {
+		return err
+	}
+
+	return hashReader.hasher.stepOut()
 }
 
 func (hashReader *hashReader) BoolValue() (bool, error) {
-	panic("implement me")
 	return hashReader.ionReader.BoolValue()
 }
 
 func (hashReader *hashReader) IntSize() (ion.IntSize, error) {
-	panic("implement me")
 	return hashReader.ionReader.IntSize()
 }
 
 func (hashReader *hashReader) IntValue() (int, error) {
-	panic("implement me")
 	return hashReader.ionReader.IntValue()
 }
 
 func (hashReader *hashReader) Int64Value() (int64, error) {
-	panic("implement me")
 	return hashReader.ionReader.Int64Value()
 }
 
 func (hashReader *hashReader) Uint64Value() (uint64, error) {
-	panic("implement me")
 	return hashReader.ionReader.Uint64Value()
 }
 
 func (hashReader *hashReader) BigIntValue() (*big.Int, error) {
-	panic("implement me")
 	return hashReader.ionReader.BigIntValue()
 }
 
 func (hashReader *hashReader) FloatValue() (float64, error) {
-	panic("implement me")
 	return hashReader.ionReader.FloatValue()
 }
 
 func (hashReader *hashReader) DecimalValue() (*ion.Decimal, error) {
-	panic("implement me")
 	return hashReader.ionReader.DecimalValue()
 }
 
@@ -133,43 +160,86 @@ func (hashReader *hashReader) TimeValue() (time.Time, error) {
 }
 
 func (hashReader *hashReader) StringValue() (string, error) {
-	panic("implement me")
 	return hashReader.ionReader.StringValue()
 }
 
 func (hashReader *hashReader) ByteValue() ([]byte, error) {
-	panic("implement me")
 	return hashReader.ionReader.ByteValue()
 }
 
 func (hashReader *hashReader) Sum(b []byte) []byte {
-	panic("implement me")
+	// FIXME: return hashReader.hasher.sum()
+	panic("Not Implemented Yet")
+}
+
+func (hashReader *hashReader) traverse() error {
+	for hashReader.Next() {
+		if ion.IsContainer(hashReader.currentType) && !hashReader.IsNull() {
+			err := hashReader.StepIn()
+			if err != nil {
+				return err
+			}
+
+			err = hashReader.traverse()
+			if err != nil {
+				return err
+			}
+
+			err = hashReader.StepOut()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // The following implements HashValue interface.
 
-func (hashReader hashReader) getFieldName() string {
-	panic("implement me")
+func (hashReader *hashReader) getFieldName() string {
+	return hashReader.FieldName()
 }
 
-func (hashReader hashReader) getAnnotations() []string {
-	panic("implement me")
+func (hashReader *hashReader) getAnnotations() []string {
+	return hashReader.Annotations()
 }
 
-func (hashReader *hashReader) value() interface{} {
-	panic("implement me")
+func (hashReader *hashReader) value() (interface{}, error) {
+	switch hashReader.currentType {
+	case ion.BoolType:
+		return hashReader.BoolValue()
+	case ion.BlobType:
+		return hashReader.ionReader.ByteValue()
+	case ion.ClobType:
+		return hashReader.ionReader.ByteValue()
+	case ion.DecimalType:
+		return hashReader.DecimalValue()
+	case ion.FloatType:
+		return hashReader.FloatValue()
+	case ion.IntType:
+		return hashReader.IntValue()
+	case ion.StringType:
+		return hashReader.StringValue()
+	case ion.SymbolType:
+		return hashReader.SymbolTable(), nil
+	case ion.TimestampType:
+		return hashReader.TimeValue()
+	case ion.NoType:
+		return ion.NoType, nil
+	}
+
+	return nil, &InvalidIonTypeError{hashReader.currentType}
 }
 
 func (hashReader *hashReader) isInStruct() bool {
-	panic("implement me")
+	return hashReader.currentType == ion.StructType
 }
 
 func (hashReader *hashReader) ionType() ion.Type {
-	panic("implement me")
 	return hashReader.Type()
 }
 
 func (hashReader *hashReader) isNull() bool {
-	panic("implement me")
 	return hashReader.IsNull()
 }
