@@ -29,7 +29,7 @@ type hashValue interface {
 
 	ionType() ion.Type
 
-	value() (interface{}, error)
+	value() interface{}
 
 	isInStruct() bool
 }

@@ -33,8 +33,8 @@ func (scalarSerializer scalarSerializer) stepOut() {
 	panic("implement me")
 }
 
-func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) {
-	scalarSerializer.baseSerializer.stepIn(ionValue)
+func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) error {
+	return scalarSerializer.baseSerializer.stepIn(ionValue)
 }
 
 func (scalarSerializer scalarSerializer) digest() []byte {

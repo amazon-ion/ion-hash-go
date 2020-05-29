@@ -20,7 +20,7 @@ import "github.com/amzn/ion-go/ion"
 type serializer interface {
 	scalar(ionValue interface{})
 
-	stepIn(ionValue interface{})
+	stepIn(ionValue interface{}) error
 
 	stepOut()
 
