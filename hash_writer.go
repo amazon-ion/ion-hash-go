@@ -29,7 +29,7 @@ type HashWriter interface {
 
 	// Sum appends the current hash to b and returns the resulting slice.
 	// It does not change the underlying hash state.
-	Sum(b []byte) []byte
+	Sum(b []byte) ([]byte, error)
 }
 
 type hashWriter struct {
@@ -227,8 +227,8 @@ func (hashWriter *hashWriter) Finish() error {
 	return hashWriter.ionWriter.Finish()
 }
 
-func (hashWriter *hashWriter) Sum(b []byte) []byte {
-	return hashWriter.hasher.sum()
+func (hashWriter *hashWriter) Sum(b []byte) ([]byte, error) {
+	return hashWriter.hasher.digest()
 }
 
 // The following implements HashValue interface.
@@ -249,8 +249,8 @@ func (hashWriter *hashWriter) ionType() ion.Type {
 	return hashWriter.currentType
 }
 
-func (hashWriter *hashWriter) value() interface{} {
-	return hashWriter.currentValue
+func (hashWriter *hashWriter) value() (interface{}, error) {
+	return hashWriter.currentValue, nil
 }
 
 func (hashWriter *hashWriter) isInStruct() bool {

@@ -33,7 +33,7 @@ func newHasher(hasherProvider IonHasherProvider) *hasher {
 }
 
 func (h *hasher) scalar(ionValue hashValue) error {
-	h.currentHasher.scalar(ionValue)
+	return h.currentHasher.scalar(ionValue)
 }
 
 func (h *hasher) stepIn(ionValue hashValue) error {

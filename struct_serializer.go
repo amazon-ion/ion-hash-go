@@ -30,7 +30,7 @@ func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider
 		scalarSerializer: newScalarSerializer(hashFunctionProvider.newHasher(), depth+1)}
 }
 
-func (structSerializer structSerializer) scalar(ionValue interface{}) {
+func (structSerializer structSerializer) scalar(ionValue interface{}) error {
 	panic("implement me")
 }
 
