@@ -25,7 +25,7 @@ func newScalarSerializer(hashFunction IonHasher, depth int) serializer {
 	return &scalarSerializer{baseSerializer{hashFunction: hashFunction, depth: depth}}
 }
 
-func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) error {
+func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 	ionHashValue := ionValue.(hashValue)
 
 	err := scalarSerializer.handleAnnotationsBegin(ionHashValue)
@@ -76,55 +76,55 @@ func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) error {
 	return nil
 }
 
-func (scalarSerializer scalarSerializer) stepOut() error {
+func (scalarSerializer *scalarSerializer) stepOut() error {
 	return scalarSerializer.baseSerializer.stepOut()
 }
 
-func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) error {
+func (scalarSerializer *scalarSerializer) stepIn(ionValue interface{}) error {
 	return scalarSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
-func (scalarSerializer scalarSerializer) sum(b []byte) []byte {
+func (scalarSerializer *scalarSerializer) sum(b []byte) []byte {
 	return scalarSerializer.baseSerializer.sum(b)
 }
 
 // TODO: Remove digest()
-func (scalarSerializer scalarSerializer) digest() []byte {
+func (scalarSerializer *scalarSerializer) digest() []byte {
 	panic("Temporary placeholder function")
 }
 
-func (scalarSerializer scalarSerializer) handleFieldName(ionValue interface{}) error {
+func (scalarSerializer *scalarSerializer) handleFieldName(ionValue interface{}) error {
 	return scalarSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
-func (scalarSerializer scalarSerializer) update(bytes []byte) error {
+func (scalarSerializer *scalarSerializer) update(bytes []byte) error {
 	return scalarSerializer.baseSerializer.update(bytes)
 }
 
-func (scalarSerializer scalarSerializer) beginMarker() error {
+func (scalarSerializer *scalarSerializer) beginMarker() error {
 	return scalarSerializer.baseSerializer.beginMarker()
 }
 
-func (scalarSerializer scalarSerializer) endMarker() error {
+func (scalarSerializer *scalarSerializer) endMarker() error {
 	return scalarSerializer.baseSerializer.endMarker()
 }
 
-func (scalarSerializer scalarSerializer) handleAnnotationsBegin(ionValue interface{}) error {
+func (scalarSerializer *scalarSerializer) handleAnnotationsBegin(ionValue interface{}) error {
 	return scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
 }
 
-func (scalarSerializer scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
+func (scalarSerializer *scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
 	return scalarSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
 }
 
-func (scalarSerializer scalarSerializer) writeSymbol(token string) error {
+func (scalarSerializer *scalarSerializer) writeSymbol(token string) error {
 	return scalarSerializer.baseSerializer.writeSymbol(token)
 }
 
-func (scalarSerializer scalarSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
+func (scalarSerializer *scalarSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
 	return scalarSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
 }
 
-func (scalarSerializer scalarSerializer) getLengthFieldLength(bytes []byte) (int, error) {
+func (scalarSerializer *scalarSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 	return scalarSerializer.baseSerializer.getLengthFieldLength(bytes)
 }
