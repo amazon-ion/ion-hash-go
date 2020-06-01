@@ -228,7 +228,7 @@ func (hashWriter *hashWriter) Finish() error {
 }
 
 func (hashWriter *hashWriter) Sum(b []byte) ([]byte, error) {
-	return hashWriter.hasher.digest()
+	return hashWriter.hasher.sum(b)
 }
 
 // The following implements HashValue interface.
