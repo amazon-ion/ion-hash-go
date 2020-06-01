@@ -24,25 +24,25 @@ type serializer interface {
 
 	stepOut()
 
-	digest() []byte
+	sum(b []byte) []byte
 
-	handleFieldName(ionValue interface{})
+	handleFieldName(ionValue interface{}) error
 
-	update(bytes []byte)
+	update(bytes []byte) error
 
-	beginMarker()
+	beginMarker() error
 
-	endMarker()
+	endMarker() error
 
-	handleAnnotationsBegin(ionValue interface{}, isContainer bool)
+	handleAnnotationsBegin(ionValue interface{}) error
 
-	handleAnnotationsEnd(ionValue interface{}, isContainer bool)
+	handleAnnotationsEnd(ionValue interface{}, isContainer bool) error
 
-	writeSymbol(token string)
+	writeSymbol(token string) error
 
 	getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte
 
-	getLengthLength(bytes []byte) int
+	getLengthFieldLength(bytes []byte) (int, error)
 
 	// SymbolToken is currently not available
 	// scalarOrNullSplitParts(ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes byte[]) (byte, []byte)

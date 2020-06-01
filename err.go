@@ -54,3 +54,12 @@ type InvalidIonTypeError struct {
 func (e *InvalidIonTypeError) Error() string {
 	return fmt.Sprintf(`ionhash: Invalid Ion type: %s`, e.ionType.String())
 }
+
+// An UnknownSymbolError is returned when processing an unknown field name symbol.
+type UnknownSymbolError struct {
+	sid int
+}
+
+func (e *UnknownSymbolError) Error() string {
+	return fmt.Sprintf(`ionhash: Unknown text for sid %d`, e.sid)
+}
