@@ -13,7 +13,6 @@
  * permissions and limitations under the License.
  */
 
-
 package ionhash
 
 const (
