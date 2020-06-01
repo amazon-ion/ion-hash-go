@@ -32,11 +32,11 @@ func newHasher(hasherProvider IonHasherProvider) *hasher {
 	return &hasher{hasherProvider, currentHasher, hasherStack}
 }
 
-func (h *hasher) scalar(ionValue hashValue) {
-	h.currentHasher.scalar(ionValue)
+func (h *hasher) scalar(ionValue hashValue) error {
+	return h.currentHasher.scalar(ionValue)
 }
 
-func (h *hasher) stepIn(ionValue hashValue) {
+func (h *hasher) stepIn(ionValue hashValue) error {
 	var hashFunction IonHasher
 
 	_, isStructSerializer := h.currentHasher.(structSerializer)
@@ -53,7 +53,7 @@ func (h *hasher) stepIn(ionValue hashValue) {
 	}
 
 	h.hasherStack.push(h.currentHasher)
-	h.currentHasher.stepIn(ionValue)
+	return h.currentHasher.stepIn(ionValue)
 }
 
 func (h *hasher) stepOut() error {

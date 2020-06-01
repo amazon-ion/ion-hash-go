@@ -18,9 +18,9 @@ package ionhash
 import "github.com/amzn/ion-go/ion"
 
 type serializer interface {
-	scalar(ionValue interface{})
+	scalar(ionValue interface{}) error
 
-	stepIn(ionValue interface{})
+	stepIn(ionValue interface{}) error
 
 	stepOut()
 

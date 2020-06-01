@@ -30,7 +30,7 @@ func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider
 		scalarSerializer: newScalarSerializer(hashFunctionProvider.newHasher(), depth+1)}
 }
 
-func (structSerializer structSerializer) scalar(ionValue interface{}) {
+func (structSerializer structSerializer) scalar(ionValue interface{}) error {
 	panic("implement me")
 }
 
@@ -38,8 +38,8 @@ func (structSerializer structSerializer) stepOut() {
 	panic("implement me")
 }
 
-func (structSerializer structSerializer) stepIn(ionValue interface{}) {
-	structSerializer.baseSerializer.stepIn(ionValue)
+func (structSerializer structSerializer) stepIn(ionValue interface{}) error {
+	return structSerializer.baseSerializer.stepIn(ionValue)
 }
 
 func (structSerializer structSerializer) digest() []byte {

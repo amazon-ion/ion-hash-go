@@ -25,7 +25,7 @@ func newScalarSerializer(hashFunction IonHasher, depth int) serializer {
 	return &scalarSerializer{baseSerializer{hashFunction: hashFunction, depth: depth}}
 }
 
-func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) {
+func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) error {
 	panic("implement me")
 }
 
@@ -33,8 +33,8 @@ func (scalarSerializer scalarSerializer) stepOut() {
 	panic("implement me")
 }
 
-func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) {
-	scalarSerializer.baseSerializer.stepIn(ionValue)
+func (scalarSerializer scalarSerializer) stepIn(ionValue interface{}) error {
+	return scalarSerializer.baseSerializer.stepIn(ionValue)
 }
 
 func (scalarSerializer scalarSerializer) digest() []byte {

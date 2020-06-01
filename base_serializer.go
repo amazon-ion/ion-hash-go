@@ -24,7 +24,7 @@ type baseSerializer struct {
 	hasContainerAnnotation bool
 }
 
-func (baseSerializer *baseSerializer) stepIn(ionValue interface{}) {
+func (baseSerializer *baseSerializer) stepIn(ionValue interface{}) error {
 	panic("implement me")
 }
 
