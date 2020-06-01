@@ -25,6 +25,7 @@ func NewCryptoHasherProvider(algorithm algorithm) *cryptoHasherProvider {
 	return &cryptoHasherProvider{algorithm: algorithm}
 }
 
-func (chp *cryptoHasherProvider) newHasher() (IonHasher, error) {
-	return newCryptoHasher(chp.algorithm)
+func (chp *cryptoHasherProvider) newHasher() IonHasher {
+	newHasher, _ := newCryptoHasher(chp.algorithm)
+	return newHasher
 }

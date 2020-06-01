@@ -44,7 +44,7 @@ func (h *hasher) scalar(ionValue hashValue) error {
 func (h *hasher) stepIn(ionValue hashValue) error {
 	var hashFunction IonHasher
 
-	_, isStructSerializer := h.currentHasher.(structSerializer)
+	_, isStructSerializer := h.currentHasher.(*structSerializer)
 	if isStructSerializer {
 		newHasher, err := h.hasherProvider.newHasher()
 		if err != nil {
@@ -53,7 +53,7 @@ func (h *hasher) stepIn(ionValue hashValue) error {
 
 		hashFunction = newHasher
 	} else {
-		hashFunction = h.currentHasher.(scalarSerializer).hashFunction
+		hashFunction = h.currentHasher.(*scalarSerializer).hashFunction
 	}
 
 	if ionValue.ionType() == ion.StructType {
@@ -68,12 +68,7 @@ func (h *hasher) stepIn(ionValue hashValue) error {
 	}
 
 	h.hasherStack.push(h.currentHasher)
-	err := h.currentHasher.stepIn(ionValue)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return h.currentHasher.stepIn(ionValue)
 }
 
 func (h *hasher) stepOut() error {
@@ -97,7 +92,7 @@ func (h *hasher) stepOut() error {
 
 	h.currentHasher = peekedHasher.(serializer)
 
-	structHasher, isStructSerializer := h.currentHasher.(structSerializer)
+	structHasher, isStructSerializer := h.currentHasher.(*structSerializer)
 	if isStructSerializer {
 		sum := poppedHasher.(serializer).sum(nil)
 		structHasher.appendFieldHash(sum)
