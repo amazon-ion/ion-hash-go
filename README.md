@@ -1,3 +1,5 @@
+:warning: **This package is considered experimental, under active early development, and the API is subject to change.** :warning:
+
 # Amazon Ion Hash Go
 
 An implementation of [Amazon Ion Hash](http://amzn.github.io/ion-hash) in Go.
