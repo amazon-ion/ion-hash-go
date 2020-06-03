@@ -28,7 +28,7 @@ type serializer interface {
 
 	handleFieldName(ionValue interface{}) error
 
-	update(bytes []byte) error
+	write(bytes []byte) error
 
 	beginMarker() error
 

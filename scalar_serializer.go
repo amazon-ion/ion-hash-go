@@ -58,13 +58,13 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 	tq, representation :=
 		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionVal, ionHashValue.isNull(), scalarBytes)
 
-	err = scalarSerializer.update([]byte{tq})
+	err = scalarSerializer.write([]byte{tq})
 	if err != nil {
 		return err
 	}
 
 	if len(representation) > 0 {
-		err = scalarSerializer.update(escape(representation))
+		err = scalarSerializer.write(escape(representation))
 		if err != nil {
 			return err
 		}
@@ -99,8 +99,8 @@ func (scalarSerializer *scalarSerializer) handleFieldName(ionValue interface{}) 
 	return scalarSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
-func (scalarSerializer *scalarSerializer) update(bytes []byte) error {
-	return scalarSerializer.baseSerializer.update(bytes)
+func (scalarSerializer *scalarSerializer) write(bytes []byte) error {
+	return scalarSerializer.baseSerializer.write(bytes)
 }
 
 func (scalarSerializer *scalarSerializer) beginMarker() error {

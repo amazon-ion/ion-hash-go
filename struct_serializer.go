@@ -61,7 +61,7 @@ func (structSerializer *structSerializer) stepOut() error {
 	sort.Sort(sortableBytes(structSerializer.fieldHashes))
 
 	for _, digest := range structSerializer.fieldHashes {
-		err := structSerializer.update(escape(digest))
+		err := structSerializer.write(escape(digest))
 		if err != nil {
 			return err
 		}
@@ -82,8 +82,8 @@ func (structSerializer *structSerializer) handleFieldName(ionValue interface{}) 
 	return structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
-func (structSerializer *structSerializer) update(bytes []byte) error {
-	return structSerializer.baseSerializer.update(bytes)
+func (structSerializer *structSerializer) write(bytes []byte) error {
+	return structSerializer.baseSerializer.write(bytes)
 }
 
 func (structSerializer *structSerializer) beginMarker() error {
