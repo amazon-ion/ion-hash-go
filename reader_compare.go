@@ -1,3 +1,18 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package ionhash
 
 import (
@@ -220,13 +235,37 @@ func CompareHasAnnotations(reader1, reader2 ion.Reader) error {
 func CompareScalars(ionType ion.Type, isNull bool, reader1, reader2 ion.Reader) error {
 	switch ionType {
 	case ion.BoolType:
-		if !isNull && reader1.BoolValue() != reader2.BoolValue() {
-			return fmt.Errorf("expected readers to have matching bool values")
+		if !isNull {
+			value1, err := reader1.BoolValue()
+			if err != nil {
+				return err
+			}
+
+			value2, err := reader2.BoolValue()
+			if err != nil {
+				return err
+			}
+
+			if value1 != value2 {
+				return fmt.Errorf("expected readers to have matching bool values")
+			}
 		}
 		break
 	case ion.IntType:
-		if !isNull && reader1.BigIntValue() != reader2.BigIntValue() {
-			return fmt.Errorf("expected readers to have matching big int values")
+		if !isNull {
+			value1, err := reader1.BigIntValue()
+			if err != nil {
+				return err
+			}
+
+			value2, err := reader2.BigIntValue()
+			if err != nil {
+				return err
+			}
+
+			if value1 != value2 {
+				return fmt.Errorf("expected readers to have matching big int values")
+			}
 		}
 		break
 	case ion.FloatType:
@@ -290,7 +329,17 @@ func CompareScalars(ionType ion.Type, isNull bool, reader1, reader2 ion.Reader) 
 		}
 		break
 	case ion.StringType:
-		if reader1.StringValue() != reader2.StringValue() {
+		value1, err := reader1.StringValue()
+		if err != nil {
+			return err
+		}
+
+		value2, err := reader2.StringValue()
+		if err != nil {
+			return err
+		}
+
+		if value1 != value2 {
 			return fmt.Errorf("expected readers to have matching string values")
 		}
 		break
