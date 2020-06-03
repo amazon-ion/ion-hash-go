@@ -40,13 +40,12 @@ type hashReader struct {
 }
 
 func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) (HashReader, error) {
-	hasher, err := newHasher(hasherProvider)
+	newHasher, err := newHasher(hasherProvider)
 	if err != nil {
 		return nil, err
 	}
-	hashReader := &hashReader{ionReader: ionReader, hasher: *hasher}
 
-	return hashReader, nil
+	return &hashReader{ionReader: ionReader, hasher: *newHasher}, nil
 }
 
 func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
