@@ -25,7 +25,7 @@ func newScalarSerializer(hashFunction IonHasher, depth int) serializer {
 	return &scalarSerializer{baseSerializer{hashFunction: hashFunction, depth: depth}}
 }
 
-func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) error {
+func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 	ionHashValue := ionValue.(hashValue)
 
 	err := scalarSerializer.handleAnnotationsBegin(ionHashValue)
@@ -76,7 +76,7 @@ func (scalarSerializer scalarSerializer) scalar(ionValue interface{}) error {
 	return nil
 }
 
-func (scalarSerializer scalarSerializer) stepOut() error {
+func (scalarSerializer *scalarSerializer) stepOut() error {
 	return scalarSerializer.baseSerializer.stepOut()
 }
 
@@ -116,7 +116,7 @@ func (scalarSerializer scalarSerializer) writeSymbol(token string) error {
 	return scalarSerializer.baseSerializer.writeSymbol(token)
 }
 
-func (scalarSerializer scalarSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
+func (scalarSerializer *scalarSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
 	return scalarSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
 }
 

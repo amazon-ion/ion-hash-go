@@ -39,7 +39,7 @@ func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider
 		scalarSerializer: newScalarSerializer(newHasher, depth+1)}, nil
 }
 
-func (structSerializer structSerializer) scalar(ionValue interface{}) error {
+func (structSerializer *structSerializer) scalar(ionValue interface{}) error {
 	err := structSerializer.scalarSerializer.handleFieldName(ionValue)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (structSerializer structSerializer) scalar(ionValue interface{}) error {
 	return nil
 }
 
-func (structSerializer structSerializer) stepOut() error {
+func (structSerializer *structSerializer) stepOut() error {
 	// Sort fieldHashes using the sortableBytes sorting interface
 	sort.Sort(sortableBytes(structSerializer.fieldHashes))
 
@@ -106,7 +106,7 @@ func (structSerializer structSerializer) writeSymbol(token string) error {
 	return structSerializer.baseSerializer.writeSymbol(token)
 }
 
-func (structSerializer structSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
+func (structSerializer *structSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
 	return structSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
 }
 
