@@ -70,39 +70,39 @@ func (structSerializer *structSerializer) stepOut() error {
 	return structSerializer.baseSerializer.stepOut()
 }
 
-func (structSerializer structSerializer) stepIn(ionValue interface{}) error {
+func (structSerializer *structSerializer) stepIn(ionValue interface{}) error {
 	return structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
-func (structSerializer structSerializer) sum(b []byte) []byte {
+func (structSerializer *structSerializer) sum(b []byte) []byte {
 	return structSerializer.baseSerializer.sum(b)
 }
 
-func (structSerializer structSerializer) handleFieldName(ionValue interface{}) error {
+func (structSerializer *structSerializer) handleFieldName(ionValue interface{}) error {
 	return structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
-func (structSerializer structSerializer) update(bytes []byte) error {
+func (structSerializer *structSerializer) update(bytes []byte) error {
 	return structSerializer.baseSerializer.update(bytes)
 }
 
-func (structSerializer structSerializer) beginMarker() error {
+func (structSerializer *structSerializer) beginMarker() error {
 	return structSerializer.baseSerializer.beginMarker()
 }
 
-func (structSerializer structSerializer) endMarker() error {
+func (structSerializer *structSerializer) endMarker() error {
 	return structSerializer.baseSerializer.endMarker()
 }
 
-func (structSerializer structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
+func (structSerializer *structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
 	return structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
 }
 
-func (structSerializer structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
+func (structSerializer *structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
 	return structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
 }
 
-func (structSerializer structSerializer) writeSymbol(token string) error {
+func (structSerializer *structSerializer) writeSymbol(token string) error {
 	return structSerializer.baseSerializer.writeSymbol(token)
 }
 
@@ -110,7 +110,7 @@ func (structSerializer *structSerializer) getBytes(ionType ion.Type, ionValue in
 	return structSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
 }
 
-func (structSerializer structSerializer) getLengthFieldLength(bytes []byte) (int, error) {
+func (structSerializer *structSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 	return structSerializer.baseSerializer.getLengthFieldLength(bytes)
 }
 
