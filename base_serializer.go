@@ -80,9 +80,9 @@ func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error 
 	if baseSerializer.depth > 0 && ionValue.isInStruct() {
 		// TODO: Rework this once SymbolTokens become available
 		/*if ionValue.fieldNameSymbol().Text == null && ionValue.fieldNameSymbol().Sid != 0 {
-			 return &UnknownSymbolError{ionValue.fieldNameSymbol().Sid}
-		 }
-		 return baseSerializer.writeSymbol(ionValue.fieldNameSymbol().Text)*/
+			return &UnknownSymbolError{ionValue.fieldNameSymbol().Sid}
+		}
+		return baseSerializer.writeSymbol(ionValue.fieldNameSymbol().Text)*/
 	}
 
 	return nil
@@ -150,27 +150,34 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 
 	// TODO: Rework this once SymbolTokens become available
 	/*var sid int
-	 if token == "" {
-		 sid = 0
-	 } else {
-		 sid = ion.SymbolToken.UnknownSid
-	 }
+	if token == "" {
+		sid = 0
+	} else {
+		sid = ion.SymbolToken.UnknownSid
+	}
 
-	 symbolToken := &ion.SymbolToken{token, sid}
-	 scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, symbolToken, false);
-	 if err != nil {
-		 return err
-	 }
+	symbolToken := &ion.SymbolToken{token, sid}
+	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, symbolToken, false);
+	if err != nil {
+		return err
+	}
 
-	 tq, representation, err := baseSerializer.scalarOrNullSplitParts(ion.SymbolType, symbolToken, false, scalarBytes)
-	 if err != nil {
-		 return err
-	 }
+	tq, representation, err := baseSerializer.scalarOrNullSplitParts(ion.SymbolType, symbolToken, false, scalarBytes)
+	if err != nil {
+		return err
+	}
 
-	 baseSerializer.update([]byte{tq})
-	 if len(representation) > 0 {
-		 baseSerializer.update(escape(representation))
-	 }*/
+	err = baseSerializer.update([]byte{tq})
+	if err != nil {
+		return err
+	}
+
+	if len(representation) > 0 {
+		err = baseSerializer.update(escape(representation))
+		if err != nil {
+			return err
+		}
+	}*/
 
 	err = baseSerializer.endMarker()
 	if err != nil {
@@ -225,41 +232,41 @@ func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, e
 
 // TODO: Rework this once SymbolTokens become available
 /*func (baseSerializer *baseSerializer)scalarOrNullSplitParts(
-	 ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
+	ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
 
-	 offset, err := baseSerializer.getLengthFieldLength(bytes)
-	 if err != nil {
-		 return byte(0), nil, err
-	 }
-	 offset++
+	offset, err := baseSerializer.getLengthFieldLength(bytes)
+	if err != nil {
+		return byte(0), nil, err
+	}
+	offset++
 
-	 if ionType == ion.IntType && len(bytes) > offset {
-		 // ignore sign byte when the magnitude ends at byte boundary
-		 if (bytes[offset] & 0xFF) == 0 {
-			 offset++
-		 }
-	 }
+	if ionType == ion.IntType && len(bytes) > offset {
+		// ignore sign byte when the magnitude ends at byte boundary
+		if (bytes[offset] & 0xFF) == 0 {
+			offset++
+		}
+	}
 
-	 // the representation is everything after TL (first byte) and length
-	 representation := bytes[offset:]
-	 tq := bytes[0]
+	// the representation is everything after TL (first byte) and length
+	representation := bytes[offset:]
+	tq := bytes[0]
 
-	 if ionType == ion.SymbolType {
-		 // symbols are serialized as strings; use the correct TQ:
-		 tq = 0x70
-		 if isNull {
-			 tq = tq | 0x0F
-		 } else if symbolToken != nil && symbolToken.Value.Text == nil && symbolToken.Value.Sid == 0 {
-			 tq = 0x71
-		 }
-	 // not a symbol, bool, or null value
-	 } else if ionType != ion.BoolType && (tq & 0x0F) != 0x0F {
-		 // zero - out the L nibble
-		 tq = tq & 0xF0
-	 }
+	if ionType == ion.SymbolType {
+		// symbols are serialized as strings; use the correct TQ:
+		tq = 0x70
+		if isNull {
+			tq = tq | 0x0F
+		} else if symbolToken != nil && symbolToken.Value.Text == nil && symbolToken.Value.Sid == 0 {
+			tq = 0x71
+		}
+	// not a symbol, bool, or null value
+	} else if ionType != ion.BoolType && (tq & 0x0F) != 0x0F {
+		// zero - out the L nibble
+		tq = tq & 0xF0
+	}
 
-	 return tq, representation, nil
- }*/
+	return tq, representation, nil
+}*/
 
 func needsEscape(b byte) bool {
 	switch b {

@@ -40,28 +40,35 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 
 	// TODO: Rework this once SymbolTokens become available
 	/*var ionVal interface{}
-	 var ionType ion.Type
-	 if ionHashValue.isNull() {
-		 ionVal = nil
-		 ionType = ion.NoType
-	 } else {
-		 ionVal = ionHashValue
-		 ionType = ionHashValue.ionType()
-	 }
+	var ionType ion.Type
+	if ionHashValue.isNull() {
+		ionVal = nil
+		ionType = ion.NoType
+	} else {
+		ionVal = ionHashValue
+		ionType = ionHashValue.ionType()
+	}
 
-	 scalarBytes := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
+	scalarBytes := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
 
-	 if ionHashValue.ionType() != ion.SymbolType {
-		 ionVal = nil
-	 }
+	if ionHashValue.ionType() != ion.SymbolType {
+		ionVal = nil
+	}
 
-	 tq, representation :=
-		 scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionVal, ionHashValue.isNull(), scalarBytes)
+	tq, representation :=
+		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionVal, ionHashValue.isNull(), scalarBytes)
 
-	 scalarSerializer.update([]byte{tq})
-	 if len(representation) > 0 {
-		 scalarSerializer.update(escape(representation))
-	 }*/
+	err = scalarSerializer.update([]byte{tq})
+	if err != nil {
+		return err
+	}
+
+	if len(representation) > 0 {
+		err = scalarSerializer.update(escape(representation))
+		if err != nil {
+			return err
+		}
+	}*/
 
 	err = scalarSerializer.endMarker()
 	if err != nil {
