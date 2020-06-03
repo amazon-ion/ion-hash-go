@@ -25,7 +25,7 @@ import (
 )
 
 func TestEmptyString(t *testing.T) {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), NewCryptoHasherProvider(SHA256))
+	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), NewIdentityHasherProvider())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestEmptyString(t *testing.T) {
 }
 
 func TestTopLevelValues(t *testing.T) {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), NewCryptoHasherProvider(SHA256))
+	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), NewIdentityHasherProvider())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,10 @@ func TestTopLevelValues(t *testing.T) {
 
 	for i, expectedType := range expectedTypes {
 		if !ionHashReader.Next() {
-			t.Error("expected ionHashReader.Next() to return true")
+			err = ionHashReader.Err()
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 
 		ionType := ionHashReader.Type()
@@ -122,9 +125,13 @@ func TestConsumeRemainderSingleNext(t *testing.T) {
 func TestUnresolvedSid(t *testing.T) {
 	ionReader := ion.NewReaderBytes([]byte{0xd3, 0x8a, 0x21, 0x01})
 
-	ionHashReader, err := NewHashReader(ionReader, NewCryptoHasherProvider(SHA256))
+	ionHashReader, err := NewHashReader(ionReader, NewIdentityHasherProvider())
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
+	}
+
+	if ionHashReader.Next() {
+		t.Error("expected ionHashReader.Next() to return false")
 	}
 
 	if ionHashReader.Next() {
@@ -146,7 +153,7 @@ func TestIonReaderContract(t *testing.T) {
 
 	ionReader := ion.NewReaderBytes(file)
 
-	ionHashReader, err := NewHashReader(ionReader, NewCryptoHasherProvider(SHA256))
+	ionHashReader, err := NewHashReader(ionReader, NewIdentityHasherProvider())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -278,7 +285,7 @@ func ConsumeRemainderSingleNext(ionHashReader HashReader) error {
 type consumeFunction func(HashReader) error
 
 func consume(function consumeFunction) error {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), NewCryptoHasherProvider(SHA256))
+	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), NewIdentityHasherProvider())
 	if err != nil {
 		return err
 	}
