@@ -139,7 +139,7 @@ func TestUnresolvedSid(t *testing.T) {
 }
 
 func TestIonReaderContract(t *testing.T) {
-	file, err := ioutil.ReadFile("ion_hash_tests.ion")
+	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	if err != nil {
 		t.Fatal(err)
 	}
