@@ -22,13 +22,13 @@ type serializer interface {
 
 	stepIn(ionValue interface{}) error
 
-	stepOut()
+	stepOut() error
 
 	sum(b []byte) []byte
 
 	handleFieldName(ionValue interface{}) error
 
-	update(bytes []byte) error
+	write(bytes []byte) error
 
 	beginMarker() error
 
@@ -40,7 +40,7 @@ type serializer interface {
 
 	writeSymbol(token string) error
 
-	getBytes(ionType ion.Type, ionValue interface{}, isNull bool) []byte
+	getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error)
 
 	getLengthFieldLength(bytes []byte) (int, error)
 

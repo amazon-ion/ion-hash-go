@@ -23,13 +23,18 @@ type hasher struct {
 	hasherStack    stack
 }
 
-func newHasher(hasherProvider IonHasherProvider) *hasher {
-	currentHasher := newScalarSerializer(hasherProvider.newHasher(), 0)
+func newHasher(hasherProvider IonHasherProvider) (*hasher, error) {
+	newHasher, err := hasherProvider.newHasher()
+	if err != nil {
+		return nil, err
+	}
+
+	currentHasher := newScalarSerializer(newHasher, 0)
 
 	var hasherStack stack
 	hasherStack.push(currentHasher)
 
-	return &hasher{hasherProvider, currentHasher, hasherStack}
+	return &hasher{hasherProvider, currentHasher, hasherStack}, nil
 }
 
 func (h *hasher) scalar(ionValue hashValue) error {
@@ -39,15 +44,25 @@ func (h *hasher) scalar(ionValue hashValue) error {
 func (h *hasher) stepIn(ionValue hashValue) error {
 	var hashFunction IonHasher
 
-	_, isStructSerializer := h.currentHasher.(*structSerializer)
-	if isStructSerializer {
-		hashFunction = h.hasherProvider.newHasher()
+	_, ok := h.currentHasher.(*structSerializer)
+	if ok {
+		newHasher, err := h.hasherProvider.newHasher()
+		if err != nil {
+			return err
+		}
+
+		hashFunction = newHasher
 	} else {
 		hashFunction = h.currentHasher.(*scalarSerializer).hashFunction
 	}
 
 	if ionValue.ionType() == ion.StructType {
-		h.currentHasher = newStructSerializer(hashFunction, 0, h.hasherProvider)
+		newStructSerializer, err := newStructSerializer(hashFunction, 0, h.hasherProvider)
+		if err != nil {
+			return err
+		}
+
+		h.currentHasher = newStructSerializer
 	} else {
 		h.currentHasher = newScalarSerializer(hashFunction, 0)
 	}
@@ -61,7 +76,10 @@ func (h *hasher) stepOut() error {
 		return &InvalidOperationError{"hasher", "stepOut", "Depth is zero. Hasher cannot step out any further"}
 	}
 
-	h.currentHasher.stepOut()
+	err := h.currentHasher.stepOut()
+	if err != nil {
+		return err
+	}
 
 	poppedHasher, err := h.hasherStack.pop()
 	if err != nil {
@@ -74,8 +92,8 @@ func (h *hasher) stepOut() error {
 
 	h.currentHasher = peekedHasher.(serializer)
 
-	structHasher, isStructSerializer := h.currentHasher.(*structSerializer)
-	if isStructSerializer {
+	structHasher, ok := h.currentHasher.(*structSerializer)
+	if ok {
 		sum := poppedHasher.(serializer).sum(nil)
 		structHasher.appendFieldHash(sum)
 	}

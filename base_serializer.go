@@ -64,7 +64,7 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 		tq = tq | 0x0F
 	}
 
-	err = baseSerializer.update([]byte{tq})
+	err = baseSerializer.write([]byte{tq})
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error 
 	return nil
 }
 
-func (baseSerializer *baseSerializer) update(bytes []byte) error {
+func (baseSerializer *baseSerializer) write(bytes []byte) error {
 	_, err := baseSerializer.hashFunction.Write(bytes)
 	return err
 }
@@ -115,7 +115,7 @@ func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue)
 			return err
 		}
 
-		err = baseSerializer.update([]byte{TqValue})
+		err = baseSerializer.write([]byte{TqValue})
 		if err != nil {
 			return err
 		}
@@ -167,9 +167,16 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 		return err
 	}
 
-	baseSerializer.update([]byte{tq})
+	err = baseSerializer.write([]byte{tq})
+	if err != nil {
+		return err
+	}
+
 	if len(representation) > 0 {
-		baseSerializer.update(escape(representation))
+		err = baseSerializer.write(escape(representation))
+		if err != nil {
+			return err
+		}
 	}*/
 
 	err = baseSerializer.endMarker()
@@ -189,9 +196,12 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 		return []byte{0x40}, nil
 	} else {
 		buf := bytes.Buffer{}
-		writer := NewHashWriter(ion.NewBinaryWriter(&buf), NewCryptoHasherProvider(SHA256))
+		writer, err := NewHashWriter(ion.NewBinaryWriter(&buf), NewCryptoHasherProvider(SHA256))
+		if err != nil {
+			return nil, err
+		}
 
-		err := serializers(ionType, ionValue, writer)
+		err = serializers(ionType, ionValue, writer)
 		if err != nil {
 			return nil, err
 		}
