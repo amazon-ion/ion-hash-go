@@ -26,17 +26,15 @@ func newIdentityIonHasher() IonHasher {
 }
 
 func (identityHasher *identityHasher) Write(bytes []byte) (int, error) {
-	byteCount := 0
 	for _, b := range bytes {
 		identityHasher.identityHash = append(identityHasher.identityHash, b)
-		byteCount++
 	}
 
-	return byteCount, nil
+	return len(bytes), nil
 }
 
 func (identityHasher *identityHasher) Sum(bytes []byte) []byte {
-	// We ignore the error here because we know this particular Write() implementation cannot error
+	// We ignore the error here because we know this particular Write() implementation does not error
 	_, _ = identityHasher.Write(bytes)
 
 	identityHash := identityHasher.identityHash
