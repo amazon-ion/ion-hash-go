@@ -28,10 +28,15 @@ type structSerializer struct {
 	fieldHashes      [][]byte
 }
 
-func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider IonHasherProvider) serializer {
+func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider IonHasherProvider) (serializer, error) {
+	newHasher, err := hashFunctionProvider.newHasher()
+	if err != nil {
+		return nil, err
+	}
+
 	return &structSerializer{
 		baseSerializer:   baseSerializer{hashFunction: hashFunction, depth: depth},
-		scalarSerializer: newScalarSerializer(hashFunctionProvider.newHasher(), depth+1)}
+		scalarSerializer: newScalarSerializer(newHasher, depth+1)}, nil
 }
 
 func (structSerializer *structSerializer) scalar(ionValue interface{}) error {
@@ -56,7 +61,7 @@ func (structSerializer *structSerializer) stepOut() error {
 	sort.Sort(sortableBytes(structSerializer.fieldHashes))
 
 	for _, digest := range structSerializer.fieldHashes {
-		err := structSerializer.update(escape(digest))
+		err := structSerializer.write(escape(digest))
 		if err != nil {
 			return err
 		}
@@ -73,17 +78,12 @@ func (structSerializer *structSerializer) sum(b []byte) []byte {
 	return structSerializer.baseSerializer.sum(b)
 }
 
-// TODO: Remove digest()
-func (structSerializer *structSerializer) digest() []byte {
-	panic("Temporary placeholder function")
-}
-
 func (structSerializer *structSerializer) handleFieldName(ionValue interface{}) error {
 	return structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
-func (structSerializer *structSerializer) update(bytes []byte) error {
-	return structSerializer.baseSerializer.update(bytes)
+func (structSerializer *structSerializer) write(bytes []byte) error {
+	return structSerializer.baseSerializer.write(bytes)
 }
 
 func (structSerializer *structSerializer) beginMarker() error {

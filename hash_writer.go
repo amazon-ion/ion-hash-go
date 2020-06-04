@@ -43,11 +43,13 @@ type hashWriter struct {
 	annotations      []string
 }
 
-func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) HashWriter {
-	hasher := newHasher(hasherProvider)
-	hashWriter := &hashWriter{ionWriter: ionWriter, hasher: *hasher}
+func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) (HashWriter, error) {
+	newHasher, err := newHasher(hasherProvider)
+	if err != nil {
+		return nil, err
+	}
 
-	return hashWriter
+	return &hashWriter{ionWriter: ionWriter, hasher: *newHasher}, nil
 }
 
 func (hashWriter *hashWriter) FieldName(val string) error {

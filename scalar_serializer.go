@@ -58,9 +58,16 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 	tq, representation :=
 		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionVal, ionHashValue.isNull(), scalarBytes)
 
-	scalarSerializer.update([]byte{tq})
+	err = scalarSerializer.write([]byte{tq})
+	if err != nil {
+		return err
+	}
+
 	if len(representation) > 0 {
-		scalarSerializer.update(escape(representation))
+		err = scalarSerializer.write(escape(representation))
+		if err != nil {
+			return err
+		}
 	}*/
 
 	err = scalarSerializer.endMarker()
@@ -88,17 +95,12 @@ func (scalarSerializer *scalarSerializer) sum(b []byte) []byte {
 	return scalarSerializer.baseSerializer.sum(b)
 }
 
-// TODO: Remove digest()
-func (scalarSerializer *scalarSerializer) digest() []byte {
-	panic("Temporary placeholder function")
-}
-
 func (scalarSerializer *scalarSerializer) handleFieldName(ionValue interface{}) error {
 	return scalarSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
-func (scalarSerializer *scalarSerializer) update(bytes []byte) error {
-	return scalarSerializer.baseSerializer.update(bytes)
+func (scalarSerializer *scalarSerializer) write(bytes []byte) error {
+	return scalarSerializer.baseSerializer.write(bytes)
 }
 
 func (scalarSerializer *scalarSerializer) beginMarker() error {

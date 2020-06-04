@@ -26,12 +26,9 @@ type serializer interface {
 
 	sum(b []byte) []byte
 
-	// TODO: Remove digest()
-	digest() []byte
-
 	handleFieldName(ionValue interface{}) error
 
-	update(bytes []byte) error
+	write(bytes []byte) error
 
 	beginMarker() error
 
