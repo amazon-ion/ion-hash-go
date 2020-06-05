@@ -94,12 +94,12 @@ func (baseSerializer *baseSerializer) write(bytes []byte) error {
 }
 
 func (baseSerializer *baseSerializer) beginMarker() error {
-	_, err := baseSerializer.hashFunction.Write([]byte{BeginMarkerByte})
+	_, err := baseSerializer.hashFunction.Write([]byte{beginMarkerByte})
 	return err
 }
 
 func (baseSerializer *baseSerializer) endMarker() error {
-	_, err := baseSerializer.hashFunction.Write([]byte{EndMarkerByte})
+	_, err := baseSerializer.hashFunction.Write([]byte{endMarkerByte})
 	return err
 }
 
@@ -115,7 +115,7 @@ func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue)
 			return err
 		}
 
-		err = baseSerializer.write([]byte{TqValue})
+		err = baseSerializer.write([]byte{tqValue})
 		if err != nil {
 			return err
 		}
@@ -270,7 +270,7 @@ func (baseSerializer *baseSerializer) scalarOrNullSplitParts(
 
 func needsEscape(b byte) bool {
 	switch b {
-	case BeginMarkerByte, EndMarkerByte, EscapeByte:
+	case beginMarkerByte, endMarkerByte, escapeByte:
 		return true
 	}
 
@@ -292,7 +292,7 @@ func escape(bytes []byte) []byte {
 			for j := 0; j < len(bytes); j++ {
 				c := bytes[j]
 				if needsEscape(c) {
-					escapedBytes = append(escapedBytes, EscapeByte)
+					escapedBytes = append(escapedBytes, escapeByte)
 				}
 
 				escapedBytes = append(escapedBytes, c)

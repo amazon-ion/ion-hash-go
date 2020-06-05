@@ -22,6 +22,8 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
+// HashReader inherits functions from Ion's Reader interface and adds
+// the function Sum that allows read access to the hash value held by this reader.
 type HashReader interface {
 	hashValue
 	// Embed interface of Ion reader.
@@ -39,6 +41,7 @@ type hashReader struct {
 	err         error
 }
 
+// NewHashReader takes an Ion reader and a hash provider and returns a new HashReader
 func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) (HashReader, error) {
 	newHasher, err := newHasher(hasherProvider)
 	if err != nil {
