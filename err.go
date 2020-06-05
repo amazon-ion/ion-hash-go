@@ -31,9 +31,10 @@ type InvalidOperationError struct {
 func (e *InvalidOperationError) Error() string {
 	if e.message != "" {
 		return fmt.Sprintf(`ionhash: Invalid operation at %v.%v: %v`, e.structName, e.methodName, e.message)
-	} else {
-		return fmt.Sprintf(`ionhash: Invalid operation error in %v.%v`, e.structName, e.methodName)
 	}
+
+	return fmt.Sprintf(`ionhash: Invalid operation error in %v.%v`, e.structName, e.methodName)
+
 }
 
 // InvalidArgumentError is returned when one of the arguments given to a function was not valid.

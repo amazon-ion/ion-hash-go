@@ -31,23 +31,25 @@ func (s *stack) push(element interface{}) {
 func (s *stack) pop() (interface{}, error) {
 	if s.isEmpty() {
 		return nil, &InvalidOperationError{"stack", "pop", "stack is empty"}
-	} else {
-		index := len(*s) - 1   // Get the index of the top most element.
-		element := (*s)[index] // Index into the slice and obtain the element.
-		*s = (*s)[:index]      // Remove it from the stack by slicing it off.
-		return element, nil
 	}
+
+	index := len(*s) - 1   // Get the index of the top most element.
+	element := (*s)[index] // Index into the slice and obtain the element.
+	*s = (*s)[:index]      // Remove it from the stack by slicing it off.
+
+	return element, nil
 }
 
 // Return top element of stack. Return error if stack is empty.
 func (s *stack) peek() (interface{}, error) {
 	if s.isEmpty() {
 		return nil, &InvalidOperationError{"stack", "pop", "stack is empty"}
-	} else {
-		index := len(*s) - 1   // Get the index of the top most element.
-		element := (*s)[index] // Index into the slice and obtain the element.
-		return element, nil
 	}
+
+	index := len(*s) - 1   // Get the index of the top most element.
+	element := (*s)[index] // Index into the slice and obtain the element.
+
+	return element, nil
 }
 
 // Return number of elements in stack
