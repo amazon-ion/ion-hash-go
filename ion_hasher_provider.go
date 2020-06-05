@@ -15,6 +15,7 @@
 
 package ionhash
 
+// IonHasherProvider used for creating new instances of IonHasher.
 type IonHasherProvider interface {
 	// Return a new IonHasher object.
 	newHasher() (IonHasher, error)
