@@ -17,6 +17,8 @@ package ionhash
 
 import "io"
 
+// IonHasher inherits functions from Ion Writer and adds the Sum function.
+// The Sum function provides read access to the underlying hash value.
 type IonHasher interface {
 	// Write (via the embedded io.Writer interface) adds more data to the running hash.
 	io.Writer

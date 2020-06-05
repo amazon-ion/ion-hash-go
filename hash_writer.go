@@ -22,6 +22,8 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
+// HashWriter inherits the same function as an Ion Writer and adds the Sum function.
+// The Sum function allows read access to the hash value in the current writer.
 type HashWriter interface {
 	hashValue
 	// Embed interface of Ion writer.
@@ -43,6 +45,7 @@ type hashWriter struct {
 	annotations      []string
 }
 
+// NewHashWriter takes an Ion Writer and a hash provider and returns a new HashWriter.
 func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) (HashWriter, error) {
 	newHasher, err := newHasher(hasherProvider)
 	if err != nil {

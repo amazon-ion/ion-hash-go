@@ -21,7 +21,7 @@ type cryptoHasherProvider struct {
 	algorithm algorithm
 }
 
-func NewCryptoHasherProvider(algorithm algorithm) *cryptoHasherProvider {
+func newCryptoHasherProvider(algorithm algorithm) *cryptoHasherProvider {
 	return &cryptoHasherProvider{algorithm: algorithm}
 }
 
