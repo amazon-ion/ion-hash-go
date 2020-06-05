@@ -27,13 +27,15 @@ import (
 func TestEmptyString(t *testing.T) {
 	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), NewIdentityHasherProvider())
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
 	if !ionHashReader.Next() {
 		err = ionHashReader.Err()
 		if err != nil {
-			t.Fatal(err)
+			t.Errorf("expected ionHashReader.Next() to return true; %s", err.Error())
+		} else {
+			t.Errorf("expected ionHashReader.Next() to return true")
 		}
 	}
 
@@ -44,7 +46,7 @@ func TestEmptyString(t *testing.T) {
 
 	sum, err := ionHashReader.Sum(nil)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("expected Sum() to execute without errors; %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
@@ -55,7 +57,7 @@ func TestEmptyString(t *testing.T) {
 func TestTopLevelValues(t *testing.T) {
 	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), NewIdentityHasherProvider())
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
 	expectedTypes := []ion.Type{ion.IntType, ion.IntType, ion.IntType, ion.NoType, ion.NoType}
@@ -66,7 +68,9 @@ func TestTopLevelValues(t *testing.T) {
 		if !ionHashReader.Next() {
 			err = ionHashReader.Err()
 			if err != nil {
-				t.Fatal(err)
+				t.Errorf("expected ionHashReader.Next() to return true; %s", err.Error())
+			} else {
+				t.Errorf("expected ionHashReader.Next() to return true")
 			}
 		}
 
@@ -78,7 +82,7 @@ func TestTopLevelValues(t *testing.T) {
 
 		sum, err := ionHashReader.Sum(nil)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("expected Sum() to execute without errors; %s", err.Error())
 		}
 
 		if !reflect.DeepEqual(sum, expectedSums[i]) {
@@ -127,7 +131,7 @@ func TestUnresolvedSid(t *testing.T) {
 
 	ionHashReader, err := NewHashReader(ionReader, NewIdentityHasherProvider())
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
 	if ionHashReader.Next() {
@@ -148,19 +152,23 @@ func TestUnresolvedSid(t *testing.T) {
 func TestIonReaderContract(t *testing.T) {
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("expected ion_hash_tests.ion to load properly")
 	}
 
 	ionReader := ion.NewReaderBytes(file)
 
 	ionHashReader, err := NewHashReader(ionReader, NewIdentityHasherProvider())
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
-	err = Compare(ionReader, ionHashReader)
-	if err != nil {
-		t.Error(err)
+	compare, err := Compare(ionReader, ionHashReader)
+	if !compare {
+		if err != nil {
+			t.Errorf("expected Compare(ionReader, ionHashReader) to return true; %s", err.Error())
+		} else {
+			t.Errorf("expected Compare(ionReader, ionHashReader) to return true")
+		}
 	}
 }
 
@@ -168,7 +176,7 @@ func ConsumeRemainderPartialConsume(ionHashReader HashReader) error {
 	ionHashReader.Next()
 	err := ionHashReader.StepIn()
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
 	}
 
 	ionHashReader.Next()
@@ -176,18 +184,18 @@ func ConsumeRemainderPartialConsume(ionHashReader HashReader) error {
 	ionHashReader.Next()
 	err = ionHashReader.StepIn()
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
 	}
 
 	ionHashReader.Next()
 	err = ionHashReader.StepOut() // we've only partially consumed the struct
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
 	}
 
 	err = ionHashReader.StepOut() // we've only partially consumed the list
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
 	}
 
 	return nil
@@ -197,7 +205,7 @@ func ConsumeRemainderStepInStepOutNested(ionHashReader HashReader) error {
 	ionHashReader.Next()
 	err := ionHashReader.StepIn()
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
 	}
 
 	ionHashReader.Next()
@@ -205,22 +213,22 @@ func ConsumeRemainderStepInStepOutNested(ionHashReader HashReader) error {
 	ionHashReader.Next()
 	err = ionHashReader.StepIn()
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
 	}
 
 	err = ionHashReader.StepIn()
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
 	}
 
 	err = ionHashReader.StepOut() // we haven't consumed ANY of the struct
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
 	}
 
 	err = ionHashReader.StepOut() // we've only partially consumed the list
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
 	}
 
 	return nil
@@ -230,13 +238,13 @@ func ConsumeRemainderStepInNextStepOut(ionHashReader HashReader) error {
 	ionHashReader.Next()
 	err := ionHashReader.StepIn()
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
 	}
 
 	ionHashReader.Next()
 	err = ionHashReader.StepOut() // we've partially consumed the list
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
 	}
 
 	return nil
@@ -246,7 +254,7 @@ func ConsumeRemainderStepInStepOutTopLevel(ionHashReader HashReader) error {
 	ionHashReader.Next()
 	sum, err := ionHashReader.Sum(nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("expected Sum() to execute without errors; %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
@@ -255,7 +263,7 @@ func ConsumeRemainderStepInStepOutTopLevel(ionHashReader HashReader) error {
 
 	err = ionHashReader.StepIn()
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
 	}
 
 	_, err = ionHashReader.Sum(nil)
@@ -270,7 +278,7 @@ func ConsumeRemainderStepInStepOutTopLevel(ionHashReader HashReader) error {
 
 	err = ionHashReader.StepOut() // we haven't consumed ANY of the list
 	if err != nil {
-		return err
+		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
 	}
 
 	return nil
@@ -292,7 +300,7 @@ func consume(function consumeFunction) error {
 
 	sum, err := ionHashReader.Sum(nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("expected Sum() to execute without errors; %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
@@ -306,7 +314,7 @@ func consume(function consumeFunction) error {
 
 	sum, err = ionHashReader.Sum(nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("expected Sum() to execute without errors; %s", err.Error())
 	}
 
 	expectedSum := []byte{0x0b, 0xb0, 0x0b, 0x20, 0x01, 0x0e, 0x0b, 0x20, 0x02, 0x0e, 0x0b, 0xd0, 0x0c, 0x0b, 0x70,
@@ -328,7 +336,7 @@ func consume(function consumeFunction) error {
 
 	sum, err = ionHashReader.Sum(nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("expected Sum() to execute without errors; %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
