@@ -38,25 +38,33 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 		return err
 	}
 
-	// TODO: Rework this once SymbolTokens become available
-	/*var ionVal interface{}
+	var ionVal interface{}
 	var ionType ion.Type
 	if ionHashValue.isNull() {
 		ionVal = nil
 		ionType = ion.NoType
 	} else {
-		ionVal = ionHashValue
+		ionVal, err = ionHashValue.value()
+		if err != nil {
+			return err
+		}
 		ionType = ionHashValue.ionType()
 	}
 
-	scalarBytes := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
+	scalarBytes, err := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
+	if err != nil {
+		return err
+	}
 
 	if ionHashValue.ionType() != ion.SymbolType {
 		ionVal = nil
 	}
 
-	tq, representation :=
-		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionVal, ionHashValue.isNull(), scalarBytes)
+	tq, representation, err :=
+		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionHashValue.isNull(), scalarBytes)
+	if err != nil {
+		return err
+	}
 
 	err = scalarSerializer.write([]byte{tq})
 	if err != nil {
@@ -68,7 +76,7 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 		if err != nil {
 			return err
 		}
-	}*/
+	}
 
 	err = scalarSerializer.endMarker()
 	if err != nil {
@@ -124,7 +132,7 @@ func (scalarSerializer *scalarSerializer) writeSymbol(token string) error {
 }
 
 func (scalarSerializer *scalarSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
-	return scalarSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
+	return scalarSerializer.baseSerializer.getBytes(ionType, ionValue, isNull)
 }
 
 func (scalarSerializer *scalarSerializer) getLengthFieldLength(bytes []byte) (int, error) {

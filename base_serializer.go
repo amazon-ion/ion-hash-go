@@ -196,12 +196,9 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 		return []byte{0x40}, nil
 	} else {
 		buf := bytes.Buffer{}
-		writer, err := NewHashWriter(ion.NewBinaryWriter(&buf), NewCryptoHasherProvider(SHA256))
-		if err != nil {
-			return nil, err
-		}
+		writer := ion.NewBinaryWriter(&buf)
 
-		err = serializers(ionType, ionValue, writer)
+		err := serializers(ionType, ionValue, writer)
 		if err != nil {
 			return nil, err
 		}
@@ -230,9 +227,8 @@ func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, e
 	return 0, nil
 }
 
-// TODO: Rework this once SymbolTokens become available
-/*func (baseSerializer *baseSerializer)scalarOrNullSplitParts(
-	ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
+func (baseSerializer *baseSerializer) scalarOrNullSplitParts(
+	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
 
 	offset, err := baseSerializer.getLengthFieldLength(bytes)
 	if err != nil {
@@ -251,6 +247,8 @@ func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, e
 	representation := bytes[offset:]
 	tq := bytes[0]
 
+	// TODO: Rework this once SymbolTokens are available
+	/*
 	if ionType == ion.SymbolType {
 		// symbols are serialized as strings; use the correct TQ:
 		tq = 0x70
@@ -259,14 +257,16 @@ func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, e
 		} else if symbolToken != nil && symbolToken.Value.Text == nil && symbolToken.Value.Sid == 0 {
 			tq = 0x71
 		}
+	*/
+
 	// not a symbol, bool, or null value
-	} else if ionType != ion.BoolType && (tq & 0x0F) != 0x0F {
+	if ionType != ion.BoolType && (tq & 0x0F) != 0x0F {
 		// zero - out the L nibble
 		tq = tq & 0xF0
 	}
 
 	return tq, representation, nil
-}*/
+}
 
 func needsEscape(b byte) bool {
 	switch b {
@@ -305,7 +305,7 @@ func escape(bytes []byte) []byte {
 	return bytes
 }
 
-func serializers(ionType ion.Type, ionValue interface{}, writer HashWriter) error {
+func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) error {
 	switch ionType {
 	case ion.BoolType:
 		return writer.WriteBool(ionValue.(bool))

@@ -242,7 +242,7 @@ func (hashReader *hashReader) value() (interface{}, error) {
 	case ion.FloatType:
 		return hashReader.FloatValue()
 	case ion.IntType:
-		return hashReader.IntValue()
+		return hashReader.Int64Value()
 	case ion.StringType:
 		return hashReader.StringValue()
 	case ion.SymbolType:

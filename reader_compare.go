@@ -38,7 +38,8 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 		ionType2 := reader2.Type()
 
 		if ionType1 != ionType2 {
-			return false, fmt.Errorf("expected ion types to match; ionType1: %v, ionType2: %v")
+			return false, fmt.Errorf(
+				"expected ion types to match; ionType1: %v, ionType2: %v", ionType1, ionType2)
 		}
 
 		ionHashReader, ok := reader1.(*hashReader)
