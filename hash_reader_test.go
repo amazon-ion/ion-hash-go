@@ -33,9 +33,7 @@ func TestEmptyString(t *testing.T) {
 	if !ionHashReader.Next() {
 		err = ionHashReader.Err()
 		if err != nil {
-			t.Errorf("expected ionHashReader.Next() to return true; %s", err.Error())
-		} else {
-			t.Errorf("expected ionHashReader.Next() to return true")
+			t.Errorf("expected ionHashReader.Next() to return false without errors; %s", err.Error())
 		}
 	}
 
@@ -69,7 +67,7 @@ func TestTopLevelValues(t *testing.T) {
 			err = ionHashReader.Err()
 			if err != nil {
 				t.Errorf("expected ionHashReader.Next() to return true; %s", err.Error())
-			} else {
+			} else if expectedType != ion.NoType {
 				t.Errorf("expected ionHashReader.Next() to return true")
 			}
 		}
