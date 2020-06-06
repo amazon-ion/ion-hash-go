@@ -140,11 +140,14 @@ func HasNext(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	}
 
 	if !next1 {
-		if reader1.Next() {
-			return false, fmt.Errorf("expected reader1.Next() to return false")
+		err := reader1.Err()
+		if err != nil {
+			return false, fmt.Errorf("expected reader1.next() not to error; %s", err.Error())
 		}
-		if reader2.Next() {
-			return false, fmt.Errorf("expected reader2.Next() to return false")
+
+		err = reader2.Err()
+		if err != nil {
+			return false, fmt.Errorf("expected reader1.next() not to error; %s", err.Error())
 		}
 	}
 
