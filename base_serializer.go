@@ -248,8 +248,7 @@ func (baseSerializer *baseSerializer) scalarOrNullSplitParts(
 	tq := bytes[0]
 
 	// TODO: Rework this once SymbolTokens are available
-	/*
-	if ionType == ion.SymbolType {
+	/*if ionType == ion.SymbolType {
 		// symbols are serialized as strings; use the correct TQ:
 		tq = 0x70
 		if isNull {
@@ -257,10 +256,10 @@ func (baseSerializer *baseSerializer) scalarOrNullSplitParts(
 		} else if symbolToken != nil && symbolToken.Value.Text == nil && symbolToken.Value.Sid == 0 {
 			tq = 0x71
 		}
-	*/
+	}*/
 
 	// not a symbol, bool, or null value
-	if ionType != ion.BoolType && (tq & 0x0F) != 0x0F {
+	if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
 		// zero - out the L nibble
 		tq = tq & 0xF0
 	}
