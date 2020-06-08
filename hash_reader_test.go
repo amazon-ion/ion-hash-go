@@ -30,25 +30,27 @@ func TestEmptyString(t *testing.T) {
 		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
-	if !ionHashReader.Next() {
-		err = ionHashReader.Err()
-		if err != nil {
-			t.Errorf("expected ionHashReader.Next() to return false without errors; %s", err.Error())
+	for i := 0; i < 2; i++ {
+		if !ionHashReader.Next() {
+			err = ionHashReader.Err()
+			if err != nil {
+				t.Errorf("expected ionHashReader.Next() to return false without errors; %s", err.Error())
+			}
 		}
-	}
 
-	ionType := ionHashReader.Type()
-	if ionType != ion.NoType {
-		t.Errorf("expected ionHashReader.Type() to return ion.NoType rather than %s", ionType.String())
-	}
+		ionType := ionHashReader.Type()
+		if ionType != ion.NoType {
+			t.Errorf("expected ionHashReader.Type() to return ion.NoType rather than %s", ionType.String())
+		}
 
-	sum, err := ionHashReader.Sum(nil)
-	if err != nil {
-		t.Fatalf("expected Sum() to execute without errors; %s", err.Error())
-	}
+		sum, err := ionHashReader.Sum(nil)
+		if err != nil {
+			t.Fatalf("expected Sum() to execute without errors; %s", err.Error())
+		}
 
-	if !reflect.DeepEqual(sum, []byte{}) {
-		t.Error("sums don't match")
+		if !reflect.DeepEqual(sum, []byte{}) {
+			t.Error("sums don't match")
+		}
 	}
 }
 

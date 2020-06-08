@@ -42,12 +42,16 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 				"expected ion types to match; ionType1: %v, ionType2: %v", ionType1, ionType2)
 		}
 
-		ionHashReader, ok := reader1.(*hashReader)
-		if ok && ionHashReader.isInStruct() {
-			compare, err := CompareFieldNames(reader1, reader2)
-			if !compare || err != nil {
-				return compare, err
+		ionHashReader, ok := reader2.(*hashReader)
+		if ok {
+			if ionHashReader.isInStruct() {
+				compare, err := CompareFieldNames(reader1, reader2)
+				if !compare || err != nil {
+					return compare, err
+				}
 			}
+		} else {
+			return false, fmt.Errorf("expected reader2 to be of type hashReader")
 		}
 
 		compare, err := CompareAnnotations(reader1, reader2)
@@ -83,7 +87,8 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 			break
 		case ion.BoolType, ion.IntType, ion.FloatType, ion.DecimalType, ion.TimestampType,
 			ion.StringType, ion.SymbolType, ion.BlobType, ion.ClobType:
-			compare, err := CompareScalars(ionType1, isNull1, reader1, reader2)
+
+			compare, err := CompareScalars(reader1, reader2)
 			if !compare || err != nil {
 				return compare, err
 			}
@@ -131,12 +136,14 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	return true, nil
 }
 
+// Check that the readers have a Next value
 func HasNext(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	next1 := reader1.Next()
 	next2 := reader2.Next()
 
 	if next1 != next2 {
-		return false, fmt.Errorf("next results don't match; reader1.Next(): %v, reader2.Next(): %v", next1, next2)
+		return false, fmt.Errorf(
+			"next results don't match; reader1.Next(): %v, reader2.Next(): %v", next1, next2)
 	}
 
 	if !next1 {
@@ -147,7 +154,7 @@ func HasNext(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 
 		err = reader2.Err()
 		if err != nil {
-			return false, fmt.Errorf("expected reader1.next() not to error; %s", err.Error())
+			return false, fmt.Errorf("expected reader2.next() not to error; %s", err.Error())
 		}
 	}
 
@@ -240,7 +247,10 @@ func CompareHasAnnotations(reader1, reader2 ion.Reader) (bool, error) {
 	return true, nil
 }
 
-func CompareScalars(ionType ion.Type, isNull bool, reader1, reader2 ion.Reader) (bool, error) {
+func CompareScalars(reader1, reader2 ion.Reader) (bool, error) {
+	ionType := reader1.Type()
+	isNull := reader1.IsNull()
+
 	switch ionType {
 	case ion.BoolType:
 		if !isNull {
@@ -313,7 +323,7 @@ func CompareScalars(ionType ion.Type, isNull bool, reader1, reader2 ion.Reader) 
 				return false, err
 			}
 
-			check, err := CheckPreciselyEquals(decimal1, decimal2)
+			check, err := DecimalStrictEquals(decimal1, decimal2)
 			if !check || err != nil {
 				return check, err
 			}
@@ -405,17 +415,18 @@ func CompareScalars(ionType ion.Type, isNull bool, reader1, reader2 ion.Reader) 
 	return true, nil
 }
 
-func CheckPreciselyEquals(decimal1, decimal2 *ion.Decimal) (bool, error) {
+// Compare two Ion Decimal values by equality and negative zero.
+func DecimalStrictEquals(decimal1, decimal2 *ion.Decimal) (bool, error) {
 	if decimal1 != decimal2 {
 		return false, fmt.Errorf("expected decimals to match")
 	}
 
 	zeroDecimal := ion.NewDecimalInt(0)
 
-	expectedNegativeZero := decimal1.Equal(zeroDecimal) && decimal1.Sign() < 0
-	actualNegativeZero := decimal2.Equal(zeroDecimal) && decimal2.Sign() < 0
+	negativeZero1 := decimal1.Equal(zeroDecimal) && decimal1.Sign() < 0
+	negativeZero2 := decimal2.Equal(zeroDecimal) && decimal2.Sign() < 0
 
-	if expectedNegativeZero != actualNegativeZero {
+	if negativeZero1 != negativeZero2 {
 		return false, fmt.Errorf("expected decimal values to be both negative zero or both not negative zero")
 	}
 
