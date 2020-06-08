@@ -25,7 +25,7 @@ import (
 )
 
 func TestEmptyString(t *testing.T) {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), NewIdentityHasherProvider())
+	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), newIdentityHasherProvider())
 	if err != nil {
 		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
@@ -55,7 +55,7 @@ func TestEmptyString(t *testing.T) {
 }
 
 func TestTopLevelValues(t *testing.T) {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), NewIdentityHasherProvider())
+	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), newIdentityHasherProvider())
 	if err != nil {
 		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
@@ -129,7 +129,7 @@ func TestConsumeRemainderSingleNext(t *testing.T) {
 func TestUnresolvedSid(t *testing.T) {
 	ionReader := ion.NewReaderBytes([]byte{0xd3, 0x8a, 0x21, 0x01})
 
-	ionHashReader, err := NewHashReader(ionReader, NewIdentityHasherProvider())
+	ionHashReader, err := NewHashReader(ionReader, newIdentityHasherProvider())
 	if err != nil {
 		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
@@ -157,17 +157,17 @@ func TestIonReaderContract(t *testing.T) {
 
 	ionReader := ion.NewReaderBytes(file)
 
-	ionHashReader, err := NewHashReader(ionReader, NewIdentityHasherProvider())
+	ionHashReader, err := NewHashReader(ionReader, newIdentityHasherProvider())
 	if err != nil {
 		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
-	compare, err := Compare(ionReader, ionHashReader)
+	compare, err := compareReaders(ionReader, ionHashReader)
 	if !compare {
 		if err != nil {
-			t.Errorf("expected Compare(ionReader, ionHashReader) to return true; %s", err.Error())
+			t.Errorf("expected compareReaders(ionReader, ionHashReader) to return true; %s", err.Error())
 		} else {
-			t.Errorf("expected Compare(ionReader, ionHashReader) to return true")
+			t.Errorf("expected compareReaders(ionReader, ionHashReader) to return true")
 		}
 	}
 }
@@ -293,7 +293,7 @@ func ConsumeRemainderSingleNext(ionHashReader HashReader) error {
 type consumeFunction func(HashReader) error
 
 func consume(function consumeFunction) error {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), NewIdentityHasherProvider())
+	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), newIdentityHasherProvider())
 	if err != nil {
 		return err
 	}

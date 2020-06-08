@@ -19,7 +19,7 @@ type identityHasherProvider struct {
 	IonHasherProvider
 }
 
-func NewIdentityHasherProvider() *identityHasherProvider {
+func newIdentityHasherProvider() *identityHasherProvider {
 	return &identityHasherProvider{}
 }
 

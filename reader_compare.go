@@ -23,9 +23,9 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
+func compareReaders(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	for true {
-		next, err := HasNext(reader1, reader2)
+		next, err := hasNext(reader1, reader2)
 		if err != nil {
 			return false, err
 		}
@@ -45,7 +45,7 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 		ionHashReader, ok := reader2.(*hashReader)
 		if ok {
 			if ionHashReader.isInStruct() {
-				compare, err := CompareFieldNames(reader1, reader2)
+				compare, err := compareFieldNames(reader1, reader2)
 				if !compare || err != nil {
 					return compare, err
 				}
@@ -54,17 +54,17 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 			return false, fmt.Errorf("expected reader2 to be of type hashReader")
 		}
 
-		compare, err := CompareAnnotations(reader1, reader2)
+		compare, err := compareAnnotations(reader1, reader2)
 		if !compare || err != nil {
 			return compare, err
 		}
 
-		compare, err = CompareAnnotationSymbols(reader1, reader2)
+		compare, err = compareAnnotationSymbols(reader1, reader2)
 		if !compare || err != nil {
 			return compare, err
 		}
 
-		compare, err = CompareHasAnnotations(reader1, reader2)
+		compare, err = compareHasAnnotations(reader1, reader2)
 		if !compare || err != nil {
 			return compare, err
 		}
@@ -88,7 +88,7 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 		case ion.BoolType, ion.IntType, ion.FloatType, ion.DecimalType, ion.TimestampType,
 			ion.StringType, ion.SymbolType, ion.BlobType, ion.ClobType:
 
-			compare, err := CompareScalars(reader1, reader2)
+			compare, err := compareScalars(reader1, reader2)
 			if !compare || err != nil {
 				return compare, err
 			}
@@ -104,7 +104,7 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 				return false, err
 			}
 
-			compare, err := Compare(reader1, reader2)
+			compare, err := compareReaders(reader1, reader2)
 			if !compare || err != nil {
 				return compare, err
 			}
@@ -124,20 +124,20 @@ func Compare(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 		}
 	}
 
-	next, err := HasNext(reader1, reader2)
+	next, err := hasNext(reader1, reader2)
 	if err != nil {
 		return false, err
 	}
 
 	if next {
-		return false, fmt.Errorf("expected HasNext() to return false")
+		return false, fmt.Errorf("expected hasNext() to return false")
 	}
 
 	return true, nil
 }
 
-// Check that the readers have a Next value
-func HasNext(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
+// hasNext() checks that the readers have a Next value
+func hasNext(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	next1 := reader1.Next()
 	next2 := reader2.Next()
 
@@ -161,7 +161,7 @@ func HasNext(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	return next1, nil
 }
 
-func CompareFieldNames(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
+func compareFieldNames(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	// TODO: Rework this once SymbolTokens are available
 	/*token1 := reader1.GetFieldNameSymbol()
 	token2 := reader2.GetFieldNameSymbol()
@@ -175,14 +175,14 @@ func CompareFieldNames(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	if tokenText1 != "" {
 		field1 := reader1.FieldName()
 		field2 := reader2.FieldName()
-		return CompareNonNullStrings(field1, field2,
+		return compareNonNullStrings(field1, field2,
 			fmt.Sprintf("field names don't match; field1: %s, field2: %s", field1, field2))
 	}*/
 
 	return true, nil
 }
 
-func CompareNonNullStrings(str1, str2 string, message string) (bool, error) {
+func compareNonNullStrings(str1, str2 string, message string) (bool, error) {
 	if str1 == "" || str2 == "" || str1 != str2 {
 		return false, fmt.Errorf(message)
 	}
@@ -190,7 +190,7 @@ func CompareNonNullStrings(str1, str2 string, message string) (bool, error) {
 	return true, nil
 }
 
-func CompareAnnotations(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
+func compareAnnotations(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	// TODO: Rework this once SymbolTokens are available
 	/*symbols := reader1.GetTypeAnnotationSymbols()
 
@@ -208,7 +208,7 @@ func CompareAnnotations(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 	return true, nil
 }
 
-func CompareAnnotationSymbols(reader1, reader2 ion.Reader) (bool, error) {
+func compareAnnotationSymbols(reader1, reader2 ion.Reader) (bool, error) {
 	// TODO: Rework this once SymbolTokens are available
 	/*if !reflect.DeepEqual(reader1.GetTypeAnnotationSymbols(), reader2.GetTypeAnnotationSymbols()) {
 		return false, fmt.Errorf("expected type annotation symbols to match")
@@ -217,7 +217,7 @@ func CompareAnnotationSymbols(reader1, reader2 ion.Reader) (bool, error) {
 	return true, nil
 }
 
-func CompareHasAnnotations(reader1, reader2 ion.Reader) (bool, error) {
+func compareHasAnnotations(reader1, reader2 ion.Reader) (bool, error) {
 	// TODO: Rework this once SymbolTokens are available
 	/*symbols := reader1.GetTypeAnnotationSymbols()
 
@@ -247,7 +247,7 @@ func CompareHasAnnotations(reader1, reader2 ion.Reader) (bool, error) {
 	return true, nil
 }
 
-func CompareScalars(reader1, reader2 ion.Reader) (bool, error) {
+func compareScalars(reader1, reader2 ion.Reader) (bool, error) {
 	ionType := reader1.Type()
 	isNull := reader1.IsNull()
 
@@ -323,7 +323,7 @@ func CompareScalars(reader1, reader2 ion.Reader) (bool, error) {
 				return false, err
 			}
 
-			check, err := DecimalStrictEquals(decimal1, decimal2)
+			check, err := decimalStrictEquals(decimal1, decimal2)
 			if !check || err != nil {
 				return check, err
 			}
@@ -415,8 +415,8 @@ func CompareScalars(reader1, reader2 ion.Reader) (bool, error) {
 	return true, nil
 }
 
-// Compare two Ion Decimal values by equality and negative zero.
-func DecimalStrictEquals(decimal1, decimal2 *ion.Decimal) (bool, error) {
+// decimalStrictEquals() compares two Ion Decimal values by equality and negative zero.
+func decimalStrictEquals(decimal1, decimal2 *ion.Decimal) (bool, error) {
 	if decimal1 != decimal2 {
 		return false, fmt.Errorf("expected decimals to match")
 	}
