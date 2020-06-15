@@ -29,7 +29,7 @@ var skipList = []string{
 	"TestConsumeRemainderStepInStepOutNested",
 	"TestConsumeRemainderStepInNextStepOut",
 	"TestConsumeRemainderStepInStepOutTopLevel",
-	"TestConsumeRemainderSingleNext",
+	"TestConsumeRemainderNext",
 	"TestUnresolvedSid",
 	"TestIonReaderContract",
 }
@@ -141,9 +141,9 @@ func TestConsumeRemainderStepInStepOutTopLevel(t *testing.T) {
 	}
 }
 
-func TestConsumeRemainderSingleNext(t *testing.T) {
+func TestConsumeRemainderNext(t *testing.T) {
 	checkTestToSkip(t)
-	err := consume(ConsumeRemainderSingleNext)
+	err := consume(ConsumeRemainderNext)
 	if err != nil {
 		t.Error(err)
 	}
@@ -306,7 +306,7 @@ func ConsumeRemainderStepInStepOutTopLevel(ionHashReader HashReader) error {
 	return nil
 }
 
-func ConsumeRemainderSingleNext(ionHashReader HashReader) error {
+func ConsumeRemainderNext(ionHashReader HashReader) error {
 	ionHashReader.Next()
 	ionHashReader.Next()
 
