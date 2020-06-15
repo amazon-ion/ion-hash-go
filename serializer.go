@@ -44,7 +44,6 @@ type serializer interface {
 
 	getLengthFieldLength(bytes []byte) (int, error)
 
-	// TODO: Once SymbolToken is available, update to
-	// scalarOrNullSplitParts(ionType ion.Type, symbolToken ion.SymbolToken, isNull bool, bytes byte[]) (byte, []byte)
+	// TODO: Add symbolToken argument to signature once SymbolTokens are available
 	scalarOrNullSplitParts(ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error)
 }

@@ -162,22 +162,7 @@ func hasNext(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 }
 
 func compareFieldNames(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
-	// TODO: Rework this once SymbolTokens are available
-	/*token1 := reader1.GetFieldNameSymbol()
-	token2 := reader2.GetFieldNameSymbol()
-
-	tokenText1 := token1.Text
-	tokenText2 := token2.Text
-	if tokenText1 != tokenText2 {
-		return false, fmt.Errorf("tokens don't match; token1: %s, token2: %s", tokenText1, tokenText2)
-	}
-
-	if tokenText1 != "" {
-		field1 := reader1.FieldName()
-		field2 := reader2.FieldName()
-		return compareNonNullStrings(field1, field2,
-			fmt.Sprintf("field names don't match; field1: %s, field2: %s", field1, field2))
-	}*/
+	// TODO: Add SymbolToken logic here once SymbolTokens are available
 
 	return true, nil
 }
@@ -191,15 +176,7 @@ func compareNonNullStrings(str1, str2 string, message string) (bool, error) {
 }
 
 func compareAnnotations(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
-	// TODO: Rework this once SymbolTokens are available
-	/*symbols := reader1.GetTypeAnnotationSymbols()
-
-	//Skip comparison if any annotation is zero symbol
-	for _, symbol := range symbols {
-		if symbol.Text == nil && symbol.Sid == 0 {
-			return true, nil
-		}
-	}*/
+	// TODO: Add SymbolToken logic here once SymbolTokens are available
 
 	if !reflect.DeepEqual(reader1.Annotations(), reader2.Annotations()) {
 		return false, fmt.Errorf("symbol sequences don't match")
@@ -209,40 +186,13 @@ func compareAnnotations(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 }
 
 func compareAnnotationSymbols(reader1, reader2 ion.Reader) (bool, error) {
-	// TODO: Rework this once SymbolTokens are available
-	/*if !reflect.DeepEqual(reader1.GetTypeAnnotationSymbols(), reader2.GetTypeAnnotationSymbols()) {
-		return false, fmt.Errorf("expected type annotation symbols to match")
-	}*/
+	// TODO: Add SymbolToken logic here once SymbolTokens are available
 
 	return true, nil
 }
 
 func compareHasAnnotations(reader1, reader2 ion.Reader) (bool, error) {
-	// TODO: Rework this once SymbolTokens are available
-	/*symbols := reader1.GetTypeAnnotationSymbols()
-
-	//Skip comparison if any annotation is zero symbol
-	for _, symbol := range symbols {
-		if symbol.Text == nil && symbol.Sid == 0 {
-			return true, nil
-		}
-	}
-
-	annotations1 := reader1.Annotations()
-	annotations2 := reader2.Annotations()
-
-	if len(annotations1) != len(annotations2) {
-		return false, fmt.Errorf("expected annotation sequences to have the same length")
-	}
-
-	for i := 0; i < len(annotations1); i++ {
-		if reader1.HasAnnotation(annotations2[i]) {
-			return false, fmt.Errorf("expected reader1 to have reader2's annotation")
-		}
-		if reader2.HasAnnotation(annotations1[i]) {
-			return false, fmt.Errorf("expected reader2 to have reader1's annotation")
-		}
-	}*/
+	// TODO: Add SymbolToken logic here once SymbolTokens are available
 
 	return true, nil
 }
@@ -362,24 +312,7 @@ func compareScalars(reader1, reader2 ion.Reader) (bool, error) {
 		}
 		break
 	case ion.SymbolType:
-		// TODO: Rework this once SymbolTokens are available
-		/*token1 := reader1.SymbolValue()
-		token2 := reader2.SymbolValue()
-
-		if isNull {
-			if token1.Text != nil {
-				return false, fmt.Errorf("expected token to be null")
-			}
-			if token2.Text != nil {
-				return false, fmt.Errorf("expected token to be null")
-			}
-		} else if token1.Text == nil || token2.Text == nil {
-			if token1.Sid != token2.Sid {
-				return false, fmt.Errorf("expected token SIDs to match")
-			}
-		} else if token1.Text != token2.Text {
-			return false, fmt.Errorf("expected tokens to match")
-		}*/
+		// TODO: Add SymbolToken logic here once SymbolTokens are available
 		break
 	case ion.BlobType, ion.ClobType:
 		if !isNull {

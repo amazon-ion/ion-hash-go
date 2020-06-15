@@ -80,10 +80,9 @@ func (baseSerializer *baseSerializer) sum(b []byte) []byte {
 func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if baseSerializer.depth > 0 && ionValue.isInStruct() {
 		fieldName := ionValue.getFieldName()
-		// TODO: Rework this once SymbolTokens become available
-		/*if fieldName == "" && ionValue.fieldNameSymbol().Sid != 0 {
-			return &UnknownSymbolError{ionValue.fieldNameSymbol().Sid}
-		}*/
+
+		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available
+
 		return baseSerializer.writeSymbol(fieldName)
 	}
 
@@ -160,16 +159,8 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 		return err
 	}
 
-	// TODO: Rework this once SymbolTokens become available
-	/*var sid int
-	if token == "" {
-		sid = 0
-	} else {
-		sid = ion.SymbolToken.UnknownSid
-	}
+	// TODO: Add SymbolToken logic here once SymbolTokens are available
 
-	symbolToken := &ion.SymbolToken{token, sid}
-	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, symbolToken, false)*/
 	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, token, false)
 	if err != nil {
 		return err
@@ -266,10 +257,9 @@ func (baseSerializer *baseSerializer) scalarOrNullSplitParts(
 		if isNull {
 			tq = tq | 0x0F
 		}
-		// TODO: Rework this once SymbolTokens are available
-		/*else if symbolToken != nil && symbolToken.Value.Text == nil && symbolToken.Value.Sid == 0 {
-			tq = 0x71
-		}*/
+
+		// TODO: Add SymbolToken logic here once SymbolTokens are available
+
 	} else if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
 		// not a symbol, bool, or null value
 		// zero - out the L nibble
