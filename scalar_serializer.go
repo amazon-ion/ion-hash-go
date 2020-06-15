@@ -61,7 +61,7 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 	}
 
 	tq, representation, err :=
-		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionHashValue.isNull(), scalarBytes)
+		scalarSerializer.scalarOrNullSplitParts(ionType, ionHashValue.isNull(), scalarBytes)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (scalarSerializer *scalarSerializer) endMarker() error {
 }
 
 func (scalarSerializer *scalarSerializer) handleAnnotationsBegin(ionValue interface{}) error {
-	return scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
+	return scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
 }
 
 func (scalarSerializer *scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
@@ -137,4 +137,10 @@ func (scalarSerializer *scalarSerializer) getBytes(ionType ion.Type, ionValue in
 
 func (scalarSerializer *scalarSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 	return scalarSerializer.baseSerializer.getLengthFieldLength(bytes)
+}
+
+func (scalarSerializer *scalarSerializer) scalarOrNullSplitParts(
+	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
+
+	return scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, isNull, bytes)
 }

@@ -57,14 +57,14 @@ func (h *hasher) stepIn(ionValue hashValue) error {
 	}
 
 	if ionValue.ionType() == ion.StructType {
-		newStructSerializer, err := newStructSerializer(hashFunction, 0, h.hasherProvider)
+		newStructSerializer, err := newStructSerializer(hashFunction, h.depth(), h.hasherProvider)
 		if err != nil {
 			return err
 		}
 
 		h.currentHasher = newStructSerializer
 	} else {
-		h.currentHasher = newScalarSerializer(hashFunction, 0)
+		h.currentHasher = newScalarSerializer(hashFunction, h.depth())
 	}
 
 	h.hasherStack.push(h.currentHasher)

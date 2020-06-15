@@ -25,8 +25,9 @@ import (
 
 // Holds the commonalities between scalar and struct serializers.
 type baseSerializer struct {
-	hashFunction IonHasher
-	depth        int
+	hashFunction           IonHasher
+	depth                  int
+	hasContainerAnnotation bool
 }
 
 func (baseSerializer *baseSerializer) stepOut() error {
@@ -49,7 +50,7 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 		return err
 	}
 
-	err = baseSerializer.handleAnnotationsBegin(ionValue)
+	err = baseSerializer.handleAnnotationsBegin(ionValue, true)
 	if err != nil {
 		return err
 	}
@@ -78,11 +79,12 @@ func (baseSerializer *baseSerializer) sum(b []byte) []byte {
 
 func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if baseSerializer.depth > 0 && ionValue.isInStruct() {
+		fieldName := ionValue.getFieldName()
 		// TODO: Rework this once SymbolTokens become available
-		/*if ionValue.fieldNameSymbol().Text == null && ionValue.fieldNameSymbol().Sid != 0 {
+		/*if fieldName == "" && ionValue.fieldNameSymbol().Sid != 0 {
 			return &UnknownSymbolError{ionValue.fieldNameSymbol().Sid}
-		}
-		return baseSerializer.writeSymbol(ionValue.fieldNameSymbol().Text)*/
+		}*/
+		return baseSerializer.writeSymbol(fieldName)
 	}
 
 	return nil
@@ -103,7 +105,7 @@ func (baseSerializer *baseSerializer) endMarker() error {
 	return err
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue) error {
+func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer bool) error {
 	if ionValue == nil {
 		return &InvalidArgumentError{"ionValue", ionValue}
 	}
@@ -126,16 +128,26 @@ func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue)
 				return err
 			}
 		}
+
+		if isContainer {
+			baseSerializer.hasContainerAnnotation = true
+		}
 	}
 
 	return nil
 }
 
 func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) error {
-	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) || isContainer {
+	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) ||
+		(isContainer && baseSerializer.hasContainerAnnotation) {
+
 		err := baseSerializer.endMarker()
 		if err != nil {
 			return err
+		}
+
+		if isContainer {
+			baseSerializer.hasContainerAnnotation = false
 		}
 	}
 
@@ -157,12 +169,13 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 	}
 
 	symbolToken := &ion.SymbolToken{token, sid}
-	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, symbolToken, false);
+	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, symbolToken, false)*/
+	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, token, false)
 	if err != nil {
 		return err
 	}
 
-	tq, representation, err := baseSerializer.scalarOrNullSplitParts(ion.SymbolType, symbolToken, false, scalarBytes)
+	tq, representation, err := baseSerializer.scalarOrNullSplitParts(ion.SymbolType, false, scalarBytes)
 	if err != nil {
 		return err
 	}
@@ -177,7 +190,7 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 		if err != nil {
 			return err
 		}
-	}*/
+	}
 
 	err = baseSerializer.endMarker()
 	if err != nil {
@@ -247,21 +260,18 @@ func (baseSerializer *baseSerializer) scalarOrNullSplitParts(
 	representation := bytes[offset:]
 	tq := bytes[0]
 
-	// TODO: Rework this once SymbolTokens are available
-	/*
-		if ionType == ion.SymbolType {
-			// symbols are serialized as strings; use the correct TQ:
-			tq = 0x70
-			if isNull {
-				tq = tq | 0x0F
-			} else if symbolToken != nil && symbolToken.Value.Text == nil && symbolToken.Value.Sid == 0 {
-				tq = 0x71
-			}
+	if ionType == ion.SymbolType {
+		// symbols are serialized as strings; use the correct TQ:
+		tq = 0x70
+		if isNull {
+			tq = tq | 0x0F
 		}
-	*/
-
-	// not a symbol, bool, or null value
-	if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
+		// TODO: Rework this once SymbolTokens are available
+		/*else if symbolToken != nil && symbolToken.Value.Text == nil && symbolToken.Value.Sid == 0 {
+			tq = 0x71
+		}*/
+	} else if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
+		// not a symbol, bool, or null value
 		// zero - out the L nibble
 		tq = tq & 0xF0
 	}
@@ -323,7 +333,7 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	case ion.StringType:
 		return writer.WriteString(ionValue.(string))
 	case ion.SymbolType:
-		return writer.WriteSymbol(ionValue.(string))
+		return writer.WriteString(ionValue.(string))
 	case ion.TimestampType:
 		return writer.WriteTimestamp(ionValue.(time.Time))
 	case ion.NullType:
