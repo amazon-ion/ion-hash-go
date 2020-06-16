@@ -281,3 +281,13 @@ func (hashWriter *hashWriter) stepIn(ionType ion.Type) error {
 
 	return hashWriter.hasher.stepIn(hashWriter)
 }
+
+func (hashWriter *hashWriter) stepOut() error {
+	return hashWriter.hasher.stepOut()
+}
+
+func (hashWriter *hashWriter) setFieldName(name string) {
+	hashWriter.currentFieldName = name
+
+	// TODO: Add currentFieldNameSymbol logic here once SymbolToken is available
+}
