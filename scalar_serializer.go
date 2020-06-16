@@ -38,25 +38,33 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 		return err
 	}
 
-	// TODO: Rework this once SymbolTokens become available
-	/*var ionVal interface{}
+	var ionVal interface{}
 	var ionType ion.Type
 	if ionHashValue.isNull() {
 		ionVal = nil
 		ionType = ion.NoType
 	} else {
-		ionVal = ionHashValue
+		ionVal, err = ionHashValue.value()
+		if err != nil {
+			return err
+		}
 		ionType = ionHashValue.ionType()
 	}
 
-	scalarBytes := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
+	scalarBytes, err := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
+	if err != nil {
+		return err
+	}
 
 	if ionHashValue.ionType() != ion.SymbolType {
 		ionVal = nil
 	}
 
-	tq, representation :=
-		scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, ionVal, ionHashValue.isNull(), scalarBytes)
+	tq, representation, err :=
+		scalarSerializer.scalarOrNullSplitParts(ionType, ionHashValue.isNull(), scalarBytes)
+	if err != nil {
+		return err
+	}
 
 	err = scalarSerializer.write([]byte{tq})
 	if err != nil {
@@ -68,7 +76,7 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 		if err != nil {
 			return err
 		}
-	}*/
+	}
 
 	err = scalarSerializer.endMarker()
 	if err != nil {
@@ -112,7 +120,7 @@ func (scalarSerializer *scalarSerializer) endMarker() error {
 }
 
 func (scalarSerializer *scalarSerializer) handleAnnotationsBegin(ionValue interface{}) error {
-	return scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
+	return scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
 }
 
 func (scalarSerializer *scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
@@ -124,9 +132,15 @@ func (scalarSerializer *scalarSerializer) writeSymbol(token string) error {
 }
 
 func (scalarSerializer *scalarSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
-	return scalarSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
+	return scalarSerializer.baseSerializer.getBytes(ionType, ionValue, isNull)
 }
 
 func (scalarSerializer *scalarSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 	return scalarSerializer.baseSerializer.getLengthFieldLength(bytes)
+}
+
+func (scalarSerializer *scalarSerializer) scalarOrNullSplitParts(
+	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
+
+	return scalarSerializer.baseSerializer.scalarOrNullSplitParts(ionType, isNull, bytes)
 }

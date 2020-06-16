@@ -95,7 +95,7 @@ func (structSerializer *structSerializer) endMarker() error {
 }
 
 func (structSerializer *structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
-	return structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue))
+	return structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
 }
 
 func (structSerializer *structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
@@ -116,6 +116,12 @@ func (structSerializer *structSerializer) getLengthFieldLength(bytes []byte) (in
 
 func (structSerializer *structSerializer) appendFieldHash(sum []byte) {
 	structSerializer.fieldHashes = append(structSerializer.fieldHashes, sum)
+}
+
+func (structSerializer *structSerializer) scalarOrNullSplitParts(
+	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
+
+	return structSerializer.baseSerializer.scalarOrNullSplitParts(ionType, isNull, bytes)
 }
 
 func compareBytes(bytes1, bytes2 []byte) int {

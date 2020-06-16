@@ -1,0 +1,3 @@
+[submodule "ion-hash-test"]
+	path = ion-hash-test
+	url = https://github.com/amzn/ion-hash-test
