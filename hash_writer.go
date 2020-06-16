@@ -266,10 +266,13 @@ func (hashWriter *hashWriter) hashScalar(ionType ion.Type, value interface{}) er
 	hashWriter.currentType = ionType
 	hashWriter.currentValue = value
 	hashWriter.currentIsNull = value == nil
+
+	err := hashWriter.hasher.scalar(hashWriter)
+
 	hashWriter.currentFieldName = ""
 	hashWriter.annotations = nil
 
-	return hashWriter.hasher.scalar(hashWriter)
+	return err
 }
 
 func (hashWriter *hashWriter) stepIn(ionType ion.Type) error {

@@ -193,7 +193,7 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 
 func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
 	if isNull {
-		typeCode := byte(ionType)
+		typeCode := byte(ionType - 1)
 		return []byte{(typeCode << 4) | 0x0F}, nil
 	} else if ionType == ion.FloatType && ionValue == 0 && int64(ionValue.(float64)) >= 0 {
 		// value is 0.0, not -0.0
