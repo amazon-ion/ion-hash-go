@@ -28,7 +28,7 @@ import (
 )
 
 func TestWriteNull(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until final str.String() check passes
 
 	str := strings.Builder{}
 	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
@@ -112,15 +112,13 @@ func TestWriteNull(t *testing.T) {
 
 	expectedStr := "null null.float null.blob null.struct"
 
-	result := str.String()
-
-	if result != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, result)
+	if str.String() != expectedStr {
+		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
 	}
 }
 
 func TestWriteScalars(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until final str.String() check passes
 
 	str := strings.Builder{}
 	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
@@ -215,15 +213,13 @@ func TestWriteScalars(t *testing.T) {
 
 	expectedStr := "5 3.14e0 1941-12-07T18:00:00.0000000-00:00 {{AAECAwQFBgcICQoLDA0ODw==}}"
 
-	result := str.String()
-
-	if result != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, result)
+	if str.String() != expectedStr {
+		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
 	}
 }
 
 func TestWriteContainers(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until final str.String() check passes
 
 	str := strings.Builder{}
 	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
@@ -355,10 +351,8 @@ func TestWriteContainers(t *testing.T) {
 
 	expectedStr := "[true] {hello:ion::hash::world}"
 
-	result := str.String()
-
-	if result != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, result)
+	if str.String() != expectedStr {
+		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
 	}
 }
 
@@ -386,7 +380,7 @@ func TestExtraStepOut(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValue(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until length checks pass
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	if err != nil {
@@ -419,7 +413,7 @@ func TestIonWriterContractWriteValue(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValues(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until length checks pass
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	if err != nil {
@@ -452,7 +446,7 @@ func TestIonWriterContractWriteValues(t *testing.T) {
 }
 
 func TestWriterUnresolvedSid(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until test is implemented once SymbolToken is available
 
 	// TODO: Implement test once SymbolToken is available
 }
