@@ -22,11 +22,104 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/amzn/ion-go/ion"
 )
 
-func TestMiscMethods(t *testing.T) {
+func TestWriteNull(t *testing.T) {
+	checkTestToSkip(t)
+
+	str := strings.Builder{}
+	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	if err != nil {
+		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
+	}
+
+	ionHashWriter, ok := writer.(*hashWriter)
+	if !ok {
+		t.Fatal("expected ionHashWriter to be of type hashWriter")
+	}
+
+	err = ionHashWriter.WriteNull()
+	if err != nil {
+		t.Errorf("expected ionHashWriter.WriteNull() to execute without errors; %s", err.Error())
+	}
+
+	sum, err := ionHashWriter.Sum(nil)
+	if err != nil {
+		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
+	}
+
+	expectedSum := []byte{0x0b, 0x0f, 0x0e}
+
+	if !reflect.DeepEqual(sum, expectedSum) {
+		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
+	}
+
+	err = ionHashWriter.WriteNullType(ion.FloatType)
+	if err != nil {
+		t.Errorf("expected ionHashWriter.WriteNullType(ion.FloatType) to execute without errors; %s", err.Error())
+	}
+
+	sum, err = ionHashWriter.Sum(nil)
+	if err != nil {
+		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
+	}
+
+	expectedSum = []byte{0x0b, 0x4f, 0x0e}
+
+	if !reflect.DeepEqual(sum, expectedSum) {
+		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
+	}
+
+	err = ionHashWriter.WriteNullType(ion.BlobType)
+	if err != nil {
+		t.Errorf("expected ionHashWriter.WriteNullType(ion.BlobType) to execute without errors; %s", err.Error())
+	}
+
+	sum, err = ionHashWriter.Sum(nil)
+	if err != nil {
+		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
+	}
+
+	expectedSum = []byte{0x0b, 0xaf, 0x0e}
+
+	if !reflect.DeepEqual(sum, expectedSum) {
+		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
+	}
+
+	err = ionHashWriter.WriteNullType(ion.StructType)
+	if err != nil {
+		t.Errorf("expected ionHashWriter.WriteNullType(ion.StructType) to execute without errors; %s", err.Error())
+	}
+
+	sum, err = ionHashWriter.Sum(nil)
+	if err != nil {
+		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
+	}
+
+	expectedSum = []byte{0x0b, 0xdf, 0x0e}
+
+	if !reflect.DeepEqual(sum, expectedSum) {
+		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
+	}
+
+	err = ionHashWriter.Finish()
+	if err != nil {
+		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
+	}
+
+	expectedStr := "null null.float null.blob null.struct"
+
+	result := str.String()
+
+	if result != expectedStr {
+		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, result)
+	}
+}
+
+func TestWriteScalars(t *testing.T) {
 	checkTestToSkip(t)
 
 	str := strings.Builder{}
@@ -49,9 +142,9 @@ func TestMiscMethods(t *testing.T) {
 		t.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
 	}
 
-	err = ionHashWriter.WriteNull()
+	err = ionHashWriter.WriteInt(5)
 	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteNull() to execute without errors; %s", err.Error())
+		t.Errorf("expected ionHashWriter.WriteInt(5) to execute without errors; %s", err.Error())
 	}
 
 	sum, err = ionHashWriter.Sum(nil)
@@ -59,10 +152,97 @@ func TestMiscMethods(t *testing.T) {
 		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
 	}
 
-	expectedSum := []byte{0x0b, 0x0f, 0x0e}
+	expectedSum := []byte{0x0b, 0x20, 0x05, 0x0e}
 
 	if !reflect.DeepEqual(sum, expectedSum) {
 		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
+	}
+
+	err = ionHashWriter.WriteFloat(3.14)
+	if err != nil {
+		t.Errorf("expected ionHashWriter.WriteInt(5) to execute without errors; %s", err.Error())
+	}
+
+	sum, err = ionHashWriter.Sum(nil)
+	if err != nil {
+		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
+	}
+
+	expectedSum = []byte{0x0b, 0x40, 0x40, 0x09, 0x1e, 0xb8, 0x51, 0xeb, 0x85, 0x1f, 0x0e}
+
+	if !reflect.DeepEqual(sum, expectedSum) {
+		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
+	}
+
+	err = ionHashWriter.WriteTimestamp(time.Date(1941, time.December, 7, 18, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Errorf("expected ionHashWriter.WriteTimestamp(time.Date(...)) to execute without errors; %s", err.Error())
+	}
+
+	sum, err = ionHashWriter.Sum(nil)
+	if err != nil {
+		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
+	}
+
+	expectedSum = []byte{0x0b, 0x60, 0x80, 0x0f, 0x95, 0x8c, 0x87, 0x92, 0x80, 0x80, 0x0e}
+
+	if !reflect.DeepEqual(sum, expectedSum) {
+		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
+	}
+
+	err = ionHashWriter.WriteBlob(
+		[]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f})
+	if err != nil {
+		t.Errorf("expected ionHashWriter.WriteBlob(...) to execute without errors; %s", err.Error())
+	}
+
+	sum, err = ionHashWriter.Sum(nil)
+	if err != nil {
+		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
+	}
+
+	expectedSum = []byte{0x0b, 0xa0, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+		0x09, 0x0a, 0x0c, 0x0b, 0x0c, 0x0c, 0x0d, 0x0c, 0x0e, 0x0f, 0x0e}
+
+	if !reflect.DeepEqual(sum, expectedSum) {
+		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
+	}
+
+	err = ionHashWriter.Finish()
+	if err != nil {
+		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
+	}
+
+	expectedStr := "5 3.14e0 1941-12-07T18:00:00.0000000-00:00 {{AAECAwQFBgcICQoLDA0ODw==}}"
+
+	result := str.String()
+
+	if result != expectedStr {
+		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, result)
+	}
+}
+
+func TestWriteContainers(t *testing.T) {
+	checkTestToSkip(t)
+
+	str := strings.Builder{}
+	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	if err != nil {
+		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
+	}
+
+	ionHashWriter, ok := writer.(*hashWriter)
+	if !ok {
+		t.Fatal("expected ionHashWriter to be of type hashWriter")
+	}
+
+	sum, err := ionHashWriter.Sum(nil)
+	if err != nil {
+		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
+	}
+
+	if !reflect.DeepEqual(sum, []byte{}) {
+		t.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
 	}
 
 	err = ionHashWriter.stepIn(ion.ListType)
@@ -80,9 +260,9 @@ func TestMiscMethods(t *testing.T) {
 		t.Error("expected Sum(nil) to return an error")
 	}
 
-	err = ionHashWriter.WriteInt(5)
+	err = ionHashWriter.WriteBool(true)
 	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteInt(5) to execute without errors; %s", err.Error())
+		t.Errorf("expected ionHashWriter.WriteBool(true) to execute without errors; %s", err.Error())
 	}
 
 	sum, err = ionHashWriter.Sum(nil)
@@ -105,23 +285,7 @@ func TestMiscMethods(t *testing.T) {
 		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
 	}
 
-	expectedSum = []byte{0x0b, 0xb0, 0x0b, 0x20, 0x05, 0x0e, 0x0e}
-
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
-
-	err = ionHashWriter.WriteNull()
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteNull() to execute without errors; %s", err.Error())
-	}
-
-	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
-
-	expectedSum = []byte{0x0b, 0x0f, 0x0e}
+	expectedSum := []byte{0x0b, 0xb0, 0x0b, 0x11, 0x0e, 0x0e}
 
 	if !reflect.DeepEqual(sum, expectedSum) {
 		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
@@ -189,10 +353,12 @@ func TestMiscMethods(t *testing.T) {
 		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
 	}
 
-	expectedStr := "null [5] null {hello:ion::hash::world}"
+	expectedStr := "[true] {hello:ion::hash::world}"
 
-	if str.String() != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of %s", expectedStr, str.String())
+	result := str.String()
+
+	if result != expectedStr {
+		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, result)
 	}
 }
 
@@ -334,7 +500,7 @@ func nextWriteValue(reader ion.Reader, writer ion.Writer) error {
 }
 
 func writeValues(reader ion.Reader, writer ion.Writer) error {
-	// TODO: Implement WriteValue logic once writer.WriteValue() is available
+	// TODO: Implement WriteValues logic once writer.WriteValues() is available
 
 	return nil
 }

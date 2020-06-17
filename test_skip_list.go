@@ -25,7 +25,9 @@ var skipList = []string{
 	"TestConsumeRemainderNext",                  // hash_reader_test
 	"TestReaderUnresolvedSid",                   // hash_reader_test
 	"TestIonReaderContract",                     // hash_reader_test
-	"TestMiscMethods",                           // hash_writer_test
+	"TestWriteNull",                             // hash_writer_test
+	"TestWriteScalars",                          // hash_writer_test
+	"TestWriteContainers",                       // hash_writer_test
 	"TestIonWriterContractWriteValue",           // hash_writer_test
 	"TestIonWriterContractWriteValues",          // hash_writer_test
 	"TestWriterUnresolvedSid",                   // hash_writer_test
