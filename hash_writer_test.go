@@ -28,8 +28,6 @@ import (
 )
 
 func TestWriteNull(t *testing.T) {
-	t.Skip() // Skipping test until final str.String() check passes
-
 	str := strings.Builder{}
 	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
 	if err != nil {
@@ -110,10 +108,12 @@ func TestWriteNull(t *testing.T) {
 		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
 	}
 
-	expectedStr := "null null.float null.blob null.struct"
+	// We're comparing splits because str.String() uses a cumbersome '\n' separator
+	expected := strings.Split("null null.float null.blob null.struct ", " ")
+	actual := strings.Split(str.String(), "\n")
 
-	if str.String() != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("expected str.String() to return %v instead of %v", expected, actual)
 	}
 }
 
@@ -211,15 +211,17 @@ func TestWriteScalars(t *testing.T) {
 		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
 	}
 
-	expectedStr := "5 3.14e0 1941-12-07T18:00:00.0000000-00:00 {{AAECAwQFBgcICQoLDA0ODw==}}"
+	// We're comparing splits because str.String() uses a cumbersome '\n' separator
+	expected := strings.Split("5 3.14e0 1941-12-07T18:00:00.0000000-00:00 {{AAECAwQFBgcICQoLDA0ODw==}} ", " ")
+	actual := strings.Split(str.String(), "\n")
 
-	if str.String() != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("expected str.String() to return %v instead of %v", expected, actual)
 	}
 }
 
 func TestWriteContainers(t *testing.T) {
-	t.Skip() // Skipping test until final str.String() check passes
+	t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
 
 	str := strings.Builder{}
 	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
@@ -241,9 +243,9 @@ func TestWriteContainers(t *testing.T) {
 		t.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
 	}
 
-	err = ionHashWriter.stepIn(ion.ListType)
+	err = ionHashWriter.BeginList()
 	if err != nil {
-		t.Errorf("expected ionHashWriter.stepIn(ion.ListType) to execute without errors; %s", err.Error())
+		t.Errorf("expected ionHashWriter.BeginList() to execute without errors; %s", err.Error())
 	}
 
 	sum, err = ionHashWriter.Sum(nil)
@@ -271,9 +273,9 @@ func TestWriteContainers(t *testing.T) {
 		t.Error("expected Sum(nil) to return an error")
 	}
 
-	err = ionHashWriter.stepOut()
+	err = ionHashWriter.EndList()
 	if err != nil {
-		t.Errorf("expected ionHashWriter.stepOut() to execute without errors; %s", err.Error())
+		t.Errorf("expected ionHashWriter.EndList() to execute without errors; %s", err.Error())
 	}
 
 	sum, err = ionHashWriter.Sum(nil)
@@ -291,16 +293,19 @@ func TestWriteContainers(t *testing.T) {
 		t.Error("expected ionHashWriter.isInStruct() to return false")
 	}
 
-	err = ionHashWriter.stepIn(ion.StructType)
+	err = ionHashWriter.BeginStruct()
 	if err != nil {
-		t.Errorf("expected ionHashWriter.stepIn(ion.StructType) to execute without errors; %s", err.Error())
+		t.Errorf("expected ionHashWriter.BeginStruct() to execute without errors; %s", err.Error())
 	}
 
 	if !ionHashWriter.isInStruct() {
 		t.Error("expected ionHashWriter.isInStruct() to return true")
 	}
 
-	ionHashWriter.setFieldName("hello")
+	err = ionHashWriter.FieldName("hello")
+	if err != nil {
+		t.Errorf("expected ionHashWriter.FieldName(\"hello\") to execute without errors; %s", err.Error())
+	}
 
 	err = ionHashWriter.Annotation("ion")
 	if err != nil {
@@ -317,9 +322,9 @@ func TestWriteContainers(t *testing.T) {
 		t.Errorf("expected ionHashWriter.WriteSymbol(\"world\") to execute without errors; %s", err.Error())
 	}
 
-	err = ionHashWriter.stepOut()
+	err = ionHashWriter.EndStruct()
 	if err != nil {
-		t.Errorf("expected ionHashWriter.stepOut() to execute without errors; %s", err.Error())
+		t.Errorf("expected ionHashWriter.EndStruct() to execute without errors; %s", err.Error())
 	}
 
 	if ionHashWriter.isInStruct() {
@@ -349,14 +354,16 @@ func TestWriteContainers(t *testing.T) {
 		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
 	}
 
-	expectedStr := "[true] {hello:ion::hash::world}"
+	// We're comparing splits because str.String() uses a cumbersome '\n' separator
+	expected := strings.Split("[true] {hello:ion::hash::world} ", " ")
+	actual := strings.Split(str.String(), "\n")
 
-	if str.String() != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("expected str.String() to return %v instead of %v", expected, actual)
 	}
 }
 
-func TestExtraStepOut(t *testing.T) {
+func TestExtraEndContainer(t *testing.T) {
 	str := strings.Builder{}
 	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
 	if err != nil {
@@ -368,14 +375,34 @@ func TestExtraStepOut(t *testing.T) {
 		t.Fatal("expected ionHashWriter to be of type hashWriter")
 	}
 
-	err = ionHashWriter.stepOut()
+	err = ionHashWriter.EndList()
 	if err != nil {
 		_, ok := err.(*InvalidOperationError)
 		if !ok {
-			t.Errorf("expected ionHashWriter.stepOut() to return an InvalidOperationError; %s", err.Error())
+			t.Errorf("expected ionHashWriter.EndList() to return an InvalidOperationError; %s", err.Error())
 		}
 	} else {
-		t.Error("expected ionHashWriter.stepOut() to return an error")
+		t.Error("expected ionHashWriter.EndList() to return an error")
+	}
+
+	err = ionHashWriter.EndSexp()
+	if err != nil {
+		_, ok := err.(*InvalidOperationError)
+		if !ok {
+			t.Errorf("expected ionHashWriter.EndSexp() to return an InvalidOperationError; %s", err.Error())
+		}
+	} else {
+		t.Error("expected ionHashWriter.EndSexp() to return an error")
+	}
+
+	err = ionHashWriter.EndStruct()
+	if err != nil {
+		_, ok := err.(*InvalidOperationError)
+		if !ok {
+			t.Errorf("expected ionHashWriter.EndStruct() to return an InvalidOperationError; %s", err.Error())
+		}
+	} else {
+		t.Error("expected ionHashWriter.EndStruct() to return an error")
 	}
 }
 
