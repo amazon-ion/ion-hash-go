@@ -24,24 +24,6 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-var skipList = []string{
-	"TestConsumeRemainderPartialConsume",
-	"TestConsumeRemainderStepInStepOutNested",
-	"TestConsumeRemainderStepInNextStepOut",
-	"TestConsumeRemainderStepInStepOutTopLevel",
-	"TestConsumeRemainderNext",
-	"TestUnresolvedSid",
-	"TestIonReaderContract",
-}
-
-func checkTestToSkip(t *testing.T) {
-	for _, fileName := range skipList {
-		if fileName == t.Name() {
-			t.Skip()
-		}
-	}
-}
-
 func TestEmptyString(t *testing.T) {
 	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), newIdentityHasherProvider())
 	if err != nil {
@@ -63,7 +45,7 @@ func TestEmptyString(t *testing.T) {
 
 		sum, err := ionHashReader.Sum(nil)
 		if err != nil {
-			t.Fatalf("expected Sum() to execute without errors; %s", err.Error())
+			t.Fatalf("expected Sum(nil) to execute without errors; %s", err.Error())
 		}
 
 		if !reflect.DeepEqual(sum, []byte{}) {
@@ -100,7 +82,7 @@ func TestTopLevelValues(t *testing.T) {
 
 		sum, err := ionHashReader.Sum(nil)
 		if err != nil {
-			t.Fatalf("expected Sum() to execute without errors; %s", err.Error())
+			t.Fatalf("expected Sum(nil) to execute without errors; %s", err.Error())
 		}
 
 		if !reflect.DeepEqual(sum, expectedSums[i]) {
@@ -110,7 +92,8 @@ func TestTopLevelValues(t *testing.T) {
 }
 
 func TestConsumeRemainderPartialConsume(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
+
 	err := consume(ConsumeRemainderPartialConsume)
 	if err != nil {
 		t.Error(err)
@@ -118,7 +101,8 @@ func TestConsumeRemainderPartialConsume(t *testing.T) {
 }
 
 func TestConsumeRemainderStepInStepOutNested(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
+
 	err := consume(ConsumeRemainderStepInStepOutNested)
 	if err != nil {
 		t.Error(err)
@@ -126,7 +110,8 @@ func TestConsumeRemainderStepInStepOutNested(t *testing.T) {
 }
 
 func TestConsumeRemainderStepInNextStepOut(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
+
 	err := consume(ConsumeRemainderStepInNextStepOut)
 	if err != nil {
 		t.Error(err)
@@ -134,7 +119,8 @@ func TestConsumeRemainderStepInNextStepOut(t *testing.T) {
 }
 
 func TestConsumeRemainderStepInStepOutTopLevel(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
+
 	err := consume(ConsumeRemainderStepInStepOutTopLevel)
 	if err != nil {
 		t.Error(err)
@@ -142,15 +128,16 @@ func TestConsumeRemainderStepInStepOutTopLevel(t *testing.T) {
 }
 
 func TestConsumeRemainderNext(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
+
 	err := consume(ConsumeRemainderNext)
 	if err != nil {
 		t.Error(err)
 	}
 }
 
-func TestUnresolvedSid(t *testing.T) {
-	checkTestToSkip(t)
+func TestReaderUnresolvedSid(t *testing.T) {
+	t.Skip() // Skipping test until SymbolToken is implemented
 
 	ionReader := ion.NewReaderBytes([]byte{0xd3, 0x8a, 0x21, 0x01})
 
@@ -175,7 +162,7 @@ func TestUnresolvedSid(t *testing.T) {
 }
 
 func TestIonReaderContract(t *testing.T) {
-	checkTestToSkip(t)
+	t.Skip()
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	if err != nil {
@@ -276,7 +263,7 @@ func ConsumeRemainderStepInStepOutTopLevel(ionHashReader HashReader) error {
 	ionHashReader.Next()
 	sum, err := ionHashReader.Sum(nil)
 	if err != nil {
-		return fmt.Errorf("expected Sum() to execute without errors; %s", err.Error())
+		return fmt.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
@@ -323,7 +310,7 @@ func consume(function consumeFunction) error {
 
 	sum, err := ionHashReader.Sum(nil)
 	if err != nil {
-		return fmt.Errorf("expected Sum() to execute without errors; %s", err.Error())
+		return fmt.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
@@ -337,7 +324,7 @@ func consume(function consumeFunction) error {
 
 	sum, err = ionHashReader.Sum(nil)
 	if err != nil {
-		return fmt.Errorf("expected Sum() to execute without errors; %s", err.Error())
+		return fmt.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
 	}
 
 	expectedSum := []byte{0x0b, 0xb0, 0x0b, 0x20, 0x01, 0x0e, 0x0b, 0x20, 0x02, 0x0e, 0x0b, 0xd0, 0x0c, 0x0b, 0x70,
@@ -359,7 +346,7 @@ func consume(function consumeFunction) error {
 
 	sum, err = ionHashReader.Sum(nil)
 	if err != nil {
-		return fmt.Errorf("expected Sum() to execute without errors; %s", err.Error())
+		return fmt.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {

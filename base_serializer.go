@@ -193,7 +193,15 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 
 func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
 	if isNull {
-		typeCode := byte(ionType)
+		var typeCode byte
+		if ionType <= ion.IntType {
+			// The Ion binary encodings of NoType, NullType, BoolType, and IntType
+			// differ from their enum values by one
+			typeCode = byte(ionType - 1)
+		} else {
+			typeCode = byte(ionType)
+		}
+
 		return []byte{(typeCode << 4) | 0x0F}, nil
 	} else if ionType == ion.FloatType && ionValue == 0 && int64(ionValue.(float64)) >= 0 {
 		// value is 0.0, not -0.0
