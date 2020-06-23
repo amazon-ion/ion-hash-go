@@ -16,12 +16,12 @@
 package ionhash
 
 import (
-	"github.com/amzn/ion-hash-go/ihp"
-	"github.com/amzn/ion-hash-go/internal"
 	"math/big"
 	"time"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/ihp"
+	"github.com/amzn/ion-hash-go/internal"
 )
 
 // HashWriter inherits the same function as an Ion Writer and adds the Sum function.

@@ -16,12 +16,12 @@
 package ionhash
 
 import (
-	"github.com/amzn/ion-hash-go/ihp"
-	"github.com/amzn/ion-hash-go/internal"
 	"math/big"
 	"time"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/ihp"
+	"github.com/amzn/ion-hash-go/internal"
 )
 
 // HashReader inherits functions from Ion's Reader interface and adds

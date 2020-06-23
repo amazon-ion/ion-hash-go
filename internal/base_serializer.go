@@ -18,10 +18,10 @@ package internal
 import (
 	"bytes"
 	"fmt"
-	"github.com/amzn/ion-hash-go/ihp"
 	"time"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/ihp"
 )
 
 // Holds the commonalities between scalar and struct serializers.

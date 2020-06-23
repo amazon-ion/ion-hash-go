@@ -18,7 +18,6 @@ package ionhash
 import (
 	"bytes"
 	"fmt"
-	"github.com/amzn/ion-hash-go/internal"
 	"io/ioutil"
 	"reflect"
 	"strings"
@@ -26,6 +25,7 @@ import (
 	"time"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/internal"
 )
 
 func TestWriteNull(t *testing.T) {

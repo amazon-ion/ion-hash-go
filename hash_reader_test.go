@@ -17,12 +17,12 @@ package ionhash
 
 import (
 	"fmt"
-	"github.com/amzn/ion-hash-go/internal"
 	"io/ioutil"
 	"reflect"
 	"testing"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/internal"
 )
 
 func TestEmptyString(t *testing.T) {

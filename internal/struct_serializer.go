@@ -16,10 +16,10 @@
 package internal
 
 import (
-	"github.com/amzn/ion-hash-go/ihp"
 	"sort"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/ihp"
 )
 
 type structSerializer struct {

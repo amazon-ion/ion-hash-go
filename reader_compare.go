@@ -17,11 +17,11 @@ package ionhash
 
 import (
 	"fmt"
-	"github.com/amzn/ion-hash-go/internal"
 	"math"
 	"reflect"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/internal"
 )
 
 func compareReaders(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
