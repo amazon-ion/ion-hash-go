@@ -23,6 +23,11 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
+// This test writes a nested struct {a: {b:1}} where the Ion Writer writes the outer struct
+// and the HashWriter writes the inner struct.
+// We then read the struct back following a similar pattern where the Ion Reader reads the outer struct
+// and the HashReader reads the inner struct.
+// We then confirm that the HashReader reads the same hash written by the HashWriter.
 func TestFieldNameAsymmetry(t *testing.T) {
 	t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
 
@@ -39,7 +44,7 @@ func TestFieldNameAsymmetry(t *testing.T) {
 		t.Fatal("expected ionHashWriter to be of type hashWriter")
 	}
 
-	// We are writing a nested struct: {a:{b:1}}
+	// Writing a nested struct: {a:{b:1}}
 	// We use the ion writer to write the outer struct (ie. {a:_})
 	err = writer.BeginStruct()
 	if err != nil {
@@ -334,87 +339,87 @@ func writeToWriterFromReader(t *testing.T, reader ion.Reader, writer ion.Writer)
 			}
 			err = writer.WriteBool(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing Boolean value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing Boolean value; %s", err.Error())
 			}
 
 		case ion.IntType:
 			val, err := reader.Int64Value()
 			if err != nil {
-				t.Errorf("Something went wrong when reading Int value value; %s", err.Error())
+				t.Errorf("Something went wrong when reading Int value; %s", err.Error())
 			}
 			err = writer.WriteInt(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing Int value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing Int value; %s", err.Error())
 			}
 
 		case ion.FloatType:
 			val, err := reader.FloatValue()
 			if err != nil {
-				t.Errorf("Something went wrong when reading Float value value; %s", err.Error())
+				t.Errorf("Something went wrong when reading Float value; %s", err.Error())
 			}
 			err = writer.WriteFloat(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing Float value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing Float value; %s", err.Error())
 			}
 
 		case ion.DecimalType:
 			val, err := reader.DecimalValue()
 			if err != nil {
-				t.Errorf("Something went wrong when reading Decimal value value; %s", err.Error())
+				t.Errorf("Something went wrong when reading Decimal value; %s", err.Error())
 			}
 			err = writer.WriteDecimal(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing Decimal value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing Decimal value; %s", err.Error())
 			}
 
 		case ion.TimestampType:
 			val, err := reader.TimeValue()
 			if err != nil {
-				t.Errorf("Something went wrong when reading Timestamp value value; %s", err.Error())
+				t.Errorf("Something went wrong when reading Timestamp value; %s", err.Error())
 			}
 			err = writer.WriteTimestamp(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing Timestamp value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing Timestamp value; %s", err.Error())
 			}
 
 		case ion.SymbolType:
 			val, err := reader.StringValue()
 			if err != nil {
-				t.Errorf("Something went wrong when reading Symbol value value; %s", err.Error())
+				t.Errorf("Something went wrong when reading Symbol value; %s", err.Error())
 			}
 			err = writer.WriteSymbol(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing Symbol value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing Symbol value; %s", err.Error())
 			}
 
 		case ion.StringType:
 			val, err := reader.StringValue()
 			if err != nil {
-				t.Errorf("Something went wrong when reading String value value; %s", err.Error())
+				t.Errorf("Something went wrong when reading String value; %s", err.Error())
 			}
 			err = writer.WriteString(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing String value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing String value; %s", err.Error())
 			}
 
 		case ion.ClobType:
 			val, err := reader.ByteValue()
 			if err != nil {
-				t.Errorf("Something went wrong when reading Clob value value; %s", err.Error())
+				t.Errorf("Something went wrong when reading Clob value; %s", err.Error())
 			}
 			err = writer.WriteClob(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing Clob value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing Clob value; %s", err.Error())
 			}
 
 		case ion.BlobType:
 			val, err := reader.ByteValue()
 			if err != nil {
-				t.Errorf("Something went wrong when reading Blob value value; %s", err.Error())
+				t.Errorf("Something went wrong when reading Blob value; %s", err.Error())
 			}
 			err = writer.WriteBlob(val)
 			if err != nil {
-				t.Errorf("Something went wrong when writing Blob value value; %s", err.Error())
+				t.Errorf("Something went wrong when writing Blob value; %s", err.Error())
 			}
 
 		case ion.SexpType:
