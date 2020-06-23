@@ -20,10 +20,10 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
-	"github.com/amzn/ion-hash-go/ihp"
-	"github.com/amzn/ion-hash-go/internal"
 	"hash"
 
+	"github.com/amzn/ion-hash-go/ihp"
+	"github.com/amzn/ion-hash-go/internal"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
 	"golang.org/x/crypto/md4"
