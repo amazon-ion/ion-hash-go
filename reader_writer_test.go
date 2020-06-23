@@ -41,7 +41,7 @@ func TestFieldNameAsymmetry(t *testing.T) {
 
 	ionHashWriter, ok := hw.(*hashWriter)
 	if !ok {
-		t.Fatal("expected ionHashWriter to be of type hashWriter")
+		t.Fatal("expected hw to be of type hashWriter")
 	}
 
 	// Writing a nested struct: {a:{b:1}}
@@ -219,7 +219,7 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 
 	ionHashWriter, ok := hw.(*hashWriter)
 	if !ok {
-		t.Error("expected ionHashWriter to be of type hashWriter")
+		t.Error("expected hw to be of type hashWriter")
 	}
 
 	err = ionHashWriter.FieldName("field_name")
@@ -343,13 +343,41 @@ func writeToWriterFromReader(t *testing.T, reader ion.Reader, writer ion.Writer)
 			}
 
 		case ion.IntType:
-			val, err := reader.Int64Value()
+			intSize, err := reader.IntSize()
 			if err != nil {
-				t.Errorf("Something went wrong when reading Int value; %s", err.Error())
+				t.Fatalf("Something went wrong when retrieving the Int size; %s", err.Error())
 			}
-			err = writer.WriteInt(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Int value; %s", err.Error())
+
+			switch intSize {
+			case ion.Int32, ion.Int64:
+				val, err := reader.Int64Value()
+				if err != nil {
+					t.Errorf("Something went wrong when reading Int value; %s", err.Error())
+				}
+				err = writer.WriteInt(val)
+				if err != nil {
+					t.Errorf("Something went wrong when writing Int value; %s", err.Error())
+				}
+			case ion.Uint64:
+				val, err := reader.Uint64Value()
+				if err != nil {
+					t.Errorf("Something went wrong when reading UInt value; %s", err.Error())
+				}
+				err = writer.WriteUint(val)
+				if err != nil {
+					t.Errorf("Something went wrong when writing UInt value; %s", err.Error())
+				}
+			case ion.BigInt:
+				val, err := reader.BigIntValue()
+				if err != nil {
+					t.Errorf("Something went wrong when reading Big Int value; %s", err.Error())
+				}
+				err = writer.WriteBigInt(val)
+				if err != nil {
+					t.Errorf("Something went wrong when writing Big Int value; %s", err.Error())
+				}
+			default:
+				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
 			}
 
 		case ion.FloatType:
