@@ -20,6 +20,8 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"github.com/amzn/ion-hash-go/ihp"
+	"github.com/amzn/ion-hash-go/internal"
 	"hash"
 
 	"golang.org/x/crypto/blake2b"
@@ -57,7 +59,7 @@ type cryptoHasher struct {
 	hashAlgorithm hash.Hash
 }
 
-func newCryptoHasher(algorithm algorithm) (IonHasher, error) {
+func newCryptoHasher(algorithm algorithm) (ihp.IonHasher, error) {
 	var hashAlgorithm hash.Hash
 
 	switch algorithm {
@@ -98,7 +100,7 @@ func newCryptoHasher(algorithm algorithm) (IonHasher, error) {
 	case BLAKE2b512:
 		hashAlgorithm, _ = blake2b.New512(nil)
 	default:
-		return nil, &InvalidArgumentError{"algorithm", algorithm}
+		return nil, &internal.InvalidArgumentError{"algorithm", algorithm}
 	}
 
 	ch := &cryptoHasher{hashAlgorithm}

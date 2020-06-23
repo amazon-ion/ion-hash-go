@@ -13,11 +13,17 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package ihp
 
-const (
-	beginMarkerByte = 0x0B
-	endMarkerByte   = 0x0E
-	escapeByte      = 0x0C
-	tqValue         = 0xE0
-)
+import "io"
+
+// IonHasher inherits functions from Ion Writer and adds the Sum function.
+// The Sum function provides read access to the underlying hash value.
+type IonHasher interface {
+	// Write (via the embedded io.Writer interface) adds more data to the running hash.
+	io.Writer
+
+	// Sum appends the current hash to b and returns the resulting slice.
+	// It does not change the underlying hash state.
+	Sum(b []byte) []byte
+}

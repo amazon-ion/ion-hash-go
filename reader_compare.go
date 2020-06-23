@@ -17,6 +17,7 @@ package ionhash
 
 import (
 	"fmt"
+	"github.com/amzn/ion-hash-go/internal"
 	"math"
 	"reflect"
 
@@ -44,7 +45,7 @@ func compareReaders(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 
 		ionHashReader, ok := reader2.(*hashReader)
 		if ok {
-			if ionHashReader.isInStruct() {
+			if ionHashReader.IsInStruct() {
 				compare, err := compareFieldNames(reader1, reader2)
 				if !compare || err != nil {
 					return compare, err
@@ -120,7 +121,7 @@ func compareReaders(reader1 ion.Reader, reader2 ion.Reader) (bool, error) {
 			}
 			break
 		default:
-			return false, &InvalidIonTypeError{ionType1}
+			return false, &internal.InvalidIonTypeError{ionType1}
 		}
 	}
 
@@ -342,7 +343,7 @@ func compareScalars(reader1, reader2 ion.Reader) (bool, error) {
 		}
 		break
 	default:
-		return false, &InvalidIonTypeError{ionType}
+		return false, &internal.InvalidIonTypeError{ionType}
 	}
 
 	return true, nil

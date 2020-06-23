@@ -13,11 +13,12 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/amzn/ion-hash-go/ihp"
 	"time"
 
 	"github.com/amzn/ion-go/ion"
@@ -25,7 +26,7 @@ import (
 
 // Holds the commonalities between scalar and struct serializers.
 type baseSerializer struct {
-	hashFunction           IonHasher
+	hashFunction           ihp.IonHasher
 	depth                  int
 	hasContainerAnnotation bool
 }
@@ -44,7 +45,7 @@ func (baseSerializer *baseSerializer) stepOut() error {
 	return nil
 }
 
-func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
+func (baseSerializer *baseSerializer) stepIn(ionValue HashValue) error {
 	err := baseSerializer.handleFieldName(ionValue)
 	if err != nil {
 		return err
@@ -61,7 +62,7 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 	}
 
 	tq := typeQualifier(ionValue)
-	if ionValue.isNull() {
+	if ionValue.CurrentIsNull() {
 		tq = tq | 0x0F
 	}
 
@@ -77,9 +78,9 @@ func (baseSerializer *baseSerializer) sum(b []byte) []byte {
 	return baseSerializer.hashFunction.Sum(b)
 }
 
-func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {
-	if baseSerializer.depth > 0 && ionValue.isInStruct() {
-		fieldName := ionValue.getFieldName()
+func (baseSerializer *baseSerializer) handleFieldName(ionValue HashValue) error {
+	if baseSerializer.depth > 0 && ionValue.IsInStruct() {
+		fieldName := ionValue.GetFieldName()
 
 		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available
 
@@ -104,12 +105,12 @@ func (baseSerializer *baseSerializer) endMarker() error {
 	return err
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer bool) error {
+func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue HashValue, isContainer bool) error {
 	if ionValue == nil {
 		return &InvalidArgumentError{"ionValue", ionValue}
 	}
 
-	annotations := ionValue.getAnnotations()
+	annotations := ionValue.GetAnnotations()
 	if len(annotations) > 0 {
 		err := baseSerializer.beginMarker()
 		if err != nil {
@@ -136,8 +137,8 @@ func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue,
 	return nil
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) error {
-	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) ||
+func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue HashValue, isContainer bool) error {
+	if (ionValue != nil && len(ionValue.GetAnnotations()) > 0) ||
 		(isContainer && baseSerializer.hasContainerAnnotation) {
 
 		err := baseSerializer.endMarker()
@@ -341,7 +342,7 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	return &InvalidIonTypeError{ionType}
 }
 
-func typeQualifier(ionValue hashValue) byte {
-	typeCode := byte(ionValue.ionType())
+func typeQualifier(ionValue HashValue) byte {
+	typeCode := byte(ionValue.IonType())
 	return typeCode << 4
 }

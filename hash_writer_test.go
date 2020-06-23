@@ -18,6 +18,7 @@ package ionhash
 import (
 	"bytes"
 	"fmt"
+	"github.com/amzn/ion-hash-go/internal"
 	"io/ioutil"
 	"reflect"
 	"strings"
@@ -248,7 +249,7 @@ func TestWriteContainers(t *testing.T) {
 
 	sum, err = ionHashWriter.Sum(nil)
 	if err != nil {
-		_, ok := err.(*InvalidOperationError)
+		_, ok := err.(*internal.InvalidOperationError)
 		if !ok {
 			t.Errorf("expected Sum(nil) to return an InvalidOperationError; %s", err.Error())
 		}
@@ -263,7 +264,7 @@ func TestWriteContainers(t *testing.T) {
 
 	sum, err = ionHashWriter.Sum(nil)
 	if err != nil {
-		_, ok := err.(*InvalidOperationError)
+		_, ok := err.(*internal.InvalidOperationError)
 		if !ok {
 			t.Errorf("expected Sum(nil) to return an InvalidOperationError; %s", err.Error())
 		}
@@ -287,7 +288,7 @@ func TestWriteContainers(t *testing.T) {
 		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
 	}
 
-	if ionHashWriter.isInStruct() {
+	if ionHashWriter.IsInStruct() {
 		t.Error("expected ionHashWriter.isInStruct() to return false")
 	}
 
@@ -296,7 +297,7 @@ func TestWriteContainers(t *testing.T) {
 		t.Errorf("expected ionHashWriter.stepIn(ion.StructType) to execute without errors; %s", err.Error())
 	}
 
-	if !ionHashWriter.isInStruct() {
+	if !ionHashWriter.IsInStruct() {
 		t.Error("expected ionHashWriter.isInStruct() to return true")
 	}
 
@@ -322,7 +323,7 @@ func TestWriteContainers(t *testing.T) {
 		t.Errorf("expected ionHashWriter.stepOut() to execute without errors; %s", err.Error())
 	}
 
-	if ionHashWriter.isInStruct() {
+	if ionHashWriter.IsInStruct() {
 		t.Error("expected ionHashWriter.isInStruct() to return false")
 	}
 
@@ -370,7 +371,7 @@ func TestExtraStepOut(t *testing.T) {
 
 	err = ionHashWriter.stepOut()
 	if err != nil {
-		_, ok := err.(*InvalidOperationError)
+		_, ok := err.(*internal.InvalidOperationError)
 		if !ok {
 			t.Errorf("expected ionHashWriter.stepOut() to return an InvalidOperationError; %s", err.Error())
 		}

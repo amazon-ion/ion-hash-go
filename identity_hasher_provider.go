@@ -15,14 +15,16 @@
 
 package ionhash
 
+import "github.com/amzn/ion-hash-go/ihp"
+
 type identityHasherProvider struct {
-	IonHasherProvider
+	ihp.IonHasherProvider
 }
 
 func newIdentityHasherProvider() *identityHasherProvider {
 	return &identityHasherProvider{}
 }
 
-func (ihp *identityHasherProvider) newHasher() (IonHasher, error) {
+func (ihp *identityHasherProvider) newHasher() (ihp.IonHasher, error) {
 	return newIdentityIonHasher(), nil
 }

@@ -15,8 +15,10 @@
 
 package ionhash
 
+import "github.com/amzn/ion-hash-go/ihp"
+
 type cryptoHasherProvider struct {
-	IonHasherProvider
+	ihp.IonHasherProvider
 
 	algorithm algorithm
 }
@@ -25,6 +27,6 @@ func newCryptoHasherProvider(algorithm algorithm) *cryptoHasherProvider {
 	return &cryptoHasherProvider{algorithm: algorithm}
 }
 
-func (chp *cryptoHasherProvider) newHasher() (IonHasher, error) {
+func (chp *cryptoHasherProvider) newHasher() (ihp.IonHasher, error) {
 	return newCryptoHasher(chp.algorithm)
 }

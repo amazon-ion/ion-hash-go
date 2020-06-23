@@ -13,20 +13,23 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
-import "github.com/amzn/ion-go/ion"
+import (
+	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/ihp"
+)
 
 type scalarSerializer struct {
 	baseSerializer
 }
 
-func newScalarSerializer(hashFunction IonHasher, depth int) serializer {
+func newScalarSerializer(hashFunction ihp.IonHasher, depth int) serializer {
 	return &scalarSerializer{baseSerializer{hashFunction: hashFunction, depth: depth}}
 }
 
 func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
-	ionHashValue := ionValue.(hashValue)
+	ionHashValue := ionValue.(HashValue)
 
 	err := scalarSerializer.handleAnnotationsBegin(ionHashValue)
 	if err != nil {
@@ -40,28 +43,28 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 
 	var ionVal interface{}
 	var ionType ion.Type
-	if ionHashValue.isNull() {
+	if ionHashValue.CurrentIsNull() {
 		ionVal = nil
 		ionType = ion.NoType
 	} else {
-		ionVal, err = ionHashValue.value()
+		ionVal, err = ionHashValue.Value()
 		if err != nil {
 			return err
 		}
-		ionType = ionHashValue.ionType()
+		ionType = ionHashValue.IonType()
 	}
 
-	scalarBytes, err := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
+	scalarBytes, err := scalarSerializer.getBytes(ionHashValue.IonType(), ionVal, ionHashValue.CurrentIsNull())
 	if err != nil {
 		return err
 	}
 
-	if ionHashValue.ionType() != ion.SymbolType {
+	if ionHashValue.IonType() != ion.SymbolType {
 		ionVal = nil
 	}
 
 	tq, representation, err :=
-		scalarSerializer.scalarOrNullSplitParts(ionType, ionHashValue.isNull(), scalarBytes)
+		scalarSerializer.scalarOrNullSplitParts(ionType, ionHashValue.CurrentIsNull(), scalarBytes)
 	if err != nil {
 		return err
 	}
@@ -96,7 +99,7 @@ func (scalarSerializer *scalarSerializer) stepOut() error {
 }
 
 func (scalarSerializer *scalarSerializer) stepIn(ionValue interface{}) error {
-	return scalarSerializer.baseSerializer.stepIn(ionValue.(hashValue))
+	return scalarSerializer.baseSerializer.stepIn(ionValue.(HashValue))
 }
 
 func (scalarSerializer *scalarSerializer) sum(b []byte) []byte {
@@ -104,7 +107,7 @@ func (scalarSerializer *scalarSerializer) sum(b []byte) []byte {
 }
 
 func (scalarSerializer *scalarSerializer) handleFieldName(ionValue interface{}) error {
-	return scalarSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
+	return scalarSerializer.baseSerializer.handleFieldName(ionValue.(HashValue))
 }
 
 func (scalarSerializer *scalarSerializer) write(bytes []byte) error {
@@ -120,11 +123,11 @@ func (scalarSerializer *scalarSerializer) endMarker() error {
 }
 
 func (scalarSerializer *scalarSerializer) handleAnnotationsBegin(ionValue interface{}) error {
-	return scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
+	return scalarSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(HashValue), false)
 }
 
 func (scalarSerializer *scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
-	return scalarSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
+	return scalarSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(HashValue), isContainer)
 }
 
 func (scalarSerializer *scalarSerializer) writeSymbol(token string) error {

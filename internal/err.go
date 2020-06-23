@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
 import (
 	"fmt"
@@ -23,43 +23,43 @@ import (
 
 // An InvalidOperationError is returned when a method call is invalid for the struct's current state.
 type InvalidOperationError struct {
-	structName string
-	methodName string
-	message    string
+	StructName string
+	MethodName string
+	Message    string
 }
 
 func (e *InvalidOperationError) Error() string {
-	if e.message != "" {
-		return fmt.Sprintf(`ionhash: Invalid operation at %v.%v: %v`, e.structName, e.methodName, e.message)
+	if e.Message != "" {
+		return fmt.Sprintf(`ionhash: Invalid operation at %v.%v: %v`, e.StructName, e.MethodName, e.Message)
 	}
 
-	return fmt.Sprintf(`ionhash: Invalid operation error in %v.%v`, e.structName, e.methodName)
+	return fmt.Sprintf(`ionhash: Invalid operation error in %v.%v`, e.StructName, e.MethodName)
 }
 
 // InvalidArgumentError is returned when one of the arguments given to a function was not valid.
 type InvalidArgumentError struct {
-	argumentName  string
-	argumentValue interface{}
+	ArgumentName  string
+	ArgumentValue interface{}
 }
 
 func (e *InvalidArgumentError) Error() string {
-	return fmt.Sprintf(`ionhash: Invalid value: "%v" specified for argument: %s`, e.argumentValue, e.argumentName)
+	return fmt.Sprintf(`ionhash: Invalid value: "%v" specified for argument: %s`, e.ArgumentValue, e.ArgumentName)
 }
 
 // An InvalidIonTypeError is returned when processing an unexpected ion type.
 type InvalidIonTypeError struct {
-	ionType ion.Type
+	IonType ion.Type
 }
 
 func (e *InvalidIonTypeError) Error() string {
-	return fmt.Sprintf(`ionhash: Invalid Ion type: %s`, e.ionType.String())
+	return fmt.Sprintf(`ionhash: Invalid Ion type: %s`, e.IonType.String())
 }
 
 // An UnknownSymbolError is returned when processing an unknown field name symbol.
 type UnknownSymbolError struct {
-	sid int
+	Sid int
 }
 
 func (e *UnknownSymbolError) Error() string {
-	return fmt.Sprintf(`ionhash: Unknown text for sid %d`, e.sid)
+	return fmt.Sprintf(`ionhash: Unknown text for sid %d`, e.Sid)
 }

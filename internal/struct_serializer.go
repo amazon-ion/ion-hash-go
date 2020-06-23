@@ -13,9 +13,10 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
 import (
+	"github.com/amzn/ion-hash-go/ihp"
 	"sort"
 
 	"github.com/amzn/ion-go/ion"
@@ -28,8 +29,8 @@ type structSerializer struct {
 	fieldHashes      [][]byte
 }
 
-func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider IonHasherProvider) (serializer, error) {
-	newHasher, err := hashFunctionProvider.newHasher()
+func newStructSerializer(hashFunction ihp.IonHasher, depth int, hashFunctionProvider ihp.IonHasherProvider) (serializer, error) {
+	newHasher, err := hashFunctionProvider.NewHasher()
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +72,7 @@ func (structSerializer *structSerializer) stepOut() error {
 }
 
 func (structSerializer *structSerializer) stepIn(ionValue interface{}) error {
-	return structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
+	return structSerializer.baseSerializer.stepIn(ionValue.(HashValue))
 }
 
 func (structSerializer *structSerializer) sum(b []byte) []byte {
@@ -79,7 +80,7 @@ func (structSerializer *structSerializer) sum(b []byte) []byte {
 }
 
 func (structSerializer *structSerializer) handleFieldName(ionValue interface{}) error {
-	return structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
+	return structSerializer.baseSerializer.handleFieldName(ionValue.(HashValue))
 }
 
 func (structSerializer *structSerializer) write(bytes []byte) error {
@@ -95,11 +96,11 @@ func (structSerializer *structSerializer) endMarker() error {
 }
 
 func (structSerializer *structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
-	return structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
+	return structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(HashValue), false)
 }
 
 func (structSerializer *structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
-	return structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
+	return structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(HashValue), isContainer)
 }
 
 func (structSerializer *structSerializer) writeSymbol(token string) error {
@@ -107,7 +108,7 @@ func (structSerializer *structSerializer) writeSymbol(token string) error {
 }
 
 func (structSerializer *structSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
-	return structSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
+	return structSerializer.baseSerializer.getBytes(ionType, ionValue.(HashValue), isNull)
 }
 
 func (structSerializer *structSerializer) getLengthFieldLength(bytes []byte) (int, error) {

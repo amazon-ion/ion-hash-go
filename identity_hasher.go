@@ -15,13 +15,15 @@
 
 package ionhash
 
+import "github.com/amzn/ion-hash-go/ihp"
+
 type identityHasher struct {
-	IonHasher
+	ihp.IonHasher
 
 	identityHash []byte
 }
 
-func newIdentityIonHasher() IonHasher {
+func newIdentityIonHasher() ihp.IonHasher {
 	return &identityHasher{identityHash: []byte{}}
 }
 

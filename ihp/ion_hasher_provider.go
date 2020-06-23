@@ -13,23 +13,10 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package ihp
 
-import "github.com/amzn/ion-go/ion"
-
-type hashValue interface {
-	getFieldName() string
-
-	getAnnotations() []string
-
-	// SymbolTokens are not available right now.
-	//fieldNameSymbol() ion.FieldNameSymbol
-
-	isNull() bool
-
-	ionType() ion.Type
-
-	value() (interface{}, error)
-
-	isInStruct() bool
+// IonHasherProvider used for creating new instances of IonHasher.
+type IonHasherProvider interface {
+	// Return a new IonHasher object.
+	NewHasher() (IonHasher, error)
 }

@@ -13,18 +13,21 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
-import "github.com/amzn/ion-go/ion"
+import (
+	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/ihp"
+)
 
-type hasher struct {
-	hasherProvider IonHasherProvider
+type Hasher struct {
+	hasherProvider ihp.IonHasherProvider
 	currentHasher  serializer
 	hasherStack    stack
 }
 
-func newHasher(hasherProvider IonHasherProvider) (*hasher, error) {
-	newHasher, err := hasherProvider.newHasher()
+func NewHasher(hasherProvider ihp.IonHasherProvider) (*Hasher, error) {
+	newHasher, err := hasherProvider.NewHasher()
 	if err != nil {
 		return nil, err
 	}
@@ -34,19 +37,19 @@ func newHasher(hasherProvider IonHasherProvider) (*hasher, error) {
 	var hasherStack stack
 	hasherStack.push(currentHasher)
 
-	return &hasher{hasherProvider, currentHasher, hasherStack}, nil
+	return &Hasher{hasherProvider, currentHasher, hasherStack}, nil
 }
 
-func (h *hasher) scalar(ionValue hashValue) error {
+func (h *Hasher) Scalar(ionValue HashValue) error {
 	return h.currentHasher.scalar(ionValue)
 }
 
-func (h *hasher) stepIn(ionValue hashValue) error {
-	var hashFunction IonHasher
+func (h *Hasher) StepIn(ionValue HashValue) error {
+	var hashFunction ihp.IonHasher
 
 	_, ok := h.currentHasher.(*structSerializer)
 	if ok {
-		newHasher, err := h.hasherProvider.newHasher()
+		newHasher, err := h.hasherProvider.NewHasher()
 		if err != nil {
 			return err
 		}
@@ -56,23 +59,23 @@ func (h *hasher) stepIn(ionValue hashValue) error {
 		hashFunction = h.currentHasher.(*scalarSerializer).hashFunction
 	}
 
-	if ionValue.ionType() == ion.StructType {
-		newStructSerializer, err := newStructSerializer(hashFunction, h.depth(), h.hasherProvider)
+	if ionValue.IonType() == ion.StructType {
+		newStructSerializer, err := newStructSerializer(hashFunction, h.Depth(), h.hasherProvider)
 		if err != nil {
 			return err
 		}
 
 		h.currentHasher = newStructSerializer
 	} else {
-		h.currentHasher = newScalarSerializer(hashFunction, h.depth())
+		h.currentHasher = newScalarSerializer(hashFunction, h.Depth())
 	}
 
 	h.hasherStack.push(h.currentHasher)
 	return h.currentHasher.stepIn(ionValue)
 }
 
-func (h *hasher) stepOut() error {
-	if h.depth() == 0 {
+func (h *Hasher) StepOut() error {
+	if h.Depth() == 0 {
 		return &InvalidOperationError{"hasher", "stepOut", "Depth is zero. Hasher cannot step out any further"}
 	}
 
@@ -101,8 +104,8 @@ func (h *hasher) stepOut() error {
 	return nil
 }
 
-func (h *hasher) sum(b []byte) ([]byte, error) {
-	if h.depth() != 0 {
+func (h *Hasher) Sum(b []byte) ([]byte, error) {
+	if h.Depth() != 0 {
 		return nil, &InvalidOperationError{
 			"hasher", "sum", "A sum may only be provided at the same depth hashing started"}
 	}
@@ -110,6 +113,6 @@ func (h *hasher) sum(b []byte) ([]byte, error) {
 	return h.currentHasher.sum(b), nil
 }
 
-func (h *hasher) depth() int {
+func (h *Hasher) Depth() int {
 	return h.hasherStack.size() - 1
 }

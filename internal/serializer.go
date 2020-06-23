@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
 import "github.com/amzn/ion-go/ion"
 

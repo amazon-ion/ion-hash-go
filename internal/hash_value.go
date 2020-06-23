@@ -13,17 +13,23 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
-import "io"
+import "github.com/amzn/ion-go/ion"
 
-// IonHasher inherits functions from Ion Writer and adds the Sum function.
-// The Sum function provides read access to the underlying hash value.
-type IonHasher interface {
-	// Write (via the embedded io.Writer interface) adds more data to the running hash.
-	io.Writer
+type HashValue interface {
+	GetFieldName() string
 
-	// Sum appends the current hash to b and returns the resulting slice.
-	// It does not change the underlying hash state.
-	Sum(b []byte) []byte
+	GetAnnotations() []string
+
+	// SymbolTokens are not available right now.
+	//fieldNameSymbol() ion.FieldNameSymbol
+
+	CurrentIsNull() bool
+
+	IonType() ion.Type
+
+	Value() (interface{}, error)
+
+	IsInStruct() bool
 }

@@ -16,6 +16,8 @@
 package ionhash
 
 import (
+	"github.com/amzn/ion-hash-go/ihp"
+	"github.com/amzn/ion-hash-go/internal"
 	"math/big"
 	"time"
 
@@ -25,7 +27,7 @@ import (
 // HashReader inherits functions from Ion's Reader interface and adds
 // the function Sum that allows read access to the hash value held by this reader.
 type HashReader interface {
-	hashValue
+	internal.HashValue
 	// Embed interface of Ion reader.
 	ion.Reader
 
@@ -36,14 +38,14 @@ type HashReader interface {
 
 type hashReader struct {
 	ionReader   ion.Reader
-	hasher      hasher
+	hasher      internal.Hasher
 	currentType ion.Type
 	err         error
 }
 
 // NewHashReader takes an Ion reader and a hash provider and returns a new HashReader
-func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) (HashReader, error) {
-	newHasher, err := newHasher(hasherProvider)
+func NewHashReader(ionReader ion.Reader, hasherProvider ihp.IonHasherProvider) (HashReader, error) {
+	newHasher, err := internal.NewHasher(hasherProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +62,7 @@ func (hashReader *hashReader) Next() bool {
 
 	if hashReader.currentType != ion.NoType {
 		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
-			err := hashReader.hasher.scalar(hashReader)
+			err := hashReader.hasher.Scalar(hashReader)
 			if err != nil {
 				hashReader.err = err
 				return false
@@ -117,7 +119,7 @@ func (hashReader *hashReader) Annotations() []string {
 }
 
 func (hashReader *hashReader) StepIn() error {
-	err := hashReader.hasher.stepIn(hashReader)
+	err := hashReader.hasher.StepIn(hashReader)
 	if err != nil {
 		return err
 	}
@@ -143,7 +145,7 @@ func (hashReader *hashReader) StepOut() error {
 		return err
 	}
 
-	err = hashReader.hasher.stepOut()
+	err = hashReader.hasher.StepOut()
 	if err != nil {
 		return err
 	}
@@ -196,7 +198,7 @@ func (hashReader *hashReader) ByteValue() ([]byte, error) {
 }
 
 func (hashReader *hashReader) Sum(b []byte) ([]byte, error) {
-	return hashReader.hasher.sum(b)
+	return hashReader.hasher.Sum(b)
 }
 
 func (hashReader *hashReader) traverse() error {
@@ -224,15 +226,15 @@ func (hashReader *hashReader) traverse() error {
 
 // The following implements HashValue interface.
 
-func (hashReader *hashReader) getFieldName() string {
+func (hashReader *hashReader) GetFieldName() string {
 	return hashReader.FieldName()
 }
 
-func (hashReader *hashReader) getAnnotations() []string {
+func (hashReader *hashReader) GetAnnotations() []string {
 	return hashReader.Annotations()
 }
 
-func (hashReader *hashReader) value() (interface{}, error) {
+func (hashReader *hashReader) Value() (interface{}, error) {
 	switch hashReader.currentType {
 	case ion.BoolType:
 		return hashReader.BoolValue()
@@ -256,17 +258,17 @@ func (hashReader *hashReader) value() (interface{}, error) {
 		return ion.NoType, nil
 	}
 
-	return nil, &InvalidIonTypeError{hashReader.currentType}
+	return nil, &internal.InvalidIonTypeError{hashReader.currentType}
 }
 
-func (hashReader *hashReader) isInStruct() bool {
+func (hashReader *hashReader) IsInStruct() bool {
 	return hashReader.currentType == ion.StructType
 }
 
-func (hashReader *hashReader) ionType() ion.Type {
+func (hashReader *hashReader) IonType() ion.Type {
 	return hashReader.Type()
 }
 
-func (hashReader *hashReader) isNull() bool {
+func (hashReader *hashReader) CurrentIsNull() bool {
 	return hashReader.IsNull()
 }

@@ -13,10 +13,11 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
-// IonHasherProvider used for creating new instances of IonHasher.
-type IonHasherProvider interface {
-	// Return a new IonHasher object.
-	newHasher() (IonHasher, error)
-}
+const (
+	beginMarkerByte = 0x0B
+	endMarkerByte   = 0x0E
+	escapeByte      = 0x0C
+	tqValue         = 0xE0
+)

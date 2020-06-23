@@ -16,6 +16,8 @@
 package ionhash
 
 import (
+	"github.com/amzn/ion-hash-go/ihp"
+	"github.com/amzn/ion-hash-go/internal"
 	"math/big"
 	"time"
 
@@ -25,7 +27,7 @@ import (
 // HashWriter inherits the same function as an Ion Writer and adds the Sum function.
 // The Sum function allows read access to the hash value in the current writer.
 type HashWriter interface {
-	hashValue
+	internal.HashValue
 	// Embed interface of Ion writer.
 	ion.Writer
 
@@ -36,7 +38,7 @@ type HashWriter interface {
 
 type hashWriter struct {
 	ionWriter ion.Writer
-	hasher    hasher
+	hasher    internal.Hasher
 
 	currentFieldName string
 	currentType      ion.Type
@@ -46,8 +48,8 @@ type hashWriter struct {
 }
 
 // NewHashWriter takes an Ion Writer and a hash provider and returns a new HashWriter.
-func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) (HashWriter, error) {
-	newHasher, err := newHasher(hasherProvider)
+func NewHashWriter(ionWriter ion.Writer, hasherProvider ihp.IonHasherProvider) (HashWriter, error) {
+	newHasher, err := internal.NewHasher(hasherProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +186,7 @@ func (hashWriter *hashWriter) BeginList() error {
 }
 
 func (hashWriter *hashWriter) EndList() error {
-	err := hashWriter.hasher.stepOut()
+	err := hashWriter.hasher.StepOut()
 	if err != nil {
 		return err
 	}
@@ -202,7 +204,7 @@ func (hashWriter *hashWriter) BeginSexp() error {
 }
 
 func (hashWriter *hashWriter) EndSexp() error {
-	err := hashWriter.hasher.stepOut()
+	err := hashWriter.hasher.StepOut()
 	if err != nil {
 		return err
 	}
@@ -220,7 +222,7 @@ func (hashWriter *hashWriter) BeginStruct() error {
 }
 
 func (hashWriter *hashWriter) EndStruct() error {
-	err := hashWriter.hasher.stepOut()
+	err := hashWriter.hasher.StepOut()
 	if err != nil {
 		return err
 	}
@@ -233,33 +235,37 @@ func (hashWriter *hashWriter) Finish() error {
 }
 
 func (hashWriter *hashWriter) Sum(b []byte) ([]byte, error) {
-	return hashWriter.hasher.sum(b)
+	return hashWriter.hasher.Sum(b)
 }
 
 // The following implements HashValue interface.
 
-func (hashWriter *hashWriter) getFieldName() string {
+func (hashWriter *hashWriter) GetFieldName() string {
 	return hashWriter.currentFieldName
 }
 
-func (hashWriter *hashWriter) getAnnotations() []string {
+func (hashWriter *hashWriter) GetAnnotations() []string {
 	return hashWriter.annotations
 }
 
-func (hashWriter *hashWriter) isNull() bool {
+func (hashWriter *hashWriter) IsNull() bool {
 	return hashWriter.currentIsNull
 }
 
-func (hashWriter *hashWriter) ionType() ion.Type {
+func (hashWriter *hashWriter) IonType() ion.Type {
 	return hashWriter.currentType
 }
 
-func (hashWriter *hashWriter) value() (interface{}, error) {
+func (hashWriter *hashWriter) Value() (interface{}, error) {
 	return hashWriter.currentValue, nil
 }
 
-func (hashWriter *hashWriter) isInStruct() bool {
+func (hashWriter *hashWriter) IsInStruct() bool {
 	return hashWriter.currentType == ion.StructType
+}
+
+func (hashWriter *hashWriter) CurrentIsNull() bool {
+	return hashWriter.IsNull()
 }
 
 func (hashWriter *hashWriter) hashScalar(ionType ion.Type, value interface{}) error {
@@ -267,7 +273,7 @@ func (hashWriter *hashWriter) hashScalar(ionType ion.Type, value interface{}) er
 	hashWriter.currentValue = value
 	hashWriter.currentIsNull = value == nil
 
-	err := hashWriter.hasher.scalar(hashWriter)
+	err := hashWriter.hasher.Scalar(hashWriter)
 
 	hashWriter.currentFieldName = ""
 	hashWriter.annotations = nil
@@ -282,11 +288,11 @@ func (hashWriter *hashWriter) stepIn(ionType ion.Type) error {
 	hashWriter.currentFieldName = ""
 	hashWriter.annotations = nil
 
-	return hashWriter.hasher.stepIn(hashWriter)
+	return hashWriter.hasher.StepIn(hashWriter)
 }
 
 func (hashWriter *hashWriter) stepOut() error {
-	return hashWriter.hasher.stepOut()
+	return hashWriter.hasher.StepOut()
 }
 
 func (hashWriter *hashWriter) setFieldName(name string) {

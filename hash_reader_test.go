@@ -17,6 +17,7 @@ package ionhash
 
 import (
 	"fmt"
+	"github.com/amzn/ion-hash-go/internal"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -154,7 +155,7 @@ func TestReaderUnresolvedSid(t *testing.T) {
 		t.Error("expected ionHashReader.Next() to return false")
 	} else {
 		err := ionHashReader.Err()
-		_, ok := err.(*UnknownSymbolError)
+		_, ok := err.(*internal.UnknownSymbolError)
 		if !ok {
 			t.Error("expected ionHashReader.Next() to result in an UnknownSymbolError")
 		}
@@ -277,7 +278,7 @@ func ConsumeRemainderStepInStepOutTopLevel(ionHashReader HashReader) error {
 
 	_, err = ionHashReader.Sum(nil)
 	if err != nil {
-		_, ok := err.(*InvalidOperationError)
+		_, ok := err.(*internal.InvalidOperationError)
 		if !ok {
 			return fmt.Errorf("expected ionHashReader.Sum(nil) to return an InvalidOperationError")
 		}
