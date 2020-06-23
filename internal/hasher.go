@@ -20,12 +20,14 @@ import (
 	"github.com/amzn/ion-hash-go/ihp"
 )
 
+// Struct responsible for hashing Ion values.
 type Hasher struct {
 	hasherProvider ihp.IonHasherProvider
 	currentHasher  serializer
 	hasherStack    stack
 }
 
+// Create a new Hasher.
 func NewHasher(hasherProvider ihp.IonHasherProvider) (*Hasher, error) {
 	newHasher, err := hasherProvider.NewHasher()
 	if err != nil {
@@ -40,10 +42,12 @@ func NewHasher(hasherProvider ihp.IonHasherProvider) (*Hasher, error) {
 	return &Hasher{hasherProvider, currentHasher, hasherStack}, nil
 }
 
+// Hash a scalar Ion value.
 func (h *Hasher) Scalar(ionValue HashValue) error {
 	return h.currentHasher.scalar(ionValue)
 }
 
+// Step into the Ion container.
 func (h *Hasher) StepIn(ionValue HashValue) error {
 	var hashFunction ihp.IonHasher
 
@@ -74,6 +78,7 @@ func (h *Hasher) StepIn(ionValue HashValue) error {
 	return h.currentHasher.stepIn(ionValue)
 }
 
+// Step out of the Ion container.
 func (h *Hasher) StepOut() error {
 	if h.Depth() == 0 {
 		return &InvalidOperationError{"hasher", "stepOut", "Depth is zero. Hasher cannot step out any further"}
@@ -104,6 +109,7 @@ func (h *Hasher) StepOut() error {
 	return nil
 }
 
+// Sum appends the current hash to b and returns the resulting slice.
 func (h *Hasher) Sum(b []byte) ([]byte, error) {
 	if h.Depth() != 0 {
 		return nil, &InvalidOperationError{

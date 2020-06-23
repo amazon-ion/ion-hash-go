@@ -17,6 +17,7 @@ package internal
 
 import "github.com/amzn/ion-go/ion"
 
+// Allows HashReader and HashWriter to implement common Ion value functions.
 type HashValue interface {
 	GetFieldName() string
 
