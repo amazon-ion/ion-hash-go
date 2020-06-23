@@ -20,14 +20,14 @@ import (
 	"github.com/amzn/ion-hash-go/ihp"
 )
 
-// Struct responsible for hashing Ion values.
+// Hasher struct is responsible for hashing Ion values.
 type Hasher struct {
 	hasherProvider ihp.IonHasherProvider
 	currentHasher  serializer
 	hasherStack    stack
 }
 
-// Create a new Hasher.
+// NewHasher creates a new Hasher.
 func NewHasher(hasherProvider ihp.IonHasherProvider) (*Hasher, error) {
 	newHasher, err := hasherProvider.NewHasher()
 	if err != nil {
@@ -42,12 +42,12 @@ func NewHasher(hasherProvider ihp.IonHasherProvider) (*Hasher, error) {
 	return &Hasher{hasherProvider, currentHasher, hasherStack}, nil
 }
 
-// Hash a scalar Ion value.
+// Scalar hashes a scalar Ion value.
 func (h *Hasher) Scalar(ionValue HashValue) error {
 	return h.currentHasher.scalar(ionValue)
 }
 
-// Step into the Ion container.
+// StepIn will step in the Ion container.
 func (h *Hasher) StepIn(ionValue HashValue) error {
 	var hashFunction ihp.IonHasher
 
@@ -78,7 +78,7 @@ func (h *Hasher) StepIn(ionValue HashValue) error {
 	return h.currentHasher.stepIn(ionValue)
 }
 
-// Step out of the Ion container.
+// StepOut will step out of the Ion container.
 func (h *Hasher) StepOut() error {
 	if h.Depth() == 0 {
 		return &InvalidOperationError{"hasher", "stepOut", "Depth is zero. Hasher cannot step out any further"}
@@ -119,6 +119,7 @@ func (h *Hasher) Sum(b []byte) ([]byte, error) {
 	return h.currentHasher.sum(b), nil
 }
 
+// Depth returns the current size of the Hasher stack.
 func (h *Hasher) Depth() int {
 	return h.hasherStack.size() - 1
 }
