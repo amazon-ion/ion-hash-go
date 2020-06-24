@@ -29,84 +29,85 @@ import (
 // and the HashReader reads the inner struct.
 // We then confirm that the HashReader reads the same hash written by the HashWriter.
 func TestFieldNameAsymmetry(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
+	//t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
 
 	buf := bytes.Buffer{}
 	writer := ion.NewBinaryWriter(&buf)
 
 	hw, err := NewHashWriter(writer, newIdentityHasherProvider())
 	if err != nil {
-		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
+		t.Fatalf("Expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
 
 	ionHashWriter, ok := hw.(*hashWriter)
 	if !ok {
-		t.Fatal("expected hw to be of type hashWriter")
+		t.Fatal("Expected hw to be of type hashWriter")
 	}
 
 	// Writing a nested struct: {a:{b:1}}
 	// We use the ion writer to write the outer struct (ie. {a:_})
 	err = writer.BeginStruct()
 	if err != nil {
-		t.Errorf("expected writer.BeginStruct() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing writer.BeginStruct(); %s", err.Error())
 	}
 
 	err = writer.FieldName("a")
 	if err != nil {
-		t.Errorf("expected writer.FieldName(\"a\") to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing writer.FieldName(\"a\"); %s", err.Error())
 	}
 
 	// We use the ion hash writer to write the inner struct (ie. {b:1} inside {a:{b:1}})
 	err = ionHashWriter.BeginStruct()
 	if err != nil {
-		t.Errorf("expected ionHashWriter.BeginStruct() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashWriter.BeginStruct(); %s", err.Error())
 	}
 
 	err = ionHashWriter.FieldName("b")
 	if err != nil {
-		t.Errorf("expected ionHashWriter.FieldName(\"b\") to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashWriter.FieldName(\"b\"); %s", err.Error())
 	}
 
+	ionHashWriter.setUndah(true)
 	err = ionHashWriter.WriteInt(1)
 	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteInt(1) to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashWriter.WriteInt(1); %s", err.Error())
 	}
 
 	err = ionHashWriter.EndStruct()
 	if err != nil {
-		t.Errorf("expected ionHashWriter.EndStruct() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashWriter.EndStruct(); %s", err.Error())
 	}
 
 	err = writer.EndStruct()
 	if err != nil {
-		t.Errorf("expected writer.EndStruct() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing writer.EndStruct(); %s", err.Error())
 	}
 
 	writeHash, err := ionHashWriter.Sum(nil)
 	if err != nil {
-		t.Errorf("expected ionHashWriter.Sum(nil) to execute without errors; %s", err.Error())
+		t.Fatalf("Something went wrong executing ionHashWriter.Sum(nil); %s", err.Error())
 	}
 
 	err = ionHashWriter.Finish()
 	if err != nil {
-		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashWriter.Finish(); %s", err.Error())
 	}
 
 	err = writer.Finish()
 	if err != nil {
-		t.Errorf("expected writer.Finish() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing writer.Finish(); %s", err.Error())
 	}
 
 	reader := ion.NewReaderBytes(buf.Bytes())
 
 	hr, err := NewHashReader(reader, newIdentityHasherProvider())
 	if err != nil {
-		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
+		t.Fatalf("Expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
 	ionHashReader, ok := hr.(*hashReader)
 	if !ok {
-		t.Fatalf("expected hr to be of type hashReader")
+		t.Fatalf("Expected hr to be of type hashReader")
 	}
 
 	// We are reading the nested struct that we just wrote: {a:{b:1}}
@@ -114,57 +115,61 @@ func TestFieldNameAsymmetry(t *testing.T) {
 	if !reader.Next() {
 		err = reader.Err()
 		if err != nil {
-			t.Errorf("expected reader.Next() to execute without errors; %s", err.Error())
+			t.Errorf("Something went wrong executing reader.Next(); %s", err.Error())
 		}
 	}
 
 	err = reader.StepIn()
 	if err != nil {
-		t.Errorf("expected reader.StepIn() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing reader.StepIn(); %s", err.Error())
 	}
 
 	if !reader.Next() {
 		err = reader.Err()
 		if err != nil {
-			t.Errorf("expected reader.Next() to execute without errors; %s", err.Error())
+			t.Errorf("Something went wrong executing reader.Next(); %s", err.Error())
 		}
 	}
 
 	// We use the ion hash reader to read the inner struct (ie. {b:1} inside {a:{b:1}})
 	err = ionHashReader.StepIn()
 	if err != nil {
-		t.Errorf("expected ionHashReader.StepIn() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashReader.StepIn(); %s", err.Error())
 	}
 
 	if !ionHashReader.Next() {
 		err = ionHashReader.Err()
 		if err != nil {
-			t.Errorf("expected ionHashReader.Next() to execute without errors; %s", err.Error())
+			t.Errorf("Something went wrong executing ionHashReader.Next(); %s", err.Error())
 		}
 	}
 
+	ionHashReader.setUndah(true)
 	err = ionHashReader.StepOut()
 	if err != nil {
-		t.Errorf("expected ionHashReader.StepOut() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashReader.StepOut(); %s", err.Error())
 	}
 
 	err = reader.StepOut()
 	if err != nil {
-		t.Errorf("expected reader.StepOut() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing reader.StepOut(); %s", err.Error())
 	}
 
 	sum, err := ionHashReader.Sum(nil)
 	if err != nil {
-		t.Fatalf("expected ionHashReader.Sum(nil) to execute without errors; %s", err.Error())
+		t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, writeHash) {
-		t.Errorf("expected sum to be %v instead of %v", writeHash, sum)
+		t.Errorf("sum did not match expectation;\n"+
+			"Expected sum: %v\n"+
+			"Actual sum:   %v",
+			writeHash, sum)
 	}
 }
 
 func TestNoFieldNameInCurrentHash(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
+	//t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
 
 	AssertNoFieldnameInCurrentHash(t, "null", []byte{0x0b, 0x0f, 0x0e})
 	AssertNoFieldnameInCurrentHash(t, "false", []byte{0x0b, 0x10, 0x0e})
@@ -209,48 +214,52 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 
 	err = writer.BeginStruct()
 	if err != nil {
-		t.Errorf("expected writer.BeginStruct() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing writer.BeginStruct(); %s", err.Error())
 	}
 
 	hw, err := NewHashWriter(writer, newIdentityHasherProvider())
 	if err != nil {
-		t.Errorf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
+		t.Fatalf("Expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
 
 	ionHashWriter, ok := hw.(*hashWriter)
 	if !ok {
-		t.Error("expected hw to be of type hashWriter")
+		t.Fatalf("Expected hw to be of type hashWriter")
 	}
 
 	err = ionHashWriter.FieldName("field_name")
 	if err != nil {
-		t.Errorf("expected ionHashWriter.FieldName(\"field_name\") to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashWriter.FieldName(\"field_name\"); %s", err.Error())
 	}
 
-	writeToWriterFromReader(t, reader, ionHashWriter)
+	ionHashWriter.setUndah(true)
+	writeFromReaderToWriter(t, reader, ionHashWriter)
 
 	actual, err := ionHashWriter.Sum(nil)
 	if err != nil {
-		t.Errorf("expected ionHashWriter.Sum(nil) to execute without errors; %s", err.Error())
+		t.Fatalf("Something went wrong executing ionHashWriter.Sum(nil); %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(actual, expectedBytes) {
-		t.Errorf("expected sum to be %v instead of %v", expectedBytes, actual)
+		t.Errorf("sum did not match expectation;\n"+
+			"Expected sum: %v\n"+
+			"Actual sum:   %v",
+			expectedBytes, actual)
 	}
 
 	err = writer.EndStruct()
 	if err != nil {
-		t.Errorf("expected writer.EndStruct() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing writer.EndStruct(); %s", err.Error())
 	}
 
 	err = ionHashWriter.Finish()
 	if err != nil {
-		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing ionHashWriter.Finish(); %s", err.Error())
 	}
 
 	err = writer.Finish()
 	if err != nil {
-		t.Errorf("expected writer.Finish() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing writer.Finish(); %s", err.Error())
 	}
 
 	reader = ion.NewReaderBytes(buf.Bytes())
@@ -258,30 +267,32 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 	if !reader.Next() {
 		err = reader.Err()
 		if err != nil {
-			t.Errorf("expected reader.Next() to execute without errors; %s", err.Error())
+			t.Errorf("Something went wrong executing reader.Next(); %s", err.Error())
 		}
 	}
 
 	err = reader.StepIn()
 	if err != nil {
-		t.Errorf("expected reader.StepIn() to execute without errors; %s", err.Error())
+		t.Errorf("Something went wrong executing reader.StepIn(); %s", err.Error())
 	}
 
 	hr, err := NewHashReader(reader, newIdentityHasherProvider())
 	if err != nil {
-		t.Errorf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
+		t.Fatalf("Expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
 	ionHashReader := hr.(*hashReader)
 	if !ok {
-		t.Fatal("expected hr to be of type hashReader")
+		t.Fatal("Expected hr to be of type hashReader")
 	}
+
+	ionHashReader.setUndah(true)
 
 	// List
 	if !ionHashReader.Next() {
 		err = ionHashReader.Err()
 		if err != nil {
-			t.Errorf("expected ionHashReader.Next() to execute without errors; %s", err.Error())
+			t.Errorf("Something went wrong executing ionHashReader.Next(); %s", err.Error())
 		}
 	}
 
@@ -289,227 +300,19 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 	if !ionHashReader.Next() {
 		err = ionHashReader.Err()
 		if err != nil {
-			t.Errorf("expected ionHashReader.Next() to execute without errors; %s", err.Error())
+			t.Errorf("Something went wrong executing ionHashReader.Next(); %s", err.Error())
 		}
 	}
 
 	actualBytes, err := ionHashReader.Sum(nil)
 	if err != nil {
-		t.Errorf("expected ionHashReader.Sum(nil) to execute without errors; %s", err.Error())
+		t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(expectedBytes, actualBytes) {
-		t.Errorf("expected sum to be %v instead of %v", expectedBytes, actualBytes)
-	}
-}
-
-// Read all the values in the reader and write them in the writer
-func writeToWriterFromReader(t *testing.T, reader ion.Reader, writer ion.Writer) {
-	for reader.Next() {
-		name := reader.FieldName()
-		if name != "" {
-			err := writer.FieldName(name)
-			if err != nil {
-				t.Fatalf("expected writer.FieldName(name) to execute without errors; %s", err.Error())
-			}
-		}
-
-		an := reader.Annotations()
-		if len(an) > 0 {
-			err := writer.Annotations(an...)
-			if err != nil {
-				t.Fatalf("expected writer.Annotations(an...) to execute without errors; %s", err.Error())
-			}
-		}
-
-		currentType := reader.Type()
-		if reader.IsNull() {
-			err := writer.WriteNullType(currentType)
-			if err != nil {
-				t.Fatalf("expected writer.WriteNullType(currentType) to execute without errors; %s", err.Error())
-			}
-			return
-		}
-
-		switch currentType {
-		case ion.BoolType:
-			val, err := reader.BoolValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Boolean value; %s", err.Error())
-			}
-			err = writer.WriteBool(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Boolean value; %s", err.Error())
-			}
-
-		case ion.IntType:
-			intSize, err := reader.IntSize()
-			if err != nil {
-				t.Fatalf("Something went wrong when retrieving the Int size; %s", err.Error())
-			}
-
-			switch intSize {
-			case ion.Int32, ion.Int64:
-				val, err := reader.Int64Value()
-				if err != nil {
-					t.Errorf("Something went wrong when reading Int value; %s", err.Error())
-				}
-				err = writer.WriteInt(val)
-				if err != nil {
-					t.Errorf("Something went wrong when writing Int value; %s", err.Error())
-				}
-			case ion.Uint64:
-				val, err := reader.Uint64Value()
-				if err != nil {
-					t.Errorf("Something went wrong when reading UInt value; %s", err.Error())
-				}
-				err = writer.WriteUint(val)
-				if err != nil {
-					t.Errorf("Something went wrong when writing UInt value; %s", err.Error())
-				}
-			case ion.BigInt:
-				val, err := reader.BigIntValue()
-				if err != nil {
-					t.Errorf("Something went wrong when reading Big Int value; %s", err.Error())
-				}
-				err = writer.WriteBigInt(val)
-				if err != nil {
-					t.Errorf("Something went wrong when writing Big Int value; %s", err.Error())
-				}
-			default:
-				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
-			}
-
-		case ion.FloatType:
-			val, err := reader.FloatValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Float value; %s", err.Error())
-			}
-			err = writer.WriteFloat(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Float value; %s", err.Error())
-			}
-
-		case ion.DecimalType:
-			val, err := reader.DecimalValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Decimal value; %s", err.Error())
-			}
-			err = writer.WriteDecimal(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Decimal value; %s", err.Error())
-			}
-
-		case ion.TimestampType:
-			val, err := reader.TimeValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Timestamp value; %s", err.Error())
-			}
-			err = writer.WriteTimestamp(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Timestamp value; %s", err.Error())
-			}
-
-		case ion.SymbolType:
-			val, err := reader.StringValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Symbol value; %s", err.Error())
-			}
-			err = writer.WriteSymbol(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Symbol value; %s", err.Error())
-			}
-
-		case ion.StringType:
-			val, err := reader.StringValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading String value; %s", err.Error())
-			}
-			err = writer.WriteString(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing String value; %s", err.Error())
-			}
-
-		case ion.ClobType:
-			val, err := reader.ByteValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Clob value; %s", err.Error())
-			}
-			err = writer.WriteClob(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Clob value; %s", err.Error())
-			}
-
-		case ion.BlobType:
-			val, err := reader.ByteValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Blob value; %s", err.Error())
-			}
-			err = writer.WriteBlob(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Blob value; %s", err.Error())
-			}
-
-		case ion.SexpType:
-			err := reader.StepIn()
-			if err != nil {
-				t.Fatalf("expected reader.StepIn() to execute without errors; %s", err.Error())
-			}
-			err = writer.BeginSexp()
-			if err != nil {
-				t.Fatalf("expected writer.BeginSexp() to execute without errors; %s", err.Error())
-			}
-			writeToWriterFromReader(t, reader, writer)
-			err = reader.StepOut()
-			if err != nil {
-				t.Fatalf("expected reader.StepOut() to execute without errors; %s", err.Error())
-			}
-			err = writer.EndSexp()
-			if err != nil {
-				t.Fatalf("expected writer.EndSexp() to execute without errors; %s", err.Error())
-			}
-
-		case ion.ListType:
-			err := reader.StepIn()
-			if err != nil {
-				t.Fatalf("expected reader.StepIn() to execute without errors; %s", err.Error())
-			}
-			err = writer.BeginList()
-			if err != nil {
-				t.Fatalf("expected writer.BeginList() to execute without errors; %s", err.Error())
-			}
-			writeToWriterFromReader(t, reader, writer)
-			err = reader.StepOut()
-			if err != nil {
-				t.Fatalf("expected reader.StepOut() to execute without errors; %s", err.Error())
-			}
-			err = writer.EndList()
-			if err != nil {
-				t.Fatalf("expected writer.EndList() to execute without errors; %s", err.Error())
-			}
-
-		case ion.StructType:
-			err := reader.StepIn()
-			if err != nil {
-				t.Fatalf("expected reader.StepIn() to execute without errors; %s", err.Error())
-			}
-			err = writer.BeginStruct()
-			if err != nil {
-				t.Fatalf("expected writer.BeginStruct() to execute without errors; %s", err.Error())
-			}
-			writeToWriterFromReader(t, reader, writer)
-			err = reader.StepOut()
-			if err != nil {
-				t.Fatalf("expected reader.StepOut() to execute without errors; %s", err.Error())
-			}
-			err = writer.EndStruct()
-			if err != nil {
-				t.Fatalf("expected writer.EndStruct() to execute without errors; %s", err.Error())
-			}
-		}
-	}
-
-	if reader.Err() != nil {
-		t.Errorf("expected reader.Next() to execute without errors; %s", reader.Err().Error())
+		t.Errorf("sum did not match expectation;\n"+
+			"Expected sum: %v\n"+
+			"Actual sum:   %v",
+			expectedBytes, actualBytes)
 	}
 }
