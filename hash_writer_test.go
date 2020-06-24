@@ -451,7 +451,7 @@ func TestExtraEndContainer(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValue(t *testing.T) {
-	t.Skip() // Skipping test until length checks pass
+	t.Skip()
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	if err != nil {
@@ -460,9 +460,9 @@ func TestIonWriterContractWriteValue(t *testing.T) {
 
 	reader := ion.NewReaderBytes(file)
 
-	expected := ExerciseWriter(t, reader, false, nextWriteValue)
+	expected := ExerciseWriter(t, reader, false, writeFromReaderToWriterAfterNext)
 
-	actual := ExerciseWriter(t, reader, true, nextWriteValue)
+	actual := ExerciseWriter(t, reader, true, writeFromReaderToWriterAfterNext)
 
 	if len(expected) <= 10 {
 		t.Error("Expected the ion writer to write more than 10 bytes")
@@ -481,7 +481,7 @@ func TestIonWriterContractWriteValue(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValues(t *testing.T) {
-	t.Skip() // Skipping test until length checks pass
+	t.Skip()
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	if err != nil {
@@ -490,9 +490,9 @@ func TestIonWriterContractWriteValues(t *testing.T) {
 
 	reader := ion.NewReaderBytes(file)
 
-	expected := ExerciseWriter(t, reader, false, writeValues)
+	expected := ExerciseWriter(t, reader, false, writeFromReaderToWriter)
 
-	actual := ExerciseWriter(t, reader, true, writeValues)
+	actual := ExerciseWriter(t, reader, true, writeFromReaderToWriter)
 
 	if len(expected) <= 1000 {
 		t.Error("Expected the ion writer to write more than 1000 bytes")
@@ -541,18 +541,13 @@ func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, functio
 
 type writeFunction func(*testing.T, ion.Reader, ion.Writer)
 
-func nextWriteValue(t *testing.T, reader ion.Reader, writer ion.Writer) {
-	next := reader.Next()
-	if !next {
+func writeFromReaderToWriterAfterNext(t *testing.T, reader ion.Reader, writer ion.Writer) {
+	if !reader.Next() {
 		err := reader.Err()
 		if err != nil {
 			t.Errorf("Something went wrong executing reader.Next(); %s", err.Error())
 		}
 	}
 
-	// TODO: Implement WriteValue logic once writer.WriteValue() is available
-}
-
-func writeValues(t *testing.T, reader ion.Reader, writer ion.Writer) {
-	// TODO: Implement WriteValues logic once writer.WriteValues() is available
+	writeFromReaderToWriter(t, reader, writer)
 }
