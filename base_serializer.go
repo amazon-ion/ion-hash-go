@@ -331,7 +331,20 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	case ion.StringType:
 		return writer.WriteString(ionValue.(string))
 	case ion.SymbolType:
-		return writer.WriteString(ionValue.(string))
+		ionValueStr, ok := ionValue.(string)
+		if ok {
+			return writer.WriteString(ionValueStr)
+		}
+
+		ionValueSymbol, ok := ionValue.(ion.SymbolTable)
+		if ok {
+			symbols := ionValueSymbol.Symbols()
+			if len(symbols) > 0 {
+				return writer.WriteString(symbols[0])
+			}
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.TimestampType:
 		return writer.WriteTimestamp(ionValue.(time.Time))
 	case ion.NullType:
