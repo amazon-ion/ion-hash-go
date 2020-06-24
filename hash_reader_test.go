@@ -47,7 +47,7 @@ func TestEmptyString(t *testing.T) {
 
 		sum, err := ionHashReader.Sum(nil)
 		if err != nil {
-			t.Fatalf("Something went wrong executing Sum(nil); %s", err.Error())
+			t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 		}
 
 		if !reflect.DeepEqual(sum, []byte{}) {
@@ -89,7 +89,7 @@ func TestTopLevelValues(t *testing.T) {
 
 		sum, err := ionHashReader.Sum(nil)
 		if err != nil {
-			t.Fatalf("Something went wrong executing Sum(nil); %s", err.Error())
+			t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 		}
 
 		if !reflect.DeepEqual(sum, expectedSums[i]) {
@@ -252,7 +252,7 @@ func ConsumeRemainderStepInStepOutTopLevel(t *testing.T, ionHashReader HashReade
 	ionHashReader.Next()
 	sum, err := ionHashReader.Sum(nil)
 	if err != nil {
-		t.Fatalf("Something went wrong executing Sum(nil); %s", err.Error())
+		t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
@@ -313,7 +313,7 @@ func consume(t *testing.T, function consumeFunction) {
 
 	sum, err := ionHashReader.Sum(nil)
 	if err != nil {
-		t.Fatalf("Something went wrong executing Sum(nil); %s", err.Error())
+		t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
@@ -327,7 +327,7 @@ func consume(t *testing.T, function consumeFunction) {
 
 	sum, err = ionHashReader.Sum(nil)
 	if err != nil {
-		t.Fatalf("Something went wrong executing Sum(nil); %s", err.Error())
+		t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 	}
 
 	expectedSum := []byte{0x0b, 0xb0, 0x0b, 0x20, 0x01, 0x0e, 0x0b, 0x20, 0x02, 0x0e, 0x0b, 0xd0, 0x0c, 0x0b, 0x70,
@@ -360,7 +360,7 @@ func consume(t *testing.T, function consumeFunction) {
 
 	sum, err = ionHashReader.Sum(nil)
 	if err != nil {
-		t.Fatalf("Something went wrong executing Sum(nil); %s", err.Error())
+		t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 	}
 
 	if !reflect.DeepEqual(sum, []byte{}) {
