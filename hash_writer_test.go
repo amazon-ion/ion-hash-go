@@ -124,8 +124,8 @@ func TestWriteNull(t *testing.T) {
 	actual := strings.Split(str.String(), "\n")
 
 	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("str.String() did not match expectation;\n" +
-			"Expected str.String(): %v" +
+		t.Errorf("str.String() did not match expectation;\n"+
+			"Expected str.String(): %v"+
 			"Actual str.string():   %v",
 			expected, actual)
 	}
@@ -245,8 +245,8 @@ func TestWriteScalars(t *testing.T) {
 	actual := strings.Split(str.String(), "\n")
 
 	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("str.String() did not match expectation;\n" +
-			"Expected str.String(): %v" +
+		t.Errorf("str.String() did not match expectation;\n"+
+			"Expected str.String(): %v"+
 			"Actual str.string():   %v",
 			expected, actual)
 	}
@@ -400,8 +400,8 @@ func TestWriteContainers(t *testing.T) {
 	actual := strings.Split(str.String(), "\n")
 
 	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("str.String() did not match expectation;\n" +
-			"Expected str.String(): %v" +
+		t.Errorf("str.String() did not match expectation;\n"+
+			"Expected str.String(): %v"+
 			"Actual str.string():   %v",
 			expected, actual)
 	}
