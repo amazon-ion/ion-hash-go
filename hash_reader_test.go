@@ -171,14 +171,7 @@ func TestIonReaderContract(t *testing.T) {
 		t.Fatalf("Expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
-	compare, err := compareReaders(reader, ionHashReader)
-	if !compare {
-		if err != nil {
-			t.Errorf("Something went wrong executing compareReaders(reader, ionHashReader); %s", err.Error())
-		} else {
-			t.Errorf("Expected compareReaders(reader, ionHashReader) to return true")
-		}
-	}
+	compareReaders(t, reader, ionHashReader)
 }
 
 func ConsumeRemainderPartialConsume(t *testing.T, ionHashReader HashReader) {
