@@ -67,7 +67,6 @@ func TestFieldNameAsymmetry(t *testing.T) {
 		t.Errorf("Something went wrong executing ionHashWriter.FieldName(\"b\"); %s", err.Error())
 	}
 
-	ionHashWriter.setUndah(true)
 	err = ionHashWriter.WriteInt(1)
 	if err != nil {
 		t.Errorf("Something went wrong executing ionHashWriter.WriteInt(1); %s", err.Error())
@@ -144,7 +143,6 @@ func TestFieldNameAsymmetry(t *testing.T) {
 		}
 	}
 
-	ionHashReader.setUndah(true)
 	err = ionHashReader.StepOut()
 	if err != nil {
 		t.Errorf("Something went wrong executing ionHashReader.StepOut(); %s", err.Error())
@@ -232,7 +230,6 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 		t.Errorf("Something went wrong executing ionHashWriter.FieldName(\"field_name\"); %s", err.Error())
 	}
 
-	ionHashWriter.setUndah(true)
 	writeFromReaderToWriter(t, reader, ionHashWriter)
 
 	actual, err := ionHashWriter.Sum(nil)
@@ -285,8 +282,6 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 	if !ok {
 		t.Fatal("Expected hr to be of type hashReader")
 	}
-
-	ionHashReader.setUndah(true)
 
 	// List
 	if !ionHashReader.Next() {

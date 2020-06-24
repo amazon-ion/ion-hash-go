@@ -113,8 +113,8 @@ func hasNext(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) bool {
 	next2 := reader2.Next()
 
 	if next1 != next2 {
-		t.Errorf("next results don't match;\n" +
-			"next1: %v,\n" +
+		t.Errorf("next results don't match;\n"+
+			"next1: %v,\n"+
 			"next2: %v",
 			next1, next2)
 	}
@@ -155,8 +155,8 @@ func compareAnnotations(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 	annotations2 := reader2.Annotations()
 
 	if !reflect.DeepEqual(annotations1, annotations2) {
-		t.Errorf("Expected symbol sequences to match;\n" +
-			"Annotations #1: %v\n" +
+		t.Errorf("Expected symbol sequences to match;\n"+
+			"Annotations #1: %v\n"+
 			"Annotations #2; %v",
 			annotations1, annotations2)
 	}
@@ -188,8 +188,8 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 			}
 
 			if value1 != value2 {
-				t.Errorf("Expected bool values to match;\n" +
-					"Bool #1: %v\n" +
+				t.Errorf("Expected bool values to match;\n"+
+					"Bool #1: %v\n"+
 					"Bool #2: %v",
 					value1, value2)
 			}
@@ -248,8 +248,8 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 				}
 
 				if bigInt1 != bigInt2 {
-					t.Errorf("Expected big int values to match;\n" +
-						"Big Int #1: %v\n" +
+					t.Errorf("Expected big int values to match;\n"+
+						"Big Int #1: %v\n"+
 						"Big Int #2: %v",
 						bigInt1, bigInt2)
 				}
@@ -278,8 +278,8 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 					t.Errorf("Expected float values to differ")
 				}
 			} else if float1 != float2 {
-				t.Errorf("Expected float values to match;\n" +
-					"Float #1: %v\n" +
+				t.Errorf("Expected float values to match;\n"+
+					"Float #1: %v\n"+
 					"Float #2: %v",
 					float1, float2)
 			}
@@ -311,8 +311,8 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 			}
 
 			if timestamp1 != timestamp2 {
-				t.Errorf("Expected timestamp values to match;\n" +
-					"Timestamp #1: %v\n" +
+				t.Errorf("Expected timestamp values to match;\n"+
+					"Timestamp #1: %v\n"+
 					"Timestamp #2: %v",
 					timestamp1, timestamp2)
 			}
@@ -329,8 +329,8 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 		}
 
 		if str1 != str2 {
-			t.Errorf("Expected string values to match;\n" +
-				"String #1: %s\n" +
+			t.Errorf("Expected string values to match;\n"+
+				"String #1: %s\n"+
 				"String #2: %s",
 				str1, str2)
 		}
@@ -357,8 +357,8 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 			}
 
 			for i := 0; i < len(b1); i++ {
-				t.Errorf("Expected byte arrays to match;\n" +
-					"Array #1: %v\n" +
+				t.Errorf("Expected byte arrays to match;\n"+
+					"Array #1: %v\n"+
 					"Array #2: %v",
 					b1, b2)
 			}
@@ -371,8 +371,8 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 // decimalStrictEquals() compares two Ion Decimal values by equality and negative zero.
 func decimalStrictEquals(t *testing.T, decimal1, decimal2 *ion.Decimal) {
 	if decimal1 != decimal2 {
-		t.Errorf("Expected decimal values to match;\n" +
-			"Decimal #1: %v\n" +
+		t.Errorf("Expected decimal values to match;\n"+
+			"Decimal #1: %v\n"+
 			"Decimal #2: %v",
 			decimal1, decimal2)
 	}
