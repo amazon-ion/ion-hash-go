@@ -246,7 +246,7 @@ func TestWriteScalars(t *testing.T) {
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("str.String() did not match expectation;\n"+
-			"Expected str.String(): %v"+
+			"Expected str.String(): %v\n"+
 			"Actual str.string():   %v",
 			expected, actual)
 	}
