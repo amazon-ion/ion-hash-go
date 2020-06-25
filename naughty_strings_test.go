@@ -31,9 +31,14 @@ func TestNaughtyStrings(t *testing.T) {
 
 	file, err := os.Open("ion-hash-test/big_list_of_naughty_strings.txt")
 	if err != nil {
-		t.Fatal("expected big_list_of_naughty_strings.txt to load properly")
+		t.Fatalf("Something went wrong loading big_list_of_naughty_strings.txt; %s", err.Error())
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Errorf("Something went wrong executing file.Close(); %s", err.Error())
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -91,7 +96,7 @@ func TestNaughtyStrings(t *testing.T) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		t.Fatalf("expected scanner to scan without errors; %s", err.Error())
+		t.Errorf("Expected scanner to scan without errors; %s", err.Error())
 	}
 }
 
@@ -101,53 +106,53 @@ func NaughtyStrings(t *testing.T, tv testValue, s string) {
 	str := strings.Builder{}
 	hw, err := NewHashWriter(ion.NewTextWriter(&str), hasherProvider)
 	if err != nil {
-		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
+		t.Fatalf("Expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
 
 	ionHashWriter, ok := hw.(*hashWriter)
 	if !ok {
-		t.Fatal("expected hw to be of type hashWriter")
+		t.Fatal("Expected hw to be of type hashWriter")
 	}
 
 	writeToWriterFromReader(t, ion.NewReaderStr(s), ionHashWriter)
 
 	hr, err := NewHashReader(ion.NewReaderStr(s), hasherProvider)
 	if err != nil {
-		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
+		t.Fatalf("Expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
 
 	ionHashReader, ok := hr.(*hashReader)
 	if !ok {
-		t.Fatalf("expected hr to be of type hashReader")
+		t.Fatalf("Expected hr to be of type hashReader")
 	}
 
 	if !ionHashReader.Next() {
-		err = ionHashReader.Err()
-		if err != nil {
-			t.Errorf("expected ionHashReader.Next() to execute without errors; %s", err.Error())
+		if err = ionHashReader.Err(); err != nil {
+			t.Errorf("Something went wrong executing ionHashReader.Next(); %s", err.Error())
 		}
 	}
 
 	if !ionHashReader.Next() {
-		err = ionHashReader.Err()
-		if err != nil {
-			t.Errorf("expected ionHashReader.Next() to execute without errors; %s", err.Error())
+		if err = ionHashReader.Err(); err != nil {
+			t.Errorf("Something went wrong executing ionHashReader.Next(); %s", err.Error())
 		}
 	}
 
 	if tv.isValidIon() {
 		writerSum, err := ionHashWriter.Sum(nil)
 		if err != nil {
-			t.Fatalf("expected ionHashWriter.Sum(nil) to execute without errors; %s", err.Error())
+			t.Fatalf("Something went wrong executing ionHashWriter.Sum(nil); %s", err.Error())
 		}
 
 		readerSum, err := ionHashReader.Sum(nil)
 		if err != nil {
-			t.Fatalf("expected ionHashReader.Sum(nil) to execute without errors; %s", err.Error())
+			t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
 		}
 
 		if !reflect.DeepEqual(writerSum, readerSum) {
-			t.Errorf("expected reader/writer sums for \"%s\" to match;\nWriter sum: %v\nReader sum: %v",
+			t.Errorf("Expected reader/writer sums for \"%s\" to match;\n"+
+				"Writer sum: %v\n"+
+				"Reader sum: %v",
 				tv.asIon(), writerSum, readerSum)
 		}
 	}
