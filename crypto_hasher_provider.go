@@ -15,6 +15,7 @@
 
 package ionhash
 
+// CryptoHasherProvider struct for crypto hasher provider
 type CryptoHasherProvider struct {
 	IonHasherProvider
 
