@@ -17,35 +17,22 @@ package ionhash
 
 import (
 	"math"
-	"reflect"
 	"testing"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
-	for true {
-		if !hasNext(t, reader1, reader2) {
-			break
-		}
-
-		ionType1 := reader1.Type()
-		ionType2 := reader2.Type()
-
-		if ionType1 != ionType2 {
-			t.Errorf("Ion types do not match;\n"+
-				"Type #1: %s\n"+
-				"Type #2: %s",
-				ionType1.String(), ionType2.String())
-		}
+	for hasNext(t, reader1, reader2) {
+		require.Equal(t, reader1.Type().String(), reader2.Type().String(), "Ion Types did not match")
 
 		ionHashReader, ok := reader2.(*hashReader)
-		if ok {
-			if ionHashReader.isInStruct() {
-				compareFieldNames(t, reader1, reader2)
-			}
-		} else {
-			t.Errorf("Expected reader2 to be of type hashReader")
+		require.True(t, ok, "Expected reader2 to be of type hashReader")
+
+		if ionHashReader.isInStruct() {
+			compareFieldNames(t, reader1, reader2)
 		}
 
 		compareAnnotations(t, reader1, reader2)
@@ -54,57 +41,32 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 
 		compareHasAnnotations(t, reader1, reader2)
 
-		isNull1 := reader1.IsNull()
-		isNull2 := reader2.IsNull()
-		if isNull1 != isNull2 {
-			t.Errorf("Expected readers to have matching IsNull() values;\n"+
-				"isNull1: %v,\n"+
-				"isNull2: %v",
-				isNull1, isNull2)
-		}
+		require.Equal(t, reader1.IsNull(), reader2.IsNull(), "Expected readers to have matching IsNull() values")
 
-		switch ionType1 {
+		switch reader1.Type() {
 		case ion.NullType:
-			if !isNull1 {
-				t.Errorf("Expected ionType1 to be null")
-			}
-			if !isNull2 {
-				t.Errorf("Expected ionType2 to be null")
-			}
+			assert.True(t, reader1.IsNull(), "Expected reader1.IsNull() to return true")
+			assert.True(t, reader2.IsNull(), "Expected reader2.IsNull() to return true")
 		case ion.BoolType, ion.IntType, ion.FloatType, ion.DecimalType, ion.TimestampType,
 			ion.StringType, ion.SymbolType, ion.BlobType, ion.ClobType:
 
-			compareScalars(t, reader1, reader2)
+			compareScalars(t, reader1.Type(), reader1.IsNull(), reader1, reader2)
 		case ion.StructType, ion.ListType, ion.SexpType:
-			err := reader1.StepIn()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader1.StepIn(); %s", err.Error())
-			}
+			assert.NoError(t, reader1.StepIn(), "Something went wrong executing reader1.StepIn()")
 
-			err = reader2.StepIn()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader2.StepIn(); %s", err.Error())
-			}
+			assert.NoError(t, reader2.StepIn(), "Something went wrong executing reader2.StepIn()")
 
 			compareReaders(t, reader1, reader2)
 
-			err = reader1.StepOut()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader1.StepOut(); %s", err.Error())
-			}
+			assert.NoError(t, reader1.StepOut(), "Something went wrong executing reader1.StepOut()")
 
-			err = reader2.StepOut()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader1.StepOut(); %s", err.Error())
-			}
+			assert.NoError(t, reader2.StepOut(), "Something went wrong executing reader2.StepOut()")
 		default:
-			t.Error(&InvalidIonTypeError{ionType1})
+			t.Error(&InvalidIonTypeError{reader1.Type()})
 		}
 	}
 
-	if hasNext(t, reader1, reader2) {
-		t.Errorf("Expected hasNext() to return false")
-	}
+	assert.False(t, hasNext(t, reader1, reader2), "Expected hasNext() to return false")
 }
 
 // hasNext() checks that the readers have a Next value
@@ -112,25 +74,14 @@ func hasNext(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) bool {
 	next1 := reader1.Next()
 	next2 := reader2.Next()
 
-	if next1 != next2 {
-		t.Errorf("next results don't match;\n"+
-			"next1: %v,\n"+
-			"next2: %v",
-			next1, next2)
-	}
+	assert.Equal(t, next1, next2, "next results don't match")
 
 	if !next1 {
-		err := reader1.Err()
-		if err != nil {
-			t.Errorf("Something went wrong executing reader1.next(); %s", err.Error())
-		}
+		assert.NoError(t, reader1.Err(), "Something went wrong executing reader1.next()")
 	}
 
 	if !next2 {
-		err := reader2.Err()
-		if err != nil {
-			t.Errorf("Something went wrong executing reader2.next(); %s", err.Error())
-		}
+		assert.NoError(t, reader2.Err(), "Something went wrong executing reader2.next()")
 	}
 
 	return next1 && next2
@@ -140,26 +91,16 @@ func compareFieldNames(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 	// TODO: Add SymbolToken logic here once SymbolTokens are available
 }
 
-func compareNonNullStrings(t *testing.T, str1, str2 string, message string) bool {
-	if str1 == "" || str2 == "" || str1 != str2 {
-		t.Error(message)
-	}
-
-	return true
+func compareNonNullStrings(t *testing.T, str1, str2 string) {
+	assert.NotNil(t, str1, "Expected str1 to be not null")
+	assert.NotNil(t, str2, "Expected str2 to be not null")
+	assert.Equal(t, str1, str2, "Expected strings to match")
 }
 
 func compareAnnotations(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 	// TODO: Add SymbolToken logic here once SymbolTokens are available
 
-	annotations1 := reader1.Annotations()
-	annotations2 := reader2.Annotations()
-
-	if !reflect.DeepEqual(annotations1, annotations2) {
-		t.Errorf("Expected symbol sequences to match;\n"+
-			"Annotations #1: %v\n"+
-			"Annotations #2; %v",
-			annotations1, annotations2)
-	}
+	assert.Equal(t, reader1.Annotations(), reader2.Annotations(), "Expected symbol sequences to match")
 }
 
 func compareAnnotationSymbols(t *testing.T, reader1, reader2 ion.Reader) {
@@ -170,89 +111,48 @@ func compareHasAnnotations(t *testing.T, reader1, reader2 ion.Reader) {
 	// TODO: Add SymbolToken logic here once SymbolTokens are available
 }
 
-func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
-	ionType := reader1.Type()
-	isNull := reader1.IsNull()
-
+func compareScalars(t *testing.T, ionType ion.Type, isNull bool, reader1 ion.Reader, reader2 ion.Reader) {
 	switch ionType {
 	case ion.BoolType:
 		if !isNull {
 			value1, err := reader1.BoolValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader1.BoolValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader1.BoolValue()")
 
 			value2, err := reader2.BoolValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader2.BoolValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader2.BoolValue()")
 
-			if value1 != value2 {
-				t.Errorf("Expected bool values to match;\n"+
-					"Bool #1: %v\n"+
-					"Bool #2: %v",
-					value1, value2)
-			}
+			assert.Equal(t, value1, value2, "Expected bool values to match")
 		}
 	case ion.IntType:
 		if !isNull {
 			intSize, err := reader1.IntSize()
-			if err != nil {
-				t.Fatalf("Something went wrong executing reader1.IntSize(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader1.IntSize()")
 
 			switch intSize {
 			case ion.Int32, ion.Int64:
 				int1, err := reader1.Int64Value()
-				if err != nil {
-					t.Errorf("Something went wrong executing reader1.Int64Value(); %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong executing reader1.Int64Value()")
 
 				int2, err := reader2.Int64Value()
-				if err != nil {
-					t.Errorf("Something went wrong executing reader2.Int64Value(); %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong executing reader2.Int64Value()")
 
-				if int1 != int2 {
-					t.Errorf("Expected int values to match;\n"+
-						"Int #1: %v\n"+
-						"Int #2: %v",
-						int1, int2)
-				}
+				assert.Equal(t, int1, int2, "Expected int values to match")
 			case ion.Uint64:
 				uint1, err := reader1.Uint64Value()
-				if err != nil {
-					t.Errorf("Something went wrong executing reader1.Uint64Value(); %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong executing reader1.Uint64Value()")
 
 				uint2, err := reader2.Uint64Value()
-				if err != nil {
-					t.Errorf("Something went wrong executing reader2.Uint64Value(); %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong executing reader2.Uint64Value()")
 
-				if uint1 != uint2 {
-					t.Errorf("Expected uint values to match;\n"+
-						"UInt #1: %v\n"+
-						"UInt #2: %v",
-						uint1, uint2)
-				}
+				assert.Equal(t, uint1, uint2, "Expected uint values to match")
 			case ion.BigInt:
 				bigInt1, err := reader1.BigIntValue()
-				if err != nil {
-					t.Errorf("Something went wrong executing reader1.BigIntValue(); %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong executing reader1.BigIntValue()")
 
 				bigInt2, err := reader2.BigIntValue()
-				if err != nil {
-					t.Errorf("Something went wrong executing reader2.BigIntValue(); %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong executing reader2.BigIntValue()")
 
-				if bigInt1 != bigInt2 {
-					t.Errorf("Expected big int values to match;\n"+
-						"Big Int #1: %v\n"+
-						"Big Int #2: %v",
-						bigInt1, bigInt2)
-				}
+				assert.Equal(t, bigInt1, bigInt2, "Expected big int values to match")
 			default:
 				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
 			}
@@ -260,108 +160,62 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 	case ion.FloatType:
 		if !isNull {
 			float1, err := reader1.FloatValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader1.FloatValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader1.FloatValue()")
 
 			float2, err := reader2.FloatValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader2.FloatValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader2.FloatValue()")
 
 			if math.IsNaN(float1) && math.IsNaN(float2) {
-				if float1 != float2 {
-					t.Errorf("Expected NaN float values to match")
-				}
+				assert.Equal(t, float1, float2, "Expected NaN float values to match")
 			} else if math.IsNaN(float1) || math.IsNaN(float2) {
-				if float1 == float2 {
-					t.Errorf("Expected float values to differ")
-				}
-			} else if float1 != float2 {
-				t.Errorf("Expected float values to match;\n"+
-					"Float #1: %v\n"+
-					"Float #2: %v",
-					float1, float2)
+				assert.NotEqual(t, float1, float2, "Expected float values to differ")
+			} else {
+				assert.Equal(t, float1, float2, "Expected float values to match")
 			}
 		}
 	case ion.DecimalType:
 		if !isNull {
 			decimal1, err := reader1.DecimalValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader1.DecimalValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader1.DecimalValue()")
 
 			decimal2, err := reader2.DecimalValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader2.DecimalValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader2.DecimalValue()")
 
 			decimalStrictEquals(t, decimal1, decimal2)
 		}
 	case ion.TimestampType:
 		if !isNull {
 			timestamp1, err := reader1.TimeValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader1.TimeValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader1.TimeValue()")
 
 			timestamp2, err := reader2.TimeValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader2.TimeValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader2.TimeValue()")
 
-			if timestamp1 != timestamp2 {
-				t.Errorf("Expected timestamp values to match;\n"+
-					"Timestamp #1: %v\n"+
-					"Timestamp #2: %v",
-					timestamp1, timestamp2)
-			}
+			assert.Equal(t, timestamp1, timestamp2, "Expected timestamp values to match")
 		}
 	case ion.StringType:
 		str1, err := reader1.StringValue()
-		if err != nil {
-			t.Errorf("Something went wrong executing reader1.StringValue(); %s", err.Error())
-		}
+		assert.NoError(t, err, "Something went wrong executing reader1.StringValue()")
 
 		str2, err := reader2.StringValue()
-		if err != nil {
-			t.Errorf("Something went wrong executing reader2.StringValue(); %s", err.Error())
-		}
+		assert.NoError(t, err, "Something went wrong executing reader2.StringValue()")
 
-		if str1 != str2 {
-			t.Errorf("Expected string values to match;\n"+
-				"String #1: %s\n"+
-				"String #2: %s",
-				str1, str2)
-		}
+		assert.Equal(t, str1, str2, "Expected string values to match")
 	case ion.SymbolType:
 		// TODO: Add SymbolToken logic here once SymbolTokens are available
 	case ion.BlobType, ion.ClobType:
 		if !isNull {
 			b1, err := reader1.ByteValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader1.ByteValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader1.ByteValue()")
 
 			b2, err := reader2.ByteValue()
-			if err != nil {
-				t.Errorf("Something went wrong executing reader2.ByteValue(); %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong executing reader2.ByteValue()")
 
-			if b1 == nil || b2 == nil {
-				t.Errorf("Expected byte arrays to be non-null")
-			}
+			assert.True(t, b1 != nil && b2 != nil, "Expected byte arrays to be non-null")
 
-			if len(b1) != len(b2) {
-				t.Errorf("Expected byte arrays to have same length")
-			}
+			assert.Equal(t, len(b1), len(b2), "Expected byte arrays to have same length")
 
-			for i := 0; i < len(b1); i++ {
-				t.Errorf("Expected byte arrays to match;\n"+
-					"Array #1: %v\n"+
-					"Array #2: %v",
-					b1, b2)
-			}
+			assert.Equal(t, b1, b2, "Expected byte arrays to match")
 		}
 	default:
 		t.Error(InvalidIonTypeError{ionType})
@@ -370,25 +224,17 @@ func compareScalars(t *testing.T, reader1, reader2 ion.Reader) {
 
 // decimalStrictEquals() compares two Ion Decimal values by equality and negative zero.
 func decimalStrictEquals(t *testing.T, decimal1, decimal2 *ion.Decimal) {
-	if decimal1 != decimal2 {
-		t.Errorf("Expected decimal values to match;\n"+
-			"Decimal #1: %v\n"+
-			"Decimal #2: %v",
-			decimal1, decimal2)
-	}
+	assert.Equal(t, decimal1, decimal2, "Expected decimal values to match")
 
 	zeroDecimal := ion.NewDecimalInt(0)
 
 	negativeZero1 := decimal1.Equal(zeroDecimal) && decimal1.Sign() < 0
 	negativeZero2 := decimal2.Equal(zeroDecimal) && decimal2.Sign() < 0
 
-	if negativeZero1 != negativeZero2 {
-		t.Errorf("Expected decimal values to be both negative zero or both not negative zero")
-	}
+	assert.Equal(t, negativeZero1, negativeZero2,
+		"Expected decimal values to be both negative zero or both not negative zero")
 
-	if !decimal1.Equal(decimal2) {
-		t.Errorf("Expected decimal Equal() to return true for given decimal values")
-	}
+	assert.True(t, decimal1.Equal(decimal2), "Expected decimal Equal() to return true for given decimal values")
 }
 
 // Read all the values in the reader and write them in the writer
@@ -396,223 +242,118 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 	for reader.Next() {
 		name := reader.FieldName()
 		if name != "" {
-			err := writer.FieldName(name)
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.FieldName(name); %s", err.Error())
-			}
+			require.NoError(t, writer.FieldName(name), "Something went wrong executing writer.FieldName(name)")
 		}
 
 		an := reader.Annotations()
 		if len(an) > 0 {
-			err := writer.Annotations(an...)
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.Annotations(an...); %s", err.Error())
-			}
+			require.NoError(t, writer.Annotations(an...), "Something went wrong executing writer.Annotations(an...)")
 		}
 
 		currentType := reader.Type()
 		if reader.IsNull() {
-			err := writer.WriteNullType(currentType)
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.WriteNullType(currentType); %s", err.Error())
-			}
+			require.NoError(t, writer.WriteNullType(currentType),
+				"Something went wrong executing writer.WriteNullType(currentType)")
 			return
 		}
 
 		switch currentType {
 		case ion.BoolType:
 			val, err := reader.BoolValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Boolean value; %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong when reading Boolean value")
 
-			err = writer.WriteBool(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Boolean value; %s", err.Error())
-			}
+			assert.NoError(t, writer.WriteBool(val), "Something went wrong when writing Boolean value")
 		case ion.IntType:
 			intSize, err := reader.IntSize()
-			if err != nil {
-				t.Fatalf("Something went wrong when retrieving the Int size; %s", err.Error())
-			}
+			require.NoError(t, err, "Something went wrong when retrieving the Int size")
 
 			switch intSize {
 			case ion.Int32, ion.Int64:
 				val, err := reader.Int64Value()
-				if err != nil {
-					t.Errorf("Something went wrong when reading Int value; %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong when reading Int value")
 
-				err = writer.WriteInt(val)
-				if err != nil {
-					t.Errorf("Something went wrong when writing Int value; %s", err.Error())
-				}
+				assert.NoError(t, writer.WriteInt(val), "Something went wrong when writing Int value")
 			case ion.Uint64:
 				val, err := reader.Uint64Value()
-				if err != nil {
-					t.Errorf("Something went wrong when reading UInt value; %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong when reading UInt value")
 
-				err = writer.WriteUint(val)
-				if err != nil {
-					t.Errorf("Something went wrong when writing UInt value; %s", err.Error())
-				}
+				assert.NoError(t, writer.WriteUint(val), "Something went wrong when writing UInt value")
 			case ion.BigInt:
 				val, err := reader.BigIntValue()
-				if err != nil {
-					t.Errorf("Something went wrong when reading Big Int value; %s", err.Error())
-				}
+				assert.NoError(t, err, "Something went wrong when reading Big Int value")
 
-				err = writer.WriteBigInt(val)
-				if err != nil {
-					t.Errorf("Something went wrong when writing Big Int value; %s", err.Error())
-				}
+				assert.NoError(t, writer.WriteBigInt(val), "Something went wrong when writing Big Int value")
 			default:
 				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
 			}
 
 		case ion.FloatType:
 			val, err := reader.FloatValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Float value; %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong when reading Float value")
 
-			err = writer.WriteFloat(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Float value; %s", err.Error())
-			}
+			assert.NoError(t, writer.WriteFloat(val), "Something went wrong when writing Float value")
 		case ion.DecimalType:
 			val, err := reader.DecimalValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Decimal value; %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong when reading Decimal value")
 
-			err = writer.WriteDecimal(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Decimal value; %s", err.Error())
-			}
-
+			assert.NoError(t, writer.WriteDecimal(val), "Something went wrong when writing Decimal value")
 		case ion.TimestampType:
 			val, err := reader.TimeValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Timestamp value; %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong when reading Timestamp value")
 
-			err = writer.WriteTimestamp(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Timestamp value; %s", err.Error())
-			}
-
+			assert.NoError(t, writer.WriteTimestamp(val), "Something went wrong when writing Timestamp value")
 		case ion.SymbolType:
 			val, err := reader.StringValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Symbol value; %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong when reading Symbol value")
 
-			err = writer.WriteSymbol(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Symbol value; %s", err.Error())
-			}
+			assert.NoError(t, writer.WriteSymbol(val), "Something went wrong when writing Symbol value")
 		case ion.StringType:
 			val, err := reader.StringValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading String value; %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong when reading String value")
 
-			err = writer.WriteString(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing String value; %s", err.Error())
-			}
+			assert.NoError(t, writer.WriteString(val), "Something went wrong when writing String value")
 		case ion.ClobType:
 			val, err := reader.ByteValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Clob value; %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong when reading Clob value")
 
-			err = writer.WriteClob(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Clob value; %s", err.Error())
-			}
+			assert.NoError(t, writer.WriteClob(val), "Something went wrong when writing Clob value")
 		case ion.BlobType:
 			val, err := reader.ByteValue()
-			if err != nil {
-				t.Errorf("Something went wrong when reading Blob value; %s", err.Error())
-			}
+			assert.NoError(t, err, "Something went wrong when reading Blob value")
 
-			err = writer.WriteBlob(val)
-			if err != nil {
-				t.Errorf("Something went wrong when writing Blob value; %s", err.Error())
-			}
+			assert.NoError(t, writer.WriteBlob(val), "Something went wrong when writing Blob value")
 		case ion.SexpType:
-			err := reader.StepIn()
-			if err != nil {
-				t.Fatalf("Something went wrong executing reader.StepIn(); %s", err.Error())
-			}
+			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
-			err = writer.BeginSexp()
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.BeginSexp(); %s", err.Error())
-			}
+			require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
 
 			writeFromReaderToWriter(t, reader, writer)
 
-			err = reader.StepOut()
-			if err != nil {
-				t.Fatalf("Something went wrong executing reader.StepOut(); %s", err.Error())
-			}
+			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 
-			err = writer.EndSexp()
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.EndSexp(); %s", err.Error())
-			}
+			require.NoError(t, writer.EndSexp(), "Something went wrong executing writer.EndSexp()")
 		case ion.ListType:
-			err := reader.StepIn()
-			if err != nil {
-				t.Fatalf("Something went wrong executing reader.StepIn(); %s", err.Error())
-			}
+			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
-			err = writer.BeginList()
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.BeginList(); %s", err.Error())
-			}
+			require.NoError(t, writer.BeginList(), "Something went wrong executing writer.BeginList()")
 
 			writeFromReaderToWriter(t, reader, writer)
 
-			err = reader.StepOut()
-			if err != nil {
-				t.Fatalf("Something went wrong executing reader.StepOut(); %s", err.Error())
-			}
+			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 
-			err = writer.EndList()
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.EndList(); %s", err.Error())
-			}
+			require.NoError(t, writer.EndList(), "Something went wrong executing writer.EndList()")
 		case ion.StructType:
-			err := reader.StepIn()
-			if err != nil {
-				t.Fatalf("Something went wrong executing reader.StepIn(); %s", err.Error())
-			}
+			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
-			err = writer.BeginStruct()
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.BeginStruct(); %s", err.Error())
-			}
+			require.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
 
 			writeFromReaderToWriter(t, reader, writer)
 
-			err = reader.StepOut()
-			if err != nil {
-				t.Fatalf("Something went wrong executing reader.StepOut(); %s", err.Error())
-			}
+			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 
-			err = writer.EndStruct()
-			if err != nil {
-				t.Fatalf("Something went wrong executing writer.EndStruct(); %s", err.Error())
-			}
+			require.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
 		}
 	}
 
-	if reader.Err() != nil {
-		t.Errorf("Something went wrong executing reader.Next(); %s", reader.Err().Error())
-	}
+	assert.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 }
