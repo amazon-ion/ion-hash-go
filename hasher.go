@@ -24,7 +24,7 @@ type hasher struct {
 }
 
 func newHasher(hasherProvider IonHasherProvider) (*hasher, error) {
-	newHasher, err := hasherProvider.newHasher()
+	newHasher, err := hasherProvider.NewHasher()
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (h *hasher) stepIn(ionValue hashValue) error {
 
 	_, ok := h.currentHasher.(*structSerializer)
 	if ok {
-		newHasher, err := h.hasherProvider.newHasher()
+		newHasher, err := h.hasherProvider.NewHasher()
 		if err != nil {
 			return err
 		}
