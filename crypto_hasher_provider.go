@@ -21,10 +21,12 @@ type cryptoHasherProvider struct {
 	algorithm algorithm
 }
 
+// NewCryptoHasherProvider returns a new cryptoHasherProvider.
 func NewCryptoHasherProvider(algorithm algorithm) *cryptoHasherProvider {
 	return &cryptoHasherProvider{algorithm: algorithm}
 }
 
+// NewHasher returns a new cryptoHasher.
 func (chp *cryptoHasherProvider) NewHasher() (IonHasher, error) {
 	return newCryptoHasher(chp.algorithm)
 }
