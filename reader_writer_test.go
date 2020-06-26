@@ -17,153 +17,87 @@ package ionhash
 
 import (
 	"bytes"
-	"reflect"
 	"testing"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// This test writes a nested struct {a: {b:1}} where the Ion Writer writes the outer struct
+// This test writes a nested struct {a:{b:1}} where the Ion Writer writes the outer struct
 // and the HashWriter writes the inner struct.
 // We then read the struct back following a similar pattern where the Ion Reader reads the outer struct
 // and the HashReader reads the inner struct.
 // We then confirm that the HashReader reads the same hash written by the HashWriter.
 func TestFieldNameAsymmetry(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
-
 	buf := bytes.Buffer{}
 	writer := ion.NewBinaryWriter(&buf)
 
 	hw, err := NewHashWriter(writer, newIdentityHasherProvider())
-	if err != nil {
-		t.Fatalf("Expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
-	}
+	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
 	ionHashWriter, ok := hw.(*hashWriter)
-	if !ok {
-		t.Fatal("Expected hw to be of type hashWriter")
-	}
+	require.True(t, ok, "Expected hw to be of type hashWriter")
 
 	// Writing a nested struct: {a:{b:1}}
 	// We use the ion writer to write the outer struct (ie. {a:_})
-	err = writer.BeginStruct()
-	if err != nil {
-		t.Errorf("Something went wrong executing writer.BeginStruct(); %s", err.Error())
-	}
+	assert.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
 
-	err = writer.FieldName("a")
-	if err != nil {
-		t.Errorf("Something went wrong executing writer.FieldName(\"a\"); %s", err.Error())
-	}
+	assert.NoError(t, writer.FieldName("a"), "Something went wrong executing writer.FieldName(\"a\")")
 
 	// We use the ion hash writer to write the inner struct (ie. {b:1} inside {a:{b:1}})
-	err = ionHashWriter.BeginStruct()
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashWriter.BeginStruct(); %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.BeginStruct(), "Something went wrong executing ionHashWriter.BeginStruct()")
 
-	err = ionHashWriter.FieldName("b")
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashWriter.FieldName(\"b\"); %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.FieldName("b"), "Something went wrong executing ionHashWriter.FieldName(\"b\")")
 
-	err = ionHashWriter.WriteInt(1)
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashWriter.WriteInt(1); %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteInt(1), "Something went wrong executing ionHashWriter.WriteInt(1)")
 
-	err = ionHashWriter.EndStruct()
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashWriter.EndStruct(); %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.EndStruct(), "Something went wrong executing ionHashWriter.EndStruct()")
 
-	err = writer.EndStruct()
-	if err != nil {
-		t.Errorf("Something went wrong executing writer.EndStruct(); %s", err.Error())
-	}
+	assert.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
 
 	writeHash, err := ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Fatalf("Something went wrong executing ionHashWriter.Sum(nil); %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	err = ionHashWriter.Finish()
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashWriter.Finish(); %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.Finish(), "Something went wrong executing ionHashWriter.Finish()")
 
-	err = writer.Finish()
-	if err != nil {
-		t.Errorf("Something went wrong executing writer.Finish(); %s", err.Error())
-	}
+	assert.NoError(t, writer.Finish(), "Something went wrong executing writer.Finish()")
 
 	reader := ion.NewReaderBytes(buf.Bytes())
 
 	hr, err := NewHashReader(reader, newIdentityHasherProvider())
-	if err != nil {
-		t.Fatalf("Expected NewHashReader() to successfully create a HashReader; %s", err.Error())
-	}
+	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	ionHashReader, ok := hr.(*hashReader)
-	if !ok {
-		t.Fatalf("Expected hr to be of type hashReader")
-	}
+	require.True(t, ok, "Expected hr to be of type hashReader")
 
 	// We are reading the nested struct that we just wrote: {a:{b:1}}
 	// We use the ion reader to read the outer struct (ie. {a:_})
 	if !reader.Next() {
-		err = reader.Err()
-		if err != nil {
-			t.Errorf("Something went wrong executing reader.Next(); %s", err.Error())
-		}
+		assert.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 	}
 
-	err = reader.StepIn()
-	if err != nil {
-		t.Errorf("Something went wrong executing reader.StepIn(); %s", err.Error())
-	}
+	assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 	if !reader.Next() {
-		err = reader.Err()
-		if err != nil {
-			t.Errorf("Something went wrong executing reader.Next(); %s", err.Error())
-		}
+		assert.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 	}
 
 	// We use the ion hash reader to read the inner struct (ie. {b:1} inside {a:{b:1}})
-	err = ionHashReader.StepIn()
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashReader.StepIn(); %s", err.Error())
-	}
+	assert.NoError(t, ionHashReader.StepIn(), "Something went wrong executing ionHashReader.StepIn()")
 
 	if !ionHashReader.Next() {
-		err = ionHashReader.Err()
-		if err != nil {
-			t.Errorf("Something went wrong executing ionHashReader.Next(); %s", err.Error())
-		}
+		assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
 	}
 
-	err = ionHashReader.StepOut()
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashReader.StepOut(); %s", err.Error())
-	}
+	assert.NoError(t, ionHashReader.StepOut(), "Something went wrong executing ionHashReader.StepOut()")
 
-	err = reader.StepOut()
-	if err != nil {
-		t.Errorf("Something went wrong executing reader.StepOut(); %s", err.Error())
-	}
+	assert.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 
 	sum, err := ionHashReader.Sum(nil)
-	if err != nil {
-		t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
-	if !reflect.DeepEqual(sum, writeHash) {
-		t.Errorf("sum did not match expectation;\n"+
-			"Expected sum: %v\n"+
-			"Actual sum:   %v",
-			writeHash, sum)
-	}
+	assert.Equal(t, writeHash, sum, "sum did not match expectation")
 }
 
 func TestNoFieldNameInCurrentHash(t *testing.T) {
@@ -210,104 +144,56 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 	buf := bytes.Buffer{}
 	writer := ion.NewBinaryWriter(&buf)
 
-	err = writer.BeginStruct()
-	if err != nil {
-		t.Errorf("Something went wrong executing writer.BeginStruct(); %s", err.Error())
-	}
+	assert.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
 
 	hw, err := NewHashWriter(writer, newIdentityHasherProvider())
-	if err != nil {
-		t.Fatalf("Expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
-	}
+	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
 	ionHashWriter, ok := hw.(*hashWriter)
-	if !ok {
-		t.Fatalf("Expected hw to be of type hashWriter")
-	}
+	require.True(t, ok, "Expected hw to be of type hashWriter")
 
-	err = ionHashWriter.FieldName("field_name")
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashWriter.FieldName(\"field_name\"); %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.FieldName("field_name"),
+		"Something went wrong executing ionHashWriter.FieldName(\"field_name\")")
 
 	writeFromReaderToWriter(t, reader, ionHashWriter)
 
 	actual, err := ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Fatalf("Something went wrong executing ionHashWriter.Sum(nil); %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	if !reflect.DeepEqual(actual, expectedBytes) {
-		t.Errorf("sum did not match expectation;\n"+
-			"Expected sum: %v\n"+
-			"Actual sum:   %v",
-			expectedBytes, actual)
-	}
+	assert.Equal(t, actual, expectedBytes, "sum did not match expectation")
 
-	err = writer.EndStruct()
-	if err != nil {
-		t.Errorf("Something went wrong executing writer.EndStruct(); %s", err.Error())
-	}
+	assert.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
 
-	err = ionHashWriter.Finish()
-	if err != nil {
-		t.Errorf("Something went wrong executing ionHashWriter.Finish(); %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.Finish(), "Something went wrong executing ionHashWriter.Finish()")
 
-	err = writer.Finish()
-	if err != nil {
-		t.Errorf("Something went wrong executing writer.Finish(); %s", err.Error())
-	}
+	assert.NoError(t, writer.Finish(), "Something went wrong executing writer.Finish()")
 
 	reader = ion.NewReaderBytes(buf.Bytes())
 
 	if !reader.Next() {
-		err = reader.Err()
-		if err != nil {
-			t.Errorf("Something went wrong executing reader.Next(); %s", err.Error())
-		}
+		assert.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 	}
 
-	err = reader.StepIn()
-	if err != nil {
-		t.Errorf("Something went wrong executing reader.StepIn(); %s", err.Error())
-	}
+	assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 	hr, err := NewHashReader(reader, newIdentityHasherProvider())
-	if err != nil {
-		t.Fatalf("Expected NewHashReader() to successfully create a HashReader; %s", err.Error())
-	}
+	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	ionHashReader := hr.(*hashReader)
-	if !ok {
-		t.Fatal("Expected hr to be of type hashReader")
-	}
+	require.True(t, ok, "Expected hr to be of type hashReader")
 
 	// List
 	if !ionHashReader.Next() {
-		err = ionHashReader.Err()
-		if err != nil {
-			t.Errorf("Something went wrong executing ionHashReader.Next(); %s", err.Error())
-		}
+		assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
 	}
 
 	// None
 	if !ionHashReader.Next() {
-		err = ionHashReader.Err()
-		if err != nil {
-			t.Errorf("Something went wrong executing ionHashReader.Next(); %s", err.Error())
-		}
+		assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
 	}
 
 	actualBytes, err := ionHashReader.Sum(nil)
-	if err != nil {
-		t.Fatalf("Something went wrong executing ionHashReader.Sum(nil); %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
-	if !reflect.DeepEqual(expectedBytes, actualBytes) {
-		t.Errorf("sum did not match expectation;\n"+
-			"Expected sum: %v\n"+
-			"Actual sum:   %v",
-			expectedBytes, actualBytes)
-	}
+	assert.Equal(t, expectedBytes, actualBytes, "sum did not match expectation")
 }
