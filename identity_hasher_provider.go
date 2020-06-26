@@ -23,6 +23,6 @@ func newIdentityHasherProvider() *identityHasherProvider {
 	return &identityHasherProvider{}
 }
 
-func (ihp *identityHasherProvider) newHasher() (IonHasher, error) {
+func (ihp *identityHasherProvider) NewHasher() (IonHasher, error) {
 	return newIdentityIonHasher(), nil
 }

@@ -29,7 +29,7 @@ type structSerializer struct {
 }
 
 func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider IonHasherProvider) (serializer, error) {
-	newHasher, err := hashFunctionProvider.newHasher()
+	newHasher, err := hashFunctionProvider.NewHasher()
 	if err != nil {
 		return nil, err
 	}
