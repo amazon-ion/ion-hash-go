@@ -96,7 +96,7 @@ func TestNaughtyStrings(t *testing.T) {
 }
 
 func NaughtyStrings(t *testing.T, tv testValue, s string) {
-	hasherProvider := newCryptoHasherProvider(SHA256)
+	hasherProvider := NewCryptoHasherProvider(SHA256)
 
 	str := strings.Builder{}
 	hw, err := NewHashWriter(ion.NewTextWriter(&str), hasherProvider)
@@ -105,7 +105,7 @@ func NaughtyStrings(t *testing.T, tv testValue, s string) {
 	ionHashWriter, ok := hw.(*hashWriter)
 	require.True(t, ok, "Expected hw to be of type hashWriter")
 
-	writeToWriterFromReader(t, ion.NewReaderStr(s), ionHashWriter)
+	writeFromReaderToWriter(t, ion.NewReaderStr(s), ionHashWriter)
 
 	hr, err := NewHashReader(ion.NewReaderStr(s), hasherProvider)
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
