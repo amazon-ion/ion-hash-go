@@ -50,7 +50,7 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 		case ion.BoolType, ion.IntType, ion.FloatType, ion.DecimalType, ion.TimestampType,
 			ion.StringType, ion.SymbolType, ion.BlobType, ion.ClobType:
 
-			compareScalars(t, reader1.Type(), reader1.IsNull(), reader1, reader2)
+			compareScalars(t, reader1.Type(), reader1, reader2)
 		case ion.StructType, ion.ListType, ion.SexpType:
 			assert.NoError(t, reader1.StepIn(), "Something went wrong executing reader1.StepIn()")
 
@@ -111,88 +111,86 @@ func compareHasAnnotations(t *testing.T, reader1, reader2 ion.Reader) {
 	// TODO: Add SymbolToken logic here once SymbolTokens are available
 }
 
-func compareScalars(t *testing.T, ionType ion.Type, isNull bool, reader1 ion.Reader, reader2 ion.Reader) {
+func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 ion.Reader) {
+	isNull1 := reader1.IsNull()
+	isNull2 := reader2.IsNull()
+
+	require.Equal(t, isNull1, isNull2, "Expected readers to be both null or both non-null")
+	if isNull1 {
+		return
+	}
+
 	switch ionType {
 	case ion.BoolType:
-		if !isNull {
-			value1, err := reader1.BoolValue()
-			assert.NoError(t, err, "Something went wrong executing reader1.BoolValue()")
+		value1, err := reader1.BoolValue()
+		assert.NoError(t, err, "Something went wrong executing reader1.BoolValue()")
 
-			value2, err := reader2.BoolValue()
-			assert.NoError(t, err, "Something went wrong executing reader2.BoolValue()")
+		value2, err := reader2.BoolValue()
+		assert.NoError(t, err, "Something went wrong executing reader2.BoolValue()")
 
-			assert.Equal(t, value1, value2, "Expected bool values to match")
-		}
+		assert.Equal(t, value1, value2, "Expected bool values to match")
 	case ion.IntType:
-		if !isNull {
-			intSize, err := reader1.IntSize()
-			assert.NoError(t, err, "Something went wrong executing reader1.IntSize()")
+		intSize, err := reader1.IntSize()
+		assert.NoError(t, err, "Something went wrong executing reader1.IntSize()")
 
-			switch intSize {
-			case ion.Int32, ion.Int64:
-				int1, err := reader1.Int64Value()
-				assert.NoError(t, err, "Something went wrong executing reader1.Int64Value()")
+		switch intSize {
+		case ion.Int32, ion.Int64:
+			int1, err := reader1.Int64Value()
+			assert.NoError(t, err, "Something went wrong executing reader1.Int64Value()")
 
-				int2, err := reader2.Int64Value()
-				assert.NoError(t, err, "Something went wrong executing reader2.Int64Value()")
+			int2, err := reader2.Int64Value()
+			assert.NoError(t, err, "Something went wrong executing reader2.Int64Value()")
 
-				assert.Equal(t, int1, int2, "Expected int values to match")
-			case ion.Uint64:
-				uint1, err := reader1.Uint64Value()
-				assert.NoError(t, err, "Something went wrong executing reader1.Uint64Value()")
+			assert.Equal(t, int1, int2, "Expected int values to match")
+		case ion.Uint64:
+			uint1, err := reader1.Uint64Value()
+			assert.NoError(t, err, "Something went wrong executing reader1.Uint64Value()")
 
-				uint2, err := reader2.Uint64Value()
-				assert.NoError(t, err, "Something went wrong executing reader2.Uint64Value()")
+			uint2, err := reader2.Uint64Value()
+			assert.NoError(t, err, "Something went wrong executing reader2.Uint64Value()")
 
-				assert.Equal(t, uint1, uint2, "Expected uint values to match")
-			case ion.BigInt:
-				bigInt1, err := reader1.BigIntValue()
-				assert.NoError(t, err, "Something went wrong executing reader1.BigIntValue()")
+			assert.Equal(t, uint1, uint2, "Expected uint values to match")
+		case ion.BigInt:
+			bigInt1, err := reader1.BigIntValue()
+			assert.NoError(t, err, "Something went wrong executing reader1.BigIntValue()")
 
-				bigInt2, err := reader2.BigIntValue()
-				assert.NoError(t, err, "Something went wrong executing reader2.BigIntValue()")
+			bigInt2, err := reader2.BigIntValue()
+			assert.NoError(t, err, "Something went wrong executing reader2.BigIntValue()")
 
-				assert.Equal(t, bigInt1, bigInt2, "Expected big int values to match")
-			default:
-				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
-			}
+			assert.Equal(t, bigInt1, bigInt2, "Expected big int values to match")
+		default:
+			t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
 		}
 	case ion.FloatType:
-		if !isNull {
-			float1, err := reader1.FloatValue()
-			assert.NoError(t, err, "Something went wrong executing reader1.FloatValue()")
+		float1, err := reader1.FloatValue()
+		assert.NoError(t, err, "Something went wrong executing reader1.FloatValue()")
 
-			float2, err := reader2.FloatValue()
-			assert.NoError(t, err, "Something went wrong executing reader2.FloatValue()")
+		float2, err := reader2.FloatValue()
+		assert.NoError(t, err, "Something went wrong executing reader2.FloatValue()")
 
-			if math.IsNaN(float1) && math.IsNaN(float2) {
-				assert.Equal(t, float1, float2, "Expected NaN float values to match")
-			} else if math.IsNaN(float1) || math.IsNaN(float2) {
-				assert.NotEqual(t, float1, float2, "Expected float values to differ")
-			} else {
-				assert.Equal(t, float1, float2, "Expected float values to match")
-			}
+		if math.IsNaN(float1) && math.IsNaN(float2) {
+			assert.Equal(t, float1, float2, "Expected NaN float values to match")
+		} else if math.IsNaN(float1) || math.IsNaN(float2) {
+			assert.NotEqual(t, float1, float2, "Expected IsNaN float value to differ from a non-IsNaN float value")
+		} else {
+			assert.Equal(t, float1, float2, "Expected float values to match")
 		}
 	case ion.DecimalType:
-		if !isNull {
-			decimal1, err := reader1.DecimalValue()
-			assert.NoError(t, err, "Something went wrong executing reader1.DecimalValue()")
+		decimal1, err := reader1.DecimalValue()
+		assert.NoError(t, err, "Something went wrong executing reader1.DecimalValue()")
 
-			decimal2, err := reader2.DecimalValue()
-			assert.NoError(t, err, "Something went wrong executing reader2.DecimalValue()")
+		decimal2, err := reader2.DecimalValue()
+		assert.NoError(t, err, "Something went wrong executing reader2.DecimalValue()")
 
-			decimalStrictEquals(t, decimal1, decimal2)
-		}
+		decimalStrictEquals(t, decimal1, decimal2)
 	case ion.TimestampType:
-		if !isNull {
-			timestamp1, err := reader1.TimeValue()
-			assert.NoError(t, err, "Something went wrong executing reader1.TimeValue()")
+		timestamp1, err := reader1.TimeValue()
+		assert.NoError(t, err, "Something went wrong executing reader1.TimeValue()")
 
-			timestamp2, err := reader2.TimeValue()
-			assert.NoError(t, err, "Something went wrong executing reader2.TimeValue()")
+		timestamp2, err := reader2.TimeValue()
+		assert.NoError(t, err, "Something went wrong executing reader2.TimeValue()")
 
-			assert.Equal(t, timestamp1, timestamp2, "Expected timestamp values to match")
-		}
+		assert.Equal(t, timestamp1, timestamp2, "Expected timestamp values to match")
 	case ion.StringType:
 		str1, err := reader1.StringValue()
 		assert.NoError(t, err, "Something went wrong executing reader1.StringValue()")
@@ -203,20 +201,19 @@ func compareScalars(t *testing.T, ionType ion.Type, isNull bool, reader1 ion.Rea
 		assert.Equal(t, str1, str2, "Expected string values to match")
 	case ion.SymbolType:
 		// TODO: Add SymbolToken logic here once SymbolTokens are available
+		t.Fail()
 	case ion.BlobType, ion.ClobType:
-		if !isNull {
-			b1, err := reader1.ByteValue()
-			assert.NoError(t, err, "Something went wrong executing reader1.ByteValue()")
+		b1, err := reader1.ByteValue()
+		assert.NoError(t, err, "Something went wrong executing reader1.ByteValue()")
 
-			b2, err := reader2.ByteValue()
-			assert.NoError(t, err, "Something went wrong executing reader2.ByteValue()")
+		b2, err := reader2.ByteValue()
+		assert.NoError(t, err, "Something went wrong executing reader2.ByteValue()")
 
-			assert.True(t, b1 != nil && b2 != nil, "Expected byte arrays to be non-null")
+		assert.True(t, b1 != nil && b2 != nil, "Expected byte arrays to be non-null")
 
-			assert.Equal(t, len(b1), len(b2), "Expected byte arrays to have same length")
+		assert.Equal(t, len(b1), len(b2), "Expected byte arrays to have same length")
 
-			assert.Equal(t, b1, b2, "Expected byte arrays to match")
-		}
+		assert.Equal(t, b1, b2, "Expected byte arrays to match")
 	default:
 		t.Error(InvalidIonTypeError{ionType})
 	}
@@ -234,7 +231,8 @@ func decimalStrictEquals(t *testing.T, decimal1, decimal2 *ion.Decimal) {
 	assert.Equal(t, negativeZero1, negativeZero2,
 		"Expected decimal values to be both negative zero or both not negative zero")
 
-	assert.True(t, decimal1.Equal(decimal2), "Expected decimal Equal() to return true for given decimal values")
+	assert.True(t, decimal1.Equal(decimal2), "Expected decimal1.Equal(decimal2) to return true")
+	assert.True(t, decimal2.Equal(decimal1), "Expected decimal2.Equal(decimal1) to return true")
 }
 
 // Read all the values in the reader and write them in the writer
