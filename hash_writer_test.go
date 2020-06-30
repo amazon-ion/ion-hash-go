@@ -236,39 +236,39 @@ func TestExtraEndContainer(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValue(t *testing.T) {
+	// Skipping test until FieldNameSymbol logic is available.
+	// Test currently fails with empty field name ie. {'':1}
 	t.Skip()
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
-	reader := ion.NewReaderBytes(file)
+	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriterAfterNext)
 
-	expected := ExerciseWriter(t, reader, false, writeFromReaderToWriterAfterNext)
+	actual := ExerciseWriter(t, ion.NewReaderBytes(file), true, writeFromReaderToWriterAfterNext)
 
-	actual := ExerciseWriter(t, reader, true, writeFromReaderToWriterAfterNext)
+	assert.Greater(t, len(expected), 10, "Expected the ion writer to write more than 10 bytes")
 
-	assert.LessOrEqual(t, len(expected), 10, "Expected the ion writer to write more than 10 bytes")
-
-	assert.LessOrEqual(t, len(actual), 10, "Expected the ion writer to write more than 10 bytes")
+	assert.Greater(t, len(actual), 10, "Expected the ion writer to write more than 10 bytes")
 
 	assert.Equal(t, expected, actual, "sum did not match expectation")
 }
 
 func TestIonWriterContractWriteValues(t *testing.T) {
+	// Skipping test until FieldNameSymbol logic is available.
+	// Test currently fails with empty field name ie. {'':1}
 	t.Skip()
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
-	reader := ion.NewReaderBytes(file)
+	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriter)
 
-	expected := ExerciseWriter(t, reader, false, writeFromReaderToWriter)
+	actual := ExerciseWriter(t, ion.NewReaderBytes(file), true, writeFromReaderToWriter)
 
-	actual := ExerciseWriter(t, reader, true, writeFromReaderToWriter)
+	assert.Greater(t, len(expected), 1000, "Expected the ion writer to write more than 1000 bytes")
 
-	assert.LessOrEqual(t, len(expected), 1000, "Expected the ion writer to write more than 10 bytes")
-
-	assert.LessOrEqual(t, len(actual), 1000, "Expected the ion writer to write more than 10 bytes")
+	assert.Greater(t, len(actual), 1000, "Expected the ion writer to write more than 1000 bytes")
 
 	assert.Equal(t, expected, actual, "sum did not match expectation")
 }
@@ -292,7 +292,6 @@ func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, functio
 
 	function(t, reader, writer)
 
-	err = writer.Finish()
 	assert.NoError(t, writer.Finish(), "Something went wrong executing writer.Finish()")
 
 	return buf.Bytes()
@@ -301,9 +300,7 @@ func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, functio
 type writeFunction func(*testing.T, ion.Reader, ion.Writer)
 
 func writeFromReaderToWriterAfterNext(t *testing.T, reader ion.Reader, writer ion.Writer) {
-	if !reader.Next() {
-		assert.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
-	}
+	require.True(t, reader.Next())
 
 	writeFromReaderToWriter(t, reader, writer)
 }
