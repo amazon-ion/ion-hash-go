@@ -96,7 +96,7 @@ func TestNaughtyStrings(t *testing.T) {
 }
 
 func NaughtyStrings(t *testing.T, tv testValue, s string) {
-	hasherProvider := newCryptoHasherProvider(SHA256)
+	hasherProvider := NewCryptoHasherProvider(SHA256)
 
 	str := strings.Builder{}
 	hw, err := NewHashWriter(ion.NewTextWriter(&str), hasherProvider)
