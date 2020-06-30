@@ -238,142 +238,120 @@ func decimalStrictEquals(t *testing.T, decimal1, decimal2 *ion.Decimal) {
 // Read all the values in the reader and write them in the writer
 func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer) {
 	for reader.Next() {
-		writeValue(t, reader, writer)
+		name := reader.FieldName()
+		if name != "" {
+			require.NoError(t, writer.FieldName(name), "Something went wrong executing writer.FieldName(name)")
+		}
+
+		an := reader.Annotations()
+		if len(an) > 0 {
+			require.NoError(t, writer.Annotations(an...), "Something went wrong executing writer.Annotations(an...)")
+		}
+
+		currentType := reader.Type()
+		if reader.IsNull() {
+			require.NoError(t, writer.WriteNullType(currentType),
+				"Something went wrong executing writer.WriteNullType(currentType)")
+			continue
+		}
+
+		switch currentType {
+		case ion.BoolType:
+			val, err := reader.BoolValue()
+			assert.NoError(t, err, "Something went wrong when reading Boolean value")
+
+			assert.NoError(t, writer.WriteBool(val), "Something went wrong when writing Boolean value")
+		case ion.IntType:
+			intSize, err := reader.IntSize()
+			require.NoError(t, err, "Something went wrong when retrieving the Int size")
+
+			switch intSize {
+			case ion.Int32, ion.Int64:
+				val, err := reader.Int64Value()
+				assert.NoError(t, err, "Something went wrong when reading Int value")
+
+				assert.NoError(t, writer.WriteInt(val), "Something went wrong when writing Int value")
+			case ion.Uint64:
+				val, err := reader.Uint64Value()
+				assert.NoError(t, err, "Something went wrong when reading UInt value")
+
+				assert.NoError(t, writer.WriteUint(val), "Something went wrong when writing UInt value")
+			case ion.BigInt:
+				val, err := reader.BigIntValue()
+				assert.NoError(t, err, "Something went wrong when reading Big Int value")
+
+				assert.NoError(t, writer.WriteBigInt(val), "Something went wrong when writing Big Int value")
+			default:
+				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
+			}
+
+		case ion.FloatType:
+			val, err := reader.FloatValue()
+			assert.NoError(t, err, "Something went wrong when reading Float value")
+
+			assert.NoError(t, writer.WriteFloat(val), "Something went wrong when writing Float value")
+		case ion.DecimalType:
+			val, err := reader.DecimalValue()
+			assert.NoError(t, err, "Something went wrong when reading Decimal value")
+
+			assert.NoError(t, writer.WriteDecimal(val), "Something went wrong when writing Decimal value")
+		case ion.TimestampType:
+			val, err := reader.TimeValue()
+			assert.NoError(t, err, "Something went wrong when reading Timestamp value")
+
+			assert.NoError(t, writer.WriteTimestamp(val), "Something went wrong when writing Timestamp value")
+		case ion.SymbolType:
+			val, err := reader.StringValue()
+			assert.NoError(t, err, "Something went wrong when reading Symbol value")
+
+			assert.NoError(t, writer.WriteSymbol(val), "Something went wrong when writing Symbol value")
+		case ion.StringType:
+			val, err := reader.StringValue()
+			assert.NoError(t, err, "Something went wrong when reading String value")
+
+			assert.NoError(t, writer.WriteString(val), "Something went wrong when writing String value")
+		case ion.ClobType:
+			val, err := reader.ByteValue()
+			assert.NoError(t, err, "Something went wrong when reading Clob value")
+
+			assert.NoError(t, writer.WriteClob(val), "Something went wrong when writing Clob value")
+		case ion.BlobType:
+			val, err := reader.ByteValue()
+			assert.NoError(t, err, "Something went wrong when reading Blob value")
+
+			assert.NoError(t, writer.WriteBlob(val), "Something went wrong when writing Blob value")
+		case ion.SexpType:
+			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
+
+			require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
+
+			writeFromReaderToWriter(t, reader, writer)
+
+			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
+
+			require.NoError(t, writer.EndSexp(), "Something went wrong executing writer.EndSexp()")
+		case ion.ListType:
+			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
+
+			require.NoError(t, writer.BeginList(), "Something went wrong executing writer.BeginList()")
+
+			writeFromReaderToWriter(t, reader, writer)
+
+			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
+
+			require.NoError(t, writer.EndList(), "Something went wrong executing writer.EndList()")
+		case ion.StructType:
+			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
+
+			require.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
+
+			writeFromReaderToWriter(t, reader, writer)
+
+			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
+
+			require.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
+		}
 	}
 
 	assert.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
-}
-
-func writeValue(t *testing.T, reader ion.Reader, writer ion.Writer) {
-	name := reader.FieldName()
-	if name != "" {
-		require.NoError(t, writer.FieldName(name), "Something went wrong executing writer.FieldName(name)")
-	}
-
-	an := reader.Annotations()
-	if len(an) > 0 {
-		require.NoError(t, writer.Annotations(an...), "Something went wrong executing writer.Annotations(an...)")
-	}
-
-	currentType := reader.Type()
-	if reader.IsNull() {
-		require.NoError(t, writer.WriteNullType(currentType),
-			"Something went wrong executing writer.WriteNullType(currentType)")
-		return
-	}
-
-	switch currentType {
-	case ion.BoolType:
-		val, err := reader.BoolValue()
-		assert.NoError(t, err, "Something went wrong when reading Boolean value")
-
-		assert.NoError(t, writer.WriteBool(val), "Something went wrong when writing Boolean value")
-	case ion.IntType:
-		intSize, err := reader.IntSize()
-		require.NoError(t, err, "Something went wrong when retrieving the Int size")
-
-		switch intSize {
-		case ion.Int32, ion.Int64:
-			val, err := reader.Int64Value()
-			assert.NoError(t, err, "Something went wrong when reading Int value")
-
-			assert.NoError(t, writer.WriteInt(val), "Something went wrong when writing Int value")
-		case ion.Uint64:
-			val, err := reader.Uint64Value()
-			assert.NoError(t, err, "Something went wrong when reading UInt value")
-
-			assert.NoError(t, writer.WriteUint(val), "Something went wrong when writing UInt value")
-		case ion.BigInt:
-			val, err := reader.BigIntValue()
-			assert.NoError(t, err, "Something went wrong when reading Big Int value")
-
-			assert.NoError(t, writer.WriteBigInt(val), "Something went wrong when writing Big Int value")
-		default:
-			t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
-		}
-
-	case ion.FloatType:
-		val, err := reader.FloatValue()
-		assert.NoError(t, err, "Something went wrong when reading Float value")
-
-		assert.NoError(t, writer.WriteFloat(val), "Something went wrong when writing Float value")
-	case ion.DecimalType:
-		val, err := reader.DecimalValue()
-		assert.NoError(t, err, "Something went wrong when reading Decimal value")
-
-		assert.NoError(t, writer.WriteDecimal(val), "Something went wrong when writing Decimal value")
-	case ion.TimestampType:
-		val, err := reader.TimeValue()
-		assert.NoError(t, err, "Something went wrong when reading Timestamp value")
-
-		assert.NoError(t, writer.WriteTimestamp(val), "Something went wrong when writing Timestamp value")
-	case ion.SymbolType:
-		val, err := reader.StringValue()
-		assert.NoError(t, err, "Something went wrong when reading Symbol value")
-
-		assert.NoError(t, writer.WriteSymbol(val), "Something went wrong when writing Symbol value")
-	case ion.StringType:
-		val, err := reader.StringValue()
-		assert.NoError(t, err, "Something went wrong when reading String value")
-
-		assert.NoError(t, writer.WriteString(val), "Something went wrong when writing String value")
-	case ion.ClobType:
-		val, err := reader.ByteValue()
-		assert.NoError(t, err, "Something went wrong when reading Clob value")
-
-		assert.NoError(t, writer.WriteClob(val), "Something went wrong when writing Clob value")
-	case ion.BlobType:
-		val, err := reader.ByteValue()
-		assert.NoError(t, err, "Something went wrong when reading Blob value")
-
-		assert.NoError(t, writer.WriteBlob(val), "Something went wrong when writing Blob value")
-	case ion.SexpType:
-		writeSexp(t, reader, writer)
-	case ion.ListType:
-		writeList(t, reader, writer)
-	case ion.StructType:
-		writeStruct(t, reader, writer)
-	}
-}
-
-func writeSexp(t *testing.T, reader ion.Reader, writer ion.Writer) {
-	require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
-
-	require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
-
-	for reader.Next() {
-		writeValue(t, reader, writer)
-	}
-
-	require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
-
-	require.NoError(t, writer.EndSexp(), "Something went wrong executing writer.EndSexp()")
-}
-
-func writeList(t *testing.T, reader ion.Reader, writer ion.Writer) {
-	require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
-
-	require.NoError(t, writer.BeginList(), "Something went wrong executing writer.BeginList()")
-
-	for reader.Next() {
-		writeValue(t, reader, writer)
-	}
-
-	require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
-
-	require.NoError(t, writer.EndList(), "Something went wrong executing writer.EndList()")
-}
-
-func writeStruct(t *testing.T, reader ion.Reader, writer ion.Writer) {
-	require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
-
-	require.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
-
-	for reader.Next() {
-		writeValue(t, reader, writer)
-	}
-
-	require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
-
-	require.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
 }
