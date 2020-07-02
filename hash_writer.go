@@ -268,29 +268,28 @@ func (hashWriter *hashWriter) hashScalar(ionType ion.Type, value interface{}) er
 	hashWriter.currentIsNull = value == nil
 
 	err := hashWriter.hasher.scalar(hashWriter)
+	if err != nil {
+		return err
+	}
 
 	hashWriter.currentFieldName = ""
 	hashWriter.annotations = nil
 
-	return err
+	return nil
 }
 
 func (hashWriter *hashWriter) stepIn(ionType ion.Type) error {
 	hashWriter.currentType = ionType
 	hashWriter.currentValue = nil
 	hashWriter.currentIsNull = false
+
+	err := hashWriter.hasher.stepIn(hashWriter)
+	if err != nil {
+		return err
+	}
+
 	hashWriter.currentFieldName = ""
 	hashWriter.annotations = nil
 
-	return hashWriter.hasher.stepIn(hashWriter)
-}
-
-func (hashWriter *hashWriter) stepOut() error {
-	return hashWriter.hasher.stepOut()
-}
-
-func (hashWriter *hashWriter) setFieldName(name string) {
-	hashWriter.currentFieldName = name
-
-	// TODO: Add currentFieldNameSymbol logic here once SymbolToken is available
+	return nil
 }
