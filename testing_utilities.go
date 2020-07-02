@@ -31,7 +31,7 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 		ionHashReader, ok := reader2.(*hashReader)
 		require.True(t, ok, "Expected reader2 to be of type hashReader")
 
-		if ionHashReader.isInStruct() {
+		if ionHashReader.IsInStruct() {
 			compareFieldNames(t, reader1, reader2)
 		}
 

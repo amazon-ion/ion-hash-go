@@ -67,32 +67,22 @@ func TestTopLevelValues(t *testing.T) {
 }
 
 func TestConsumeRemainderPartialConsume(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
 	consume(t, ConsumeRemainderPartialConsume)
 }
 
 func TestConsumeRemainderStepInStepOutNested(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
 	consume(t, ConsumeRemainderStepInStepOutNested)
 }
 
 func TestConsumeRemainderStepInNextStepOut(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
 	consume(t, ConsumeRemainderStepInNextStepOut)
 }
 
 func TestConsumeRemainderStepInStepOutTopLevel(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
 	consume(t, ConsumeRemainderStepInStepOutTopLevel)
 }
 
 func TestConsumeRemainderNext(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
 	consume(t, ConsumeRemainderNext)
 }
 

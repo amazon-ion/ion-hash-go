@@ -31,5 +31,5 @@ type hashValue interface {
 
 	value() (interface{}, error)
 
-	isInStruct() bool
+	IsInStruct() bool
 }

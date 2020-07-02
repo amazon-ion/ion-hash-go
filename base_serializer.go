@@ -79,7 +79,7 @@ func (baseSerializer *baseSerializer) sum(b []byte) []byte {
 }
 
 func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {
-	if baseSerializer.depth > 0 && ionValue.isInStruct() {
+	if baseSerializer.depth > 0 && ionValue.IsInStruct() {
 		fieldName := ionValue.getFieldName()
 
 		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available

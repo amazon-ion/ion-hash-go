@@ -22,12 +22,21 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-// HashWriter inherits the same function as an Ion Writer and adds the Sum function.
-// The Sum function allows read access to the hash value in the current writer.
+// HashWriter is meant to share the same methods as the ion.Writer and hashValue interfaces.
+// However embedding both ion.Writer and hashValue results in a duplicate method build error because both interfaces
+// have an IsInStruct() method.
+// So we embed the ion.Writer interface and explicitly list the remaining hashValue methods to avoid the error.
+// HashWriter also provides a Sum function which allows read access to the hash value in the current writer.
 type HashWriter interface {
-	hashValue
 	// Embed interface of Ion writer.
 	ion.Writer
+
+	// Remaining hashValue methods.
+	getFieldName() string
+	getAnnotations() []string
+	isNull() bool
+	ionType() ion.Type
+	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
 	// It does not change the underlying hash state.
@@ -236,7 +245,7 @@ func (hashWriter *hashWriter) Sum(b []byte) ([]byte, error) {
 	return hashWriter.hasher.sum(b)
 }
 
-// The following implements HashValue interface.
+// The following implements hashValue interface.
 
 func (hashWriter *hashWriter) getFieldName() string {
 	return hashWriter.currentFieldName
@@ -258,8 +267,9 @@ func (hashWriter *hashWriter) value() (interface{}, error) {
 	return hashWriter.currentValue, nil
 }
 
-func (hashWriter *hashWriter) isInStruct() bool {
-	return hashWriter.currentType == ion.StructType
+// IsInStruct implements both the ion.Writer and hashValue interfaces.
+func (hashWriter *hashWriter) IsInStruct() bool {
+	return hashWriter.ionWriter.IsInStruct()
 }
 
 func (hashWriter *hashWriter) hashScalar(ionType ion.Type, value interface{}) error {
