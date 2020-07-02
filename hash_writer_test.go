@@ -136,8 +136,6 @@ func TestWriteScalars(t *testing.T) {
 }
 
 func TestWriteContainers(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
-
 	str := strings.Builder{}
 	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
 	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
@@ -169,11 +167,11 @@ func TestWriteContainers(t *testing.T) {
 
 	assert.Equal(t, []byte{0x0b, 0xb0, 0x0b, 0x11, 0x0e, 0x0e}, sum, "sum did not match expectation")
 
-	assert.False(t, ionHashWriter.isInStruct())
+	assert.False(t, ionHashWriter.IsInStruct())
 
 	assert.NoError(t, ionHashWriter.BeginStruct(), "Something went wrong executing ionHashWriter.BeginStruct()")
 
-	assert.True(t, ionHashWriter.isInStruct())
+	assert.True(t, ionHashWriter.IsInStruct())
 
 	assert.NoError(t, ionHashWriter.FieldName("hello"),
 		"Something went wrong executing ionHashWriter.FieldName(\"hello\")")
@@ -189,7 +187,7 @@ func TestWriteContainers(t *testing.T) {
 
 	assert.NoError(t, ionHashWriter.EndStruct(), "Something went wrong executing ionHashWriter.EndStruct()")
 
-	assert.False(t, ionHashWriter.isInStruct())
+	assert.False(t, ionHashWriter.IsInStruct())
 
 	sum, err = ionHashWriter.Sum(nil)
 	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")

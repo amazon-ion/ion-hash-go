@@ -101,8 +101,6 @@ func TestFieldNameAsymmetry(t *testing.T) {
 }
 
 func TestNoFieldNameInCurrentHash(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic matches dot net
-
 	AssertNoFieldnameInCurrentHash(t, "null", []byte{0x0b, 0x0f, 0x0e})
 	AssertNoFieldnameInCurrentHash(t, "false", []byte{0x0b, 0x10, 0x0e})
 	AssertNoFieldnameInCurrentHash(t, "5", []byte{0x0b, 0x20, 0x05, 0x0e})
