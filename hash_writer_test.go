@@ -275,7 +275,7 @@ func TestWriteScalars(t *testing.T) {
 	// We're comparing splits because str.String() uses a cumbersome '\n' separator
 	expected := strings.Split("true 5 3.14e+0 1234.56789 1941-12-07T18:00:00Z symbol \"string\" "+
 		"{{\"\\0\\x01\\x02\\x03\\x04\\x05\\x06\\a\\b\\t\\n\\v\\f\\r\\x0E\\x0F\"}}"+
-		" {{AAECAwQFBgcICQoLDA0ODw==}}", " ")
+		" {{AAECAwQFBgcICQoLDA0ODw==}} ", " ")
 	actual := strings.Split(str.String(), "\n")
 
 	assert.Equal(t, expected, actual, "str.String() did not match expectation")
