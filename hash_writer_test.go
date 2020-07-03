@@ -18,6 +18,7 @@ package ionhash
 import (
 	"bytes"
 	"io/ioutil"
+	"math/big"
 	"strings"
 	"testing"
 	"time"
@@ -191,13 +192,30 @@ func TestWriteScalars(t *testing.T) {
 
 	assert.Equal(t, []byte{0x0b, 0x11, 0x0e}, sum, "sum did not match expectation")
 
-	// Int
-	assert.NoError(t, ionHashWriter.WriteInt(5), "Something went wrong executing ionHashWriter.WriteInt(5)")
+	// Uint
+	assert.NoError(t, ionHashWriter.WriteUint(5), "Something went wrong executing ionHashWriter.WriteUint(5)")
 
 	sum, err = ionHashWriter.Sum(nil)
 	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
 	assert.Equal(t, []byte{0x0b, 0x20, 0x05, 0x0e}, sum, "sum did not match expectation")
+
+	// Int
+	assert.NoError(t, ionHashWriter.WriteInt(-5), "Something went wrong executing ionHashWriter.WriteInt(5)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x30, 0x05, 0x0e}, sum, "sum did not match expectation")
+
+	// Big Int
+	bigInt := big.NewInt(123456789)
+	assert.NoError(t, ionHashWriter.WriteBigInt(bigInt), "Something went wrong executing ionHashWriter.WriteBigInt(bigInt)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0xb, 0x20, 0x7, 0x5b, 0xcd, 0x15, 0xe}, sum, "sum did not match expectation")
 
 	// Float
 	assert.NoError(t, ionHashWriter.WriteFloat(3.14), "Something went wrong executing ionHashWriter.WriteFloat(3.14)")
@@ -273,7 +291,7 @@ func TestWriteScalars(t *testing.T) {
 	assert.NoError(t, ionHashWriter.Finish(), "Something went wrong executing ionHashWriter.Finish()")
 
 	// We're comparing splits because str.String() uses a cumbersome '\n' separator
-	expected := strings.Split("true 5 3.14e+0 1234.56789 1941-12-07T18:00:00Z symbol \"string\" "+
+	expected := strings.Split("true 5 -5 123456789 3.14e+0 1234.56789 1941-12-07T18:00:00Z symbol \"string\" "+
 		"{{\"\\0\\x01\\x02\\x03\\x04\\x05\\x06\\a\\b\\t\\n\\v\\f\\r\\x0E\\x0F\"}}"+
 		" {{AAECAwQFBgcICQoLDA0ODw==}} ", " ")
 	actual := strings.Split(str.String(), "\n")
