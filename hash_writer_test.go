@@ -201,7 +201,7 @@ func TestWriteScalars(t *testing.T) {
 	assert.Equal(t, []byte{0x0b, 0x20, 0x05, 0x0e}, sum, "sum did not match expectation")
 
 	// Int
-	assert.NoError(t, ionHashWriter.WriteInt(-5), "Something went wrong executing ionHashWriter.WriteInt(5)")
+	assert.NoError(t, ionHashWriter.WriteInt(-5), "Something went wrong executing ionHashWriter.WriteInt(-5)")
 
 	sum, err = ionHashWriter.Sum(nil)
 	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
