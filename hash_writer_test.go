@@ -35,6 +35,7 @@ func TestWriteNull(t *testing.T) {
 	ionHashWriter, ok := hw.(*hashWriter)
 	require.True(t, ok, "Expected hw to be of type hashWriter")
 
+	// Null
 	assert.NoError(t, ionHashWriter.WriteNull(), "Something went wrong executing ionHashWriter.WriteNull()")
 
 	sum, err := ionHashWriter.Sum(nil)
@@ -42,6 +43,34 @@ func TestWriteNull(t *testing.T) {
 
 	assert.Equal(t, []byte{0x0b, 0x0f, 0x0e}, sum, "sum did not match expectation")
 
+	// Null Type
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.NullType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.NullType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x0f, 0x0e}, sum, "sum did not match expectation")
+
+	// Bool
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.BoolType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.BoolType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x1f, 0x0e}, sum, "sum did not match expectation")
+
+	// Int
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.IntType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.IntType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x2f, 0x0e}, sum, "sum did not match expectation")
+
+	// Float
 	assert.NoError(t, ionHashWriter.WriteNullType(ion.FloatType),
 		"Something went wrong executing ionHashWriter.WriteNullType(ion.FloatType)")
 
@@ -50,6 +79,52 @@ func TestWriteNull(t *testing.T) {
 
 	assert.Equal(t, []byte{0x0b, 0x4f, 0x0e}, sum, "sum did not match expectation")
 
+	// Decimal
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.DecimalType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.DecimalType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x5f, 0x0e}, sum, "sum did not match expectation")
+
+	// Timestamp
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.TimestampType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.TimestampType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x6f, 0x0e}, sum, "sum did not match expectation")
+
+	// Symbol
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.SymbolType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.SymbolType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x7f, 0x0e}, sum, "sum did not match expectation")
+
+	// String
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.StringType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.StringType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x8f, 0x0e}, sum, "sum did not match expectation")
+
+	// Clob
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.ClobType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.ClobType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x9f, 0x0e}, sum, "sum did not match expectation")
+
+	// Blob
 	assert.NoError(t, ionHashWriter.WriteNullType(ion.BlobType),
 		"Something went wrong executing ionHashWriter.WriteNullType(ion.BlobType)")
 
@@ -58,6 +133,25 @@ func TestWriteNull(t *testing.T) {
 
 	assert.Equal(t, []byte{0x0b, 0xaf, 0x0e}, sum, "sum did not match expectation")
 
+	// List
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.ListType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.ListType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0xbf, 0x0e}, sum, "sum did not match expectation")
+
+	// Sexp
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.SexpType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.SexpType)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0xcf, 0x0e}, sum, "sum did not match expectation")
+
+	// Struct
 	assert.NoError(t, ionHashWriter.WriteNullType(ion.StructType),
 		"Something went wrong executing ionHashWriter.WriteNullType(ion.StructType)")
 
@@ -69,15 +163,14 @@ func TestWriteNull(t *testing.T) {
 	assert.NoError(t, ionHashWriter.Finish(), "Something went wrong executing ionHashWriter.Finish()")
 
 	// We're comparing splits because str.String() uses a cumbersome '\n' separator
-	expected := strings.Split("null null.float null.blob null.struct ", " ")
+	expected := strings.Split("null null.null null.bool null.int null.float null.decimal null.timestamp "+
+		"null.symbol null.string null.clob null.blob null.list null.sexp null.struct ", " ")
 	actual := strings.Split(str.String(), "\n")
 
 	assert.Equal(t, expected, actual, "str.String() did not match expectation")
 }
 
 func TestWriteScalars(t *testing.T) {
-	t.Skip() // Skipping test until final str.String() check passes
-
 	str := strings.Builder{}
 	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
 	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
@@ -90,6 +183,15 @@ func TestWriteScalars(t *testing.T) {
 
 	assert.Equal(t, []byte{}, sum, "sum did not match expectation")
 
+	// Bool
+	assert.NoError(t, ionHashWriter.WriteBool(true), "Something went wrong executing ionHashWriter.WriteBool(true)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x11, 0x0e}, sum, "sum did not match expectation")
+
+	// Int
 	assert.NoError(t, ionHashWriter.WriteInt(5), "Something went wrong executing ionHashWriter.WriteInt(5)")
 
 	sum, err = ionHashWriter.Sum(nil)
@@ -97,7 +199,8 @@ func TestWriteScalars(t *testing.T) {
 
 	assert.Equal(t, []byte{0x0b, 0x20, 0x05, 0x0e}, sum, "sum did not match expectation")
 
-	assert.NoError(t, ionHashWriter.WriteFloat(3.14), "Something went wrong executing ionHashWriter.WriteInt(5)")
+	// Float
+	assert.NoError(t, ionHashWriter.WriteFloat(3.14), "Something went wrong executing ionHashWriter.WriteFloat(3.14)")
 
 	sum, err = ionHashWriter.Sum(nil)
 	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
@@ -105,6 +208,17 @@ func TestWriteScalars(t *testing.T) {
 	assert.Equal(t, []byte{0x0b, 0x40, 0x40, 0x09, 0x1e, 0xb8, 0x51, 0xeb, 0x85, 0x1f, 0x0e}, sum,
 		"sum did not match expectation")
 
+	// Decimal
+	dec, err := ion.ParseDecimal("1234.56789")
+	assert.NoError(t, err, "Something went wrong executing ion.ParseDecimal(\"1234.56789\")")
+	assert.NoError(t, ionHashWriter.WriteDecimal(dec), "Something went wrong executing ionHashWriter.WriteDecimal(dec)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x50, 0xc5, 0x07, 0x5b, 0xcd, 0x15, 0x0e}, sum, "sum did not match expectation")
+
+	// Timestamp
 	assert.NoError(t, ionHashWriter.WriteTimestamp(time.Date(1941, time.December, 7, 18, 0, 0, 0, time.UTC)),
 		"Something went wrong executing ionHashWriter.WriteTimestamp(time.Date(...))")
 
@@ -114,6 +228,36 @@ func TestWriteScalars(t *testing.T) {
 	assert.Equal(t, []byte{0x0b, 0x60, 0x80, 0x0f, 0x95, 0x8c, 0x87, 0x92, 0x80, 0x80, 0x0e}, sum,
 		"sum did not match expectation")
 
+	// Symbol
+	assert.NoError(t, ionHashWriter.WriteSymbol("symbol"),
+		"Something went wrong executing ionHashWriter.WriteSymbol(\"symbol\")")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x70, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x0e}, sum, "sum did not match expectation")
+
+	// String
+	assert.NoError(t, ionHashWriter.WriteString("string"),
+		"Something went wrong executing ionHashWriter.WriteString(\"string\")")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x80, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x0e}, sum, "sum did not match expectation")
+
+	// Clob
+	err = ionHashWriter.WriteClob(
+		[]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f})
+	assert.NoError(t, err, "Something went wrong executing ionHashWriter.WriteClob(...)")
+
+	sum, err = ionHashWriter.Sum(nil)
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
+
+	assert.Equal(t, []byte{0x0b, 0x90, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+		0x09, 0x0a, 0x0c, 0x0b, 0x0c, 0x0c, 0x0d, 0x0c, 0x0e, 0x0f, 0x0e}, sum, "sum did not match expectation")
+
+	// Blob
 	err = ionHashWriter.WriteBlob(
 		[]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f})
 	assert.NoError(t, err, "Something went wrong executing ionHashWriter.WriteBlob(...)")
@@ -129,7 +273,9 @@ func TestWriteScalars(t *testing.T) {
 	assert.NoError(t, ionHashWriter.Finish(), "Something went wrong executing ionHashWriter.Finish()")
 
 	// We're comparing splits because str.String() uses a cumbersome '\n' separator
-	expected := strings.Split("5 3.14e0 1941-12-07T18:00:00.0000000-00:00 {{AAECAwQFBgcICQoLDA0ODw==}} ", " ")
+	expected := strings.Split("true 5 3.14e+0 1234.56789 1941-12-07T18:00:00Z symbol \"string\" "+
+		"{{\"\\0\\x01\\x02\\x03\\x04\\x05\\x06\\a\\b\\t\\n\\v\\f\\r\\x0E\\x0F\"}}"+
+		" {{AAECAwQFBgcICQoLDA0ODw==}}", " ")
 	actual := strings.Split(str.String(), "\n")
 
 	assert.Equal(t, expected, actual, "str.String() did not match expectation")
