@@ -348,6 +348,11 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 			return writer.WriteUint(uint64(ionValUint32))
 		}
 
+		ionValInt, ok := ionValue.(int)
+		if ok {
+			return writer.WriteInt(int64(ionValInt))
+		}
+
 		ionValBigInt, ok := ionValue.(*big.Int)
 		if ok {
 			return writer.WriteBigInt(ionValBigInt)

@@ -26,7 +26,15 @@ import (
 
 func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 	for hasNext(t, reader1, reader2) {
-		require.Equal(t, reader1.Type().String(), reader2.Type().String(), "Ion Types did not match")
+		require.Equal(t, reader1.IsNull(), reader2.IsNull(), "Expected readers to have matching IsNull() values")
+
+		type1 := reader1.Type()
+		type2 := reader2.Type()
+		require.Equal(t, type1.String(), type2.String(), "Ion Types did not match")
+
+		if type1 == ion.NoType {
+			break
+		}
 
 		ionHashReader, ok := reader2.(*hashReader)
 		require.True(t, ok, "Expected reader2 to be of type hashReader")
@@ -41,28 +49,28 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 
 		compareHasAnnotations(t, reader1, reader2)
 
-		require.Equal(t, reader1.IsNull(), reader2.IsNull(), "Expected readers to have matching IsNull() values")
-
-		switch reader1.Type() {
+		switch type1 {
 		case ion.NullType:
 			assert.True(t, reader1.IsNull(), "Expected reader1.IsNull() to return true")
 			assert.True(t, reader2.IsNull(), "Expected reader2.IsNull() to return true")
 		case ion.BoolType, ion.IntType, ion.FloatType, ion.DecimalType, ion.TimestampType,
 			ion.StringType, ion.SymbolType, ion.BlobType, ion.ClobType:
 
-			compareScalars(t, reader1.Type(), reader1, reader2)
+			compareScalars(t, type1, reader1, reader2)
 		case ion.StructType, ion.ListType, ion.SexpType:
-			assert.NoError(t, reader1.StepIn(), "Something went wrong executing reader1.StepIn()")
+			if !reader1.IsNull() {
+				assert.NoError(t, reader1.StepIn(), "Something went wrong executing reader1.StepIn()")
 
-			assert.NoError(t, reader2.StepIn(), "Something went wrong executing reader2.StepIn()")
+				assert.NoError(t, reader2.StepIn(), "Something went wrong executing reader2.StepIn()")
 
-			compareReaders(t, reader1, reader2)
+				compareReaders(t, reader1, reader2)
 
-			assert.NoError(t, reader1.StepOut(), "Something went wrong executing reader1.StepOut()")
+				assert.NoError(t, reader1.StepOut(), "Something went wrong executing reader1.StepOut()")
 
-			assert.NoError(t, reader2.StepOut(), "Something went wrong executing reader2.StepOut()")
+				assert.NoError(t, reader2.StepOut(), "Something went wrong executing reader2.StepOut()")
+			}
 		default:
-			t.Error(&InvalidIonTypeError{reader1.Type()})
+			t.Error(&InvalidIonTypeError{type1})
 		}
 	}
 
@@ -73,7 +81,6 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 func hasNext(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) bool {
 	next1 := reader1.Next()
 	next2 := reader2.Next()
-
 	assert.Equal(t, next1, next2, "next results don't match")
 
 	if !next1 {
@@ -168,12 +175,10 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 
 		float2, err := reader2.FloatValue()
 		assert.NoError(t, err, "Something went wrong executing reader2.FloatValue()")
 
-		if math.IsNaN(float1) && math.IsNaN(float2) {
-			assert.Equal(t, float1, float2, "Expected NaN float values to match")
-		} else if math.IsNaN(float1) || math.IsNaN(float2) {
-			assert.NotEqual(t, float1, float2, "Expected IsNaN float value to differ from a non-IsNaN float value")
-		} else {
+		if !math.IsNaN(float1) && !math.IsNaN(float2) {
 			assert.Equal(t, float1, float2, "Expected float values to match")
+		} else if !math.IsNaN(float1) || !math.IsNaN(float2) {
+			assert.NotEqual(t, float1, float2, "Expected IsNaN float value to differ from a non-IsNaN float value")
 		}
 	case ion.DecimalType:
 		decimal1, err := reader1.DecimalValue()
@@ -201,7 +206,7 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 
 		assert.Equal(t, str1, str2, "Expected string values to match")
 	case ion.SymbolType:
 		// TODO: Add SymbolToken logic here once SymbolTokens are available
-		t.Fail()
+		t.Fatal("No SymbolToken support yet")
 	case ion.BlobType, ion.ClobType:
 		b1, err := reader1.ByteValue()
 		assert.NoError(t, err, "Something went wrong executing reader1.ByteValue()")
@@ -284,7 +289,6 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 			default:
 				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
 			}
-
 		case ion.FloatType:
 			val, err := reader.FloatValue()
 			assert.NoError(t, err, "Something went wrong when reading Float value")

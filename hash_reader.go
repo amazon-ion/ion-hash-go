@@ -250,7 +250,24 @@ func (hashReader *hashReader) value() (interface{}, error) {
 	case ion.FloatType:
 		return hashReader.FloatValue()
 	case ion.IntType:
-		return hashReader.Int64Value()
+		intSize, err := hashReader.IntSize()
+		if err != nil {
+			return nil, err
+		}
+
+		switch intSize {
+		case ion.Int32:
+			return hashReader.IntValue()
+		case ion.Int64:
+			return hashReader.Int64Value()
+		case ion.Uint64:
+			return hashReader.Uint64Value()
+		case ion.BigInt:
+			return hashReader.BigIntValue()
+		default:
+			return nil, &InvalidOperationError{
+				"hashReader", "value", "Expected intSize to be one of Int32, Int64, Uint64, or BigInt"}
+		}
 	case ion.StringType:
 		return hashReader.StringValue()
 	case ion.SymbolType:
