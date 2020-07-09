@@ -18,7 +18,9 @@ package ionhash
 type identityHasher struct {
 	IonHasher
 
-	identityHash []byte
+	identityHash  []byte
+	updateHashLog [][]byte
+	digestHashLog [][]byte
 }
 
 func newIdentityIonHasher() IonHasher {
@@ -29,7 +31,7 @@ func (identityHasher *identityHasher) Write(bytes []byte) (int, error) {
 	for _, b := range bytes {
 		identityHasher.identityHash = append(identityHasher.identityHash, b)
 	}
-
+	identityHasher.updateHashLog = append(identityHasher.updateHashLog, bytes)
 	return len(bytes), nil
 }
 
@@ -40,5 +42,7 @@ func (identityHasher *identityHasher) Sum(bytes []byte) []byte {
 	identityHash := identityHasher.identityHash
 	identityHasher.identityHash = []byte{}
 
+	identityHasher.digestHashLog = append(identityHasher.digestHashLog, identityHash)
 	return identityHash
 }
+
