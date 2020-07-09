@@ -540,12 +540,12 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 			require.NoError(t, err)
 			err = binaryWriter.BeginStruct()
 			require.NoError(t, err)
-			//if reader.FieldName() != "" {
-			//	err = textWriter.FieldName(reader.FieldName())
-			//	require.NoError(t, err)
-			//	err = binaryWriter.FieldName(reader.FieldName())
-			//	require.NoError(t, err)
-			//}
+			if reader.FieldName() != "" {
+				err = textWriter.FieldName(reader.FieldName())
+				require.NoError(t, err)
+				err = binaryWriter.FieldName(reader.FieldName())
+				require.NoError(t, err)
+			}
 
 			for reader.Next() {
 				writeToWriter(t, reader, textWriter, binaryWriter)
