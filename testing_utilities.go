@@ -26,8 +26,6 @@ import (
 
 func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 	for hasNext(t, reader1, reader2) {
-		require.Equal(t, reader1.IsNull(), reader2.IsNull(), "Expected readers to have matching IsNull() values")
-
 		type1 := reader1.Type()
 		type2 := reader2.Type()
 		require.Equal(t, type1.String(), type2.String(), "Ion Types did not match")
@@ -49,28 +47,25 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 
 		compareHasAnnotations(t, reader1, reader2)
 
-		switch type1 {
-		case ion.NullType:
-			assert.True(t, reader1.IsNull(), "Expected reader1.IsNull() to return true")
-			assert.True(t, reader2.IsNull(), "Expected reader2.IsNull() to return true")
-		case ion.BoolType, ion.IntType, ion.FloatType, ion.DecimalType, ion.TimestampType,
-			ion.StringType, ion.SymbolType, ion.BlobType, ion.ClobType:
+		isNull1 := reader1.IsNull()
+		isNull2 := reader2.IsNull()
+		require.Equal(t, isNull1, isNull2, "Expected readers to have matching IsNull() values")
 
+		if type1 == ion.NullType {
+			assert.True(t, isNull1, "Expected reader1.IsNull() to return true")
+			assert.True(t, isNull2, "Expected reader2.IsNull() to return true")
+		} else if ion.IsScalar(type1) {
 			compareScalars(t, type1, reader1, reader2)
-		case ion.StructType, ion.ListType, ion.SexpType:
-			if !reader1.IsNull() {
-				assert.NoError(t, reader1.StepIn(), "Something went wrong executing reader1.StepIn()")
+		} else if ion.IsContainer(type1) && !isNull1 {
+			assert.NoError(t, reader1.StepIn(), "Something went wrong executing reader1.StepIn()")
 
-				assert.NoError(t, reader2.StepIn(), "Something went wrong executing reader2.StepIn()")
+			assert.NoError(t, reader2.StepIn(), "Something went wrong executing reader2.StepIn()")
 
-				compareReaders(t, reader1, reader2)
+			compareReaders(t, reader1, reader2)
 
-				assert.NoError(t, reader1.StepOut(), "Something went wrong executing reader1.StepOut()")
+			assert.NoError(t, reader1.StepOut(), "Something went wrong executing reader1.StepOut()")
 
-				assert.NoError(t, reader2.StepOut(), "Something went wrong executing reader2.StepOut()")
-			}
-		default:
-			t.Error(&InvalidIonTypeError{type1})
+			assert.NoError(t, reader2.StepOut(), "Something went wrong executing reader2.StepOut()")
 		}
 	}
 
