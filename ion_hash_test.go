@@ -86,23 +86,20 @@ func ionHashDataSource(t *testing.T) []testObject {
 			testName = reader.Annotations()[0]
 		}
 
-		err := reader.StepIn()
-		assert.NoError(t, err, "Something went wrong executing reader.StepIn()")
+		assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 		reader.Next() // Read the initial Ion value.
 
 		testCase := []byte{}
 		if reader.FieldName() == "10n" {
-			err = reader.StepIn()
-			assert.NoError(t, err, "Something went wrong executing reader.StepIn()")
+			assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 			for reader.Next() {
 				intValue, err := reader.Int64Value()
 				assert.NoError(t, err, "Something went wrong executing reader.IntValue()")
 				testCase = append(testCase, byte(intValue))
 			}
-			err = reader.StepOut()
-			assert.NoError(t, err, "Something went wrong executing reader.StepOut()")
+			assert.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 
 		} else {
 			// Create textWriter to set testName to Ion text.
@@ -115,10 +112,8 @@ func ionHashDataSource(t *testing.T) []testObject {
 
 			writeToWriter(t, reader, textWriter, binaryWriter)
 
-			err = textWriter.Finish()
-			assert.NoError(t, err, "Something went wrong writing Ion value to text writer.")
-			err = binaryWriter.Finish()
-			assert.NoError(t, err, "Something went wrong writing Ion value to binary writer.")
+			assert.NoError(t, textWriter.Finish(), "Something went wrong executing textWriter.Finish().")
+			assert.NoError(t, binaryWriter.Finish(), "Something went wrong executing binaryWriter.Finish().")
 
 			if testName == "unknown" {
 				testName = str.String()
@@ -133,8 +128,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 		fieldName := reader.FieldName()
 
 		if fieldName == "expect" {
-			err = reader.StepIn()
-			assert.NoError(t, err, "Something went wrong executing reader.StepIn()")
+			assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 			for reader.Next() {
 				identityUpdateList := [][]byte{}
@@ -146,8 +140,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 				fieldName = reader.FieldName()
 				hasherName := fieldName
 				if fieldName == "identity" {
-					err = reader.StepIn()
-					assert.NoError(t, err, "Something went wrong executing reader.StepIn()")
+					assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 					for reader.Next() {
 						annotations := reader.Annotations()
@@ -166,11 +159,9 @@ func ionHashDataSource(t *testing.T) []testObject {
 							}
 						}
 					}
-					err = reader.StepOut()
-					assert.NoError(t, err, "Something went wrong executing reader.StepOut()")
+					assert.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 				} else if fieldName == "md5" {
-					err = reader.StepIn()
-					assert.NoError(t, err, "Something went wrong executing reader.StepIn()")
+					assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 					for reader.Next() {
 						annotations := reader.Annotations()
@@ -186,8 +177,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 							}
 						}
 					}
-					err = reader.StepOut()
-					assert.NoError(t, err, "Something went wrong executing reader.StepOut()")
+					assert.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 				}
 
 				expectedHashLog := hashLog{
@@ -204,11 +194,9 @@ func ionHashDataSource(t *testing.T) []testObject {
 
 				dataList = append(dataList, testObject{testName, testCase, expectedHashLog, newTestIonHasherProvider(hasherName)})
 			}
-			err = reader.StepOut()
-			assert.NoError(t, err, "Something went wrong executing reader.StepOut()")
+			assert.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 		}
-		err = reader.StepOut()
-		assert.NoError(t, err, "Something went wrong executing reader.StepOut()")
+		assert.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 	}
 	return dataList
 }
@@ -218,313 +206,6 @@ type testObject struct {
 	testCase        []byte
 	expectedHashLog hashLog
 	provider        *testIonHasherProvider
-}
-
-func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binaryWriter ion.Writer) {
-	ionType := reader.Type()
-
-	if reader.Annotations() != nil {
-		err := textWriter.Annotations(reader.Annotations()...)
-		require.NoError(t, err)
-		err = binaryWriter.Annotations(reader.Annotations()...)
-		require.NoError(t, err)
-	}
-
-	switch ionType {
-	case ion.NullType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.NullType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.NullType)
-			require.NoError(t, err)
-		} else {
-			err := textWriter.WriteNull()
-			require.NoError(t, err)
-			err = binaryWriter.WriteNull()
-			require.NoError(t, err)
-		}
-
-	case ion.BoolType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.BoolType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.BoolType)
-			require.NoError(t, err)
-		} else {
-			boolValue, err := reader.BoolValue()
-			require.NoError(t, err)
-			err = textWriter.WriteBool(boolValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteBool(boolValue)
-			require.NoError(t, err)
-		}
-
-	case ion.BlobType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.BlobType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.BlobType)
-			require.NoError(t, err)
-		} else {
-			byteValue, err := reader.ByteValue()
-			require.NoError(t, err)
-			err = textWriter.WriteBlob(byteValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteBlob(byteValue)
-			require.NoError(t, err)
-		}
-
-	case ion.ClobType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.ClobType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.ClobType)
-			require.NoError(t, err)
-		} else {
-			byteValue, err := reader.ByteValue()
-			require.NoError(t, err)
-			err = textWriter.WriteClob(byteValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteClob(byteValue)
-			require.NoError(t, err)
-		}
-
-	case ion.DecimalType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.DecimalType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.DecimalType)
-			require.NoError(t, err)
-		} else {
-			decimalValue, err := reader.DecimalValue()
-			require.NoError(t, err)
-			err = textWriter.WriteDecimal(decimalValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteDecimal(decimalValue)
-			require.NoError(t, err)
-		}
-
-	case ion.FloatType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.FloatType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.FloatType)
-			require.NoError(t, err)
-		} else {
-			floatValue, err := reader.FloatValue()
-			require.NoError(t, err)
-			err = textWriter.WriteFloat(floatValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteFloat(floatValue)
-			require.NoError(t, err)
-		}
-
-	case ion.IntType:
-		intSize, err := reader.IntSize()
-		require.NoError(t, err)
-
-		if reader.IsNull() {
-			err = textWriter.WriteNullType(ion.IntType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.IntType)
-			require.NoError(t, err)
-		} else {
-			switch intSize {
-			case ion.Int32:
-
-				intValue, err := reader.IntValue()
-				require.NoError(t, err)
-				err = textWriter.WriteInt(int64(intValue))
-				require.NoError(t, err)
-				err = binaryWriter.WriteInt(int64(intValue))
-				require.NoError(t, err)
-
-			case ion.Int64:
-				intValue, err := reader.Int64Value()
-				require.NoError(t, err)
-				err = textWriter.WriteInt(intValue)
-				require.NoError(t, err)
-				err = binaryWriter.WriteInt(intValue)
-				require.NoError(t, err)
-
-			case ion.Uint64:
-				intValue, err := reader.Uint64Value()
-				require.NoError(t, err)
-				err = textWriter.WriteUint(intValue)
-				require.NoError(t, err)
-				err = binaryWriter.WriteUint(intValue)
-				require.NoError(t, err)
-
-			case ion.BigInt:
-				intValue, err := reader.BigIntValue()
-				require.NoError(t, err)
-				err = textWriter.WriteBigInt(intValue)
-				require.NoError(t, err)
-				err = binaryWriter.WriteBigInt(intValue)
-				require.NoError(t, err)
-
-			default:
-				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
-			}
-		}
-
-	case ion.StringType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.StringType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.StringType)
-			require.NoError(t, err)
-		} else {
-			stringValue, err := reader.StringValue()
-			require.NoError(t, err)
-			err = textWriter.WriteString(stringValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteString(stringValue)
-			require.NoError(t, err)
-		}
-
-	case ion.SymbolType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.SymbolType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.SymbolType)
-			require.NoError(t, err)
-		} else {
-			stringValue, err := reader.StringValue()
-			require.NoError(t, err)
-			err = textWriter.WriteSymbol(stringValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteSymbol(stringValue)
-			require.NoError(t, err)
-		}
-
-	case ion.TimestampType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.TimestampType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.TimestampType)
-			require.NoError(t, err)
-		} else {
-			timeValue, err := reader.TimeValue()
-			require.NoError(t, err)
-			err = textWriter.WriteTimestamp(timeValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteTimestamp(timeValue)
-			require.NoError(t, err)
-		}
-
-	case ion.SexpType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.SexpType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.SexpType)
-			require.NoError(t, err)
-		} else {
-			err := reader.StepIn()
-			require.NoError(t, err)
-			err = textWriter.BeginSexp()
-			require.NoError(t, err)
-			err = binaryWriter.BeginSexp()
-			require.NoError(t, err)
-			if reader.FieldName() != "" {
-				err = textWriter.FieldName(reader.FieldName())
-				require.NoError(t, err)
-				err = binaryWriter.FieldName(reader.FieldName())
-				require.NoError(t, err)
-			}
-			for reader.Next() {
-				writeToWriter(t, reader, textWriter, binaryWriter)
-			}
-
-			err = reader.StepOut()
-			require.NoError(t, err)
-			err = textWriter.EndSexp()
-			require.NoError(t, err)
-			err = binaryWriter.EndSexp()
-			require.NoError(t, err)
-		}
-
-	case ion.ListType:
-		if reader.IsNull() {
-			err := textWriter.WriteNullType(ion.ListType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.ListType)
-			require.NoError(t, err)
-		} else {
-			err := reader.StepIn()
-			require.NoError(t, err)
-			err = textWriter.BeginList()
-			require.NoError(t, err)
-			err = binaryWriter.BeginList()
-			require.NoError(t, err)
-			if reader.FieldName() != "" {
-				err = textWriter.FieldName(reader.FieldName())
-				require.NoError(t, err)
-				err = binaryWriter.FieldName(reader.FieldName())
-				require.NoError(t, err)
-			}
-			for reader.Next() {
-				writeToWriter(t, reader, textWriter, binaryWriter)
-			}
-
-			err = reader.StepOut()
-			require.NoError(t, err)
-			err = textWriter.EndList()
-			require.NoError(t, err)
-			err = binaryWriter.EndList()
-			require.NoError(t, err)
-		}
-
-	case ion.StructType:
-		if reader.IsNull() {
-			textWriter.WriteNullType(ion.StructType)
-			err := textWriter.WriteNullType(ion.StructType)
-			require.NoError(t, err)
-			err = binaryWriter.WriteNullType(ion.StructType)
-			require.NoError(t, err)
-		} else {
-			err := reader.StepIn()
-			require.NoError(t, err)
-			err = textWriter.BeginStruct()
-			require.NoError(t, err)
-			err = binaryWriter.BeginStruct()
-			require.NoError(t, err)
-			if reader.FieldName() != "" {
-				err = textWriter.FieldName(reader.FieldName())
-				require.NoError(t, err)
-				err = binaryWriter.FieldName(reader.FieldName())
-				require.NoError(t, err)
-			}
-
-			for reader.Next() {
-				writeToWriter(t, reader, textWriter, binaryWriter)
-			}
-
-			err = reader.StepOut()
-			require.NoError(t, err)
-			err = textWriter.EndStruct()
-			require.NoError(t, err)
-			err = binaryWriter.EndStruct()
-			require.NoError(t, err)
-		}
-
-	default:
-		t.Fatal(InvalidIonTypeError{ionType})
-	}
-}
-
-func readSexpAndAppendToList(t *testing.T, reader ion.Reader) []byte {
-	err := reader.StepIn()
-	require.NoError(t, err)
-	updateBytes := []byte{}
-	for reader.Next() {
-		intValue, err := reader.Int64Value()
-		assert.NoError(t, err, "Something went wrong executing reader.Int64Value()")
-		updateBytes = append(updateBytes, byte(intValue))
-	}
-	err = reader.StepOut()
-	require.NoError(t, err)
-	return updateBytes
 }
 
 type hashLog struct {
