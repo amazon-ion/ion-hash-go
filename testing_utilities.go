@@ -136,7 +136,15 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 
 		assert.NoError(t, err, "Something went wrong executing reader1.IntSize()")
 
 		switch intSize {
-		case ion.Int32, ion.Int64:
+		case ion.Int32:
+			int1, err := reader1.IntValue()
+			assert.NoError(t, err, "Something went wrong executing reader1.IntValue()")
+
+			int2, err := reader2.IntValue()
+			assert.NoError(t, err, "Something went wrong executing reader2.IntValue()")
+
+			assert.Equal(t, int1, int2, "Expected int values to match")
+		case ion.Int64:
 			int1, err := reader1.Int64Value()
 			assert.NoError(t, err, "Something went wrong executing reader1.Int64Value()")
 
