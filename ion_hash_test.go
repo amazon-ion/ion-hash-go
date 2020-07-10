@@ -64,7 +64,7 @@ func Traverse(t *testing.T, reader ion.Reader, provider IonHasherProvider) {
 
 func TraverseReader(hr HashReader) {
 	for hr.Next() {
-		if hr.Type() != ion.NoType && hr.isInStruct() {
+		if hr.Type() != ion.NoType && hr.IsInStruct() {
 			hr.StepIn()
 			TraverseReader(hr)
 			hr.StepOut()

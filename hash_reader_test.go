@@ -25,7 +25,8 @@ import (
 )
 
 func TestEmptyString(t *testing.T) {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	for i := 0; i < 2; i++ {
@@ -42,7 +43,8 @@ func TestEmptyString(t *testing.T) {
 }
 
 func TestTopLevelValues(t *testing.T) {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	expectedTypes := []ion.Type{ion.IntType, ion.IntType, ion.IntType, ion.NoType, ion.NoType}
@@ -90,8 +92,8 @@ func TestReaderUnresolvedSid(t *testing.T) {
 	t.Skip() // Skipping test until SymbolToken is implemented
 
 	reader := ion.NewReaderBytes([]byte{0xd3, 0x8a, 0x21, 0x01})
-
-	ionHashReader, err := NewHashReader(reader, newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	ionHashReader, err := NewHashReader(reader, tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	assert.False(t, ionHashReader.Next())
@@ -108,8 +110,8 @@ func TestIonReaderContract(t *testing.T) {
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	reader := ion.NewReaderBytes(file)
-
-	ionHashReader, err := NewHashReader(reader, newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	ionHashReader, err := NewHashReader(reader, tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	compareReaders(t, reader, ionHashReader)
@@ -185,7 +187,8 @@ func ConsumeRemainderNext(t *testing.T, ionHashReader HashReader) {
 type consumeFunction func(*testing.T, HashReader)
 
 func consume(t *testing.T, function consumeFunction) {
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	sum, err := ionHashReader.Sum(nil)
