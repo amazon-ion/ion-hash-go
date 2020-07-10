@@ -15,13 +15,12 @@
 
 package ionhash
 
-
 type defaultHasher struct {
 	cryptoHasher IonHasher
-	provider testIonHasherProvider
+	provider     *testIonHasherProvider
 }
 
-func newDefaultIonHasher(algorithm algorithm, provider testIonHasherProvider) (IonHasher, error) {
+func newDefaultIonHasher(algorithm algorithm, provider *testIonHasherProvider) (IonHasher, error) {
 	cryptoHasher, err := newCryptoHasher(algorithm)
 	if err != nil {
 		return nil, &InvalidArgumentError{"algorithm", algorithm}
@@ -30,12 +29,12 @@ func newDefaultIonHasher(algorithm algorithm, provider testIonHasherProvider) (I
 }
 
 func (dh *defaultHasher) Write(b []byte) (n int, err error) {
-	dh.provider.updateHashLog = append (dh.provider.updateHashLog, b)
+	dh.provider.updateHashLog = append(dh.provider.updateHashLog, b)
 	return dh.cryptoHasher.Write(b)
 }
 
 func (dh *defaultHasher) Sum(b []byte) []byte {
 	hash := dh.cryptoHasher.Sum(b)
-	dh.provider.digestHashLog = append (dh.provider.digestHashLog, hash)
+	dh.provider.digestHashLog = append(dh.provider.digestHashLog, hash)
 	return hash
 }

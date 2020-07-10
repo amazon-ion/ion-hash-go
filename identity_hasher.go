@@ -18,8 +18,8 @@ package ionhash
 type identityHasher struct {
 	IonHasher
 
-	identityHash  []byte
-	provider *testIonHasherProvider
+	identityHash []byte
+	provider     *testIonHasherProvider
 }
 
 func newIdentityIonHasher(provider *testIonHasherProvider) IonHasher {

@@ -18,8 +18,7 @@ package ionhash
 import "strings"
 
 type testIonHasherProvider struct {
-
-	algorithm string
+	algorithm     string
 	updateHashLog [][]byte
 	digestHashLog [][]byte
 }
@@ -28,17 +27,17 @@ func newTestIonHasherProvider(algorithm string) *testIonHasherProvider {
 	return &testIonHasherProvider{algorithm: algorithm}
 }
 
-func (tiop *testIonHasherProvider)getInstance() IonHasherProvider {
+func (tiop *testIonHasherProvider) getInstance() IonHasherProvider {
 	if tiop.algorithm == "identity" {
 		return newIdentityHasherProvider(tiop)
 	} else {
-		return newDefaultHasherProvider(strings.ToUpper(tiop.algorithm), *tiop)
+		return newDefaultHasherProvider(strings.ToUpper(tiop.algorithm), tiop)
 	}
 }
 
-func (tiop *testIonHasherProvider)getUpdateHashLog() [][]byte {
+func (tiop *testIonHasherProvider) getUpdateHashLog() [][]byte {
 	return tiop.updateHashLog
 }
-func (tiop *testIonHasherProvider)getDigestHashLog() [][]byte {
+func (tiop *testIonHasherProvider) getDigestHashLog() [][]byte {
 	return tiop.digestHashLog
 }
