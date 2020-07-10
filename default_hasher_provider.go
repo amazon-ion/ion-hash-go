@@ -19,14 +19,15 @@ type defaultHasherProvider struct {
 	IonHasherProvider
 
 	algorithm algorithm
+	provider testIonHasherProvider
 }
 
-func newDefaultHasherProvider(algo string) *defaultHasherProvider {
-	return &defaultHasherProvider{algorithm: algorithm(algo)}
+func newDefaultHasherProvider(algo string, provider testIonHasherProvider) *defaultHasherProvider {
+	return &defaultHasherProvider{algorithm: algorithm(algo), provider: provider}
 }
 
 func (dhp *defaultHasherProvider) NewHasher() (IonHasher, error) {
-	 ionHasher, err := newDefaultIonHasher(dhp.algorithm)
+	 ionHasher, err := newDefaultIonHasher(dhp.algorithm, dhp.provider)
 	 if err != nil {
 	 	return nil, err
 	 }

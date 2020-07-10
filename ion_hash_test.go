@@ -18,13 +18,12 @@ package ionhash
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"strings"
-	"testing"
-
 	"github.com/amzn/ion-go/ion"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
+	"strings"
+	"testing"
 )
 
 func TestIonHash(t *testing.T) {
@@ -33,14 +32,27 @@ func TestIonHash(t *testing.T) {
 	for i := range parameters {
 		ionBinary := parameters[i].testCase
 		reader := ion.NewReaderBytes(ionBinary)
-		hashProvider := parameters[i].hasherProvider
-		Traverse(t, reader, hashProvider)
-	}
-	//for i := range parameters {
-	//	actual := compute(parameters[i].input)
-	//	print("HELLO ")
-	//	assert.Equal(t, actual, parameters[i].expected)
 
+		provider := parameters[i].provider
+		Traverse(t, reader, provider.getInstance())
+
+		if len(parameters[i].expectedHashLog.identityUpdateList) > 0 {
+			assert.Equal(t, provider.getUpdateHashLog(), parameters[i].expectedHashLog.identityUpdateList)
+		}
+		if len(parameters[i].expectedHashLog.identityDigestList) > 0 {
+			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityDigestList)
+		}
+		if len(parameters[i].expectedHashLog.identityFinalDigest) > 0 {
+			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityDigestList)
+		}
+
+		if len(parameters[i].expectedHashLog.md5UpdateList) > 0 {
+			assert.Equal(t, provider.getUpdateHashLog(), parameters[i].expectedHashLog.md5UpdateList)
+		}
+		if len(parameters[i].expectedHashLog.md5DigestList) > 0 {
+			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.md5DigestList)
+		}
+	}
 }
 
 func Traverse(t *testing.T, reader ion.Reader, provider IonHasherProvider) {
@@ -130,7 +142,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 			for reader.Next() {
 				identityUpdateList := [][]byte{}
 				identityDigestList := [][]byte{}
-				identityFinalDigest := []byte{}
+				identityFinalDigest := [][]byte{}
 				md5UpdateList := [][]byte{}
 				md5DigestList := [][]byte{}
 
@@ -152,7 +164,8 @@ func ionHashDataSource(t *testing.T) []testObject {
 								digestBytes := readSexpAndAppendToList(t, reader)
 								identityDigestList = append(identityDigestList, digestBytes)
 							} else if annotations[0] == "final_digest" {
-								identityFinalDigest = readSexpAndAppendToList(t, reader)
+								digestBytes := readSexpAndAppendToList(t, reader)
+								identityFinalDigest = append(identityFinalDigest, digestBytes)
 							}
 						}
 					}
@@ -188,13 +201,11 @@ func ionHashDataSource(t *testing.T) []testObject {
 					md5DigestList:       md5DigestList,
 				}
 
-				hasherProvider := IonHasherProvider(newIdentityHasherProvider())
 				if hasherName != "identity" {
 					testName = testName + "." + hasherName
-					hasherProvider = IonHasherProvider(newDefaultHasherProvider(strings.ToUpper(hasherName)))
 				}
 
-				dataList = append(dataList, testObject{testName, testCase, expectedHashLog, hasherProvider})
+				dataList = append(dataList, testObject{testName, testCase, expectedHashLog, newTestIonHasherProvider(hasherName)})
 			}
 			err = reader.StepOut()
 			assert.NoError(t, err, "Something went wrong executing reader.StepOut()")
@@ -209,7 +220,7 @@ type testObject struct {
 	hasherName      string
 	testCase        []byte
 	expectedHashLog hashLog
-	hasherProvider  IonHasherProvider
+	provider        *testIonHasherProvider
 }
 
 func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binaryWriter ion.Writer) {
@@ -351,12 +362,12 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		intSize, err := reader.IntSize()
 		require.NoError(t, err)
 
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
+		//if reader.FieldName() != "" {
+		//	err := textWriter.FieldName(reader.FieldName())
+		//	require.NoError(t, err)
+		//	err = binaryWriter.FieldName(reader.FieldName())
+		//	require.NoError(t, err)
+		//}
 		if reader.IsNull() {
 			err = textWriter.WriteNullType(ion.IntType)
 			require.NoError(t, err)
@@ -581,7 +592,7 @@ func readSexpAndAppendToList(t *testing.T, reader ion.Reader) []byte {
 type hashLog struct {
 	identityUpdateList  [][]byte
 	identityDigestList  [][]byte
-	identityFinalDigest []byte
+	identityFinalDigest [][]byte
 	md5UpdateList       [][]byte
 	md5DigestList       [][]byte
 }

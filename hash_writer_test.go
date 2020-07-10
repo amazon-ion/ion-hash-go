@@ -31,7 +31,8 @@ func TestWriteNull(t *testing.T) {
 	t.Skip() // Skipping test until final str.String() check passes
 
 	str := strings.Builder{}
-	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	writer, err := NewHashWriter(ion.NewTextWriter(&str), tihp.getInstance())
 	if err != nil {
 		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
@@ -121,7 +122,8 @@ func TestWriteScalars(t *testing.T) {
 	t.Skip() // Skipping test until final str.String() check passes
 
 	str := strings.Builder{}
-	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	writer, err := NewHashWriter(ion.NewTextWriter(&str), tihp.getInstance())
 	if err != nil {
 		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
@@ -222,7 +224,8 @@ func TestWriteContainers(t *testing.T) {
 	t.Skip() // Skipping test until final str.String() check passes
 
 	str := strings.Builder{}
-	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	writer, err := NewHashWriter(ion.NewTextWriter(&str), tihp.getInstance())
 	if err != nil {
 		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
@@ -358,7 +361,8 @@ func TestWriteContainers(t *testing.T) {
 
 func TestExtraStepOut(t *testing.T) {
 	str := strings.Builder{}
-	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	writer, err := NewHashWriter(ion.NewTextWriter(&str), tihp.getInstance())
 	if err != nil {
 		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
@@ -458,7 +462,8 @@ func ExerciseWriter(reader ion.Reader, useHashWriter bool, function writeFunctio
 	writer := ion.NewBinaryWriter(&buf)
 
 	if useHashWriter {
-		writer, err = NewHashWriter(writer, newIdentityHasherProvider())
+		tihp := newTestIonHasherProvider("identity")
+		writer, err = NewHashWriter(writer, tihp.getInstance())
 		if err != nil {
 			return nil, fmt.Errorf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 		}

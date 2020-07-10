@@ -18,33 +18,24 @@ package ionhash
 
 type defaultHasher struct {
 	cryptoHasher IonHasher
-	updateHashLog [][]byte
-	digestHashLog [][]byte
+	provider testIonHasherProvider
 }
 
-func newDefaultIonHasher(algorithm algorithm) (IonHasher, error) {
+func newDefaultIonHasher(algorithm algorithm, provider testIonHasherProvider) (IonHasher, error) {
 	cryptoHasher, err := newCryptoHasher(algorithm)
 	if err != nil {
 		return nil, &InvalidArgumentError{"algorithm", algorithm}
 	}
-	return &defaultHasher{cryptoHasher: cryptoHasher}, nil
+	return &defaultHasher{cryptoHasher: cryptoHasher, provider: provider}, nil
 }
 
 func (dh *defaultHasher) Write(b []byte) (n int, err error) {
-	dh.updateHashLog = append(dh.updateHashLog, b)
+	dh.provider.updateHashLog = append (dh.provider.updateHashLog, b)
 	return dh.cryptoHasher.Write(b)
 }
 
 func (dh *defaultHasher) Sum(b []byte) []byte {
 	hash := dh.cryptoHasher.Sum(b)
-	dh.digestHashLog = append(dh.digestHashLog, hash)
+	dh.provider.digestHashLog = append (dh.provider.digestHashLog, hash)
 	return hash
-}
-
-func (dh *defaultHasher) GetUpdateHashLog() [][]byte {
-	return dh.updateHashLog
-}
-
-func (dh *defaultHasher) GetDigestHashLog() [][]byte {
-	return dh.digestHashLog
 }

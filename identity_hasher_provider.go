@@ -17,12 +17,14 @@ package ionhash
 
 type identityHasherProvider struct {
 	IonHasherProvider
+
+	provider *testIonHasherProvider
 }
 
-func newIdentityHasherProvider() *identityHasherProvider {
-	return &identityHasherProvider{}
+func newIdentityHasherProvider(provider *testIonHasherProvider) *identityHasherProvider {
+	return &identityHasherProvider{provider: provider}
 }
 
 func (ihp *identityHasherProvider) NewHasher() (IonHasher, error) {
-	return newIdentityIonHasher(), nil
+	return newIdentityIonHasher(ihp.provider), nil
 }

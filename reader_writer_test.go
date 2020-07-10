@@ -34,7 +34,8 @@ func TestFieldNameAsymmetry(t *testing.T) {
 	buf := bytes.Buffer{}
 	writer := ion.NewBinaryWriter(&buf)
 
-	hw, err := NewHashWriter(writer, newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	hw, err := NewHashWriter(writer, tihp.getInstance())
 	if err != nil {
 		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
@@ -99,7 +100,8 @@ func TestFieldNameAsymmetry(t *testing.T) {
 
 	reader := ion.NewReaderBytes(buf.Bytes())
 
-	hr, err := NewHashReader(reader, newIdentityHasherProvider())
+	tihp = newTestIonHasherProvider("identity")
+	hr, err := NewHashReader(reader, tihp.getInstance())
 	if err != nil {
 		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
@@ -212,7 +214,8 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 		t.Errorf("expected writer.BeginStruct() to execute without errors; %s", err.Error())
 	}
 
-	hw, err := NewHashWriter(writer, newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	hw, err := NewHashWriter(writer, tihp.getInstance())
 	if err != nil {
 		t.Errorf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
 	}
@@ -267,7 +270,8 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 		t.Errorf("expected reader.StepIn() to execute without errors; %s", err.Error())
 	}
 
-	hr, err := NewHashReader(reader, newIdentityHasherProvider())
+	tihp = newTestIonHasherProvider("identity")
+	hr, err := NewHashReader(reader, tihp.getInstance())
 	if err != nil {
 		t.Errorf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
 	}
