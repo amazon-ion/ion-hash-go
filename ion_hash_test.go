@@ -42,8 +42,8 @@ func TestIonHash(t *testing.T) {
 		if len(parameters[i].expectedHashLog.identityDigestList) > 0 {
 			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityDigestList, parameters[i].hasherName+" failed")
 		}
-		if len(parameters[i].expectedHashLog.identityFinalDigest) > 0 {
-			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityFinalDigest, parameters[i].hasherName+" failed")
+		if len(parameters[i].expectedHashLog.identityFinalDigestList) > 0 {
+			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityFinalDigestList, parameters[i].hasherName+" failed")
 		}
 
 		if len(parameters[i].expectedHashLog.md5UpdateList) > 0 {
@@ -133,12 +133,13 @@ func ionHashDataSource(t *testing.T) []testObject {
 			for reader.Next() {
 				identityUpdateList := [][]byte{}
 				identityDigestList := [][]byte{}
-				identityFinalDigest := [][]byte{}
+				identityFinalDigestList := [][]byte{}
 				md5UpdateList := [][]byte{}
 				md5DigestList := [][]byte{}
 
 				fieldName = reader.FieldName()
 				hasherName := fieldName
+
 				if fieldName == "identity" {
 					assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
@@ -146,16 +147,16 @@ func ionHashDataSource(t *testing.T) []testObject {
 						annotations := reader.Annotations()
 
 						if len(annotations) > 0 {
-							if annotations[0] == "update" {
+							switch annotations[0] {
+							case "update":
 								updateBytes := readSexpAndAppendToList(t, reader)
 								identityUpdateList = append(identityUpdateList, updateBytes)
-
-							} else if annotations[0] == "digest" {
+							case "digest":
 								digestBytes := readSexpAndAppendToList(t, reader)
 								identityDigestList = append(identityDigestList, digestBytes)
-							} else if annotations[0] == "final_digest" {
+							case "final_digest":
 								digestBytes := readSexpAndAppendToList(t, reader)
-								identityFinalDigest = append(identityFinalDigest, digestBytes)
+								identityFinalDigestList = append(identityFinalDigestList, digestBytes)
 							}
 						}
 					}
@@ -167,11 +168,11 @@ func ionHashDataSource(t *testing.T) []testObject {
 						annotations := reader.Annotations()
 
 						if len(annotations) > 0 {
-							if annotations[0] == "update" {
+							switch annotations[0] {
+							case "update":
 								updateBytes := readSexpAndAppendToList(t, reader)
 								md5UpdateList = append(md5UpdateList, updateBytes)
-
-							} else if annotations[0] == "digest" {
+							case "digest":
 								digestBytes := readSexpAndAppendToList(t, reader)
 								md5DigestList = append(md5DigestList, digestBytes)
 							}
@@ -181,11 +182,11 @@ func ionHashDataSource(t *testing.T) []testObject {
 				}
 
 				expectedHashLog := hashLog{
-					identityUpdateList:  identityUpdateList,
-					identityDigestList:  identityDigestList,
-					identityFinalDigest: identityFinalDigest,
-					md5UpdateList:       md5UpdateList,
-					md5DigestList:       md5DigestList,
+					identityUpdateList:      identityUpdateList,
+					identityDigestList:      identityDigestList,
+					identityFinalDigestList: identityFinalDigestList,
+					md5UpdateList:           md5UpdateList,
+					md5DigestList:           md5DigestList,
 				}
 
 				if hasherName != "identity" {
@@ -209,9 +210,9 @@ type testObject struct {
 }
 
 type hashLog struct {
-	identityUpdateList  [][]byte
-	identityDigestList  [][]byte
-	identityFinalDigest [][]byte
-	md5UpdateList       [][]byte
-	md5DigestList       [][]byte
+	identityUpdateList      [][]byte
+	identityDigestList      [][]byte
+	identityFinalDigestList [][]byte
+	md5UpdateList           [][]byte
+	md5DigestList           [][]byte
 }
