@@ -17,7 +17,6 @@ package ionhash
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/amzn/ion-go/ion"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,20 +36,20 @@ func TestIonHash(t *testing.T) {
 		Traverse(t, reader, provider.getInstance())
 
 		if len(parameters[i].expectedHashLog.identityUpdateList) > 0 {
-			assert.Equal(t, provider.getUpdateHashLog(), parameters[i].expectedHashLog.identityUpdateList)
+			assert.Equal(t, provider.getUpdateHashLog(), parameters[i].expectedHashLog.identityUpdateList, parameters[i].hasherName+" failed")
 		}
 		if len(parameters[i].expectedHashLog.identityDigestList) > 0 {
-			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityDigestList)
+			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityDigestList, parameters[i].hasherName+" failed")
 		}
 		if len(parameters[i].expectedHashLog.identityFinalDigest) > 0 {
-			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityDigestList)
+			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityFinalDigest, parameters[i].hasherName+" failed")
 		}
 
 		if len(parameters[i].expectedHashLog.md5UpdateList) > 0 {
-			assert.Equal(t, provider.getUpdateHashLog(), parameters[i].expectedHashLog.md5UpdateList)
+			assert.Equal(t, provider.getUpdateHashLog(), parameters[i].expectedHashLog.md5UpdateList, parameters[i].hasherName+" failed")
 		}
 		if len(parameters[i].expectedHashLog.md5DigestList) > 0 {
-			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.md5DigestList)
+			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.md5DigestList, parameters[i].hasherName+" failed")
 		}
 	}
 }
@@ -128,10 +127,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 			}
 		}
 
-		//todo remove
-		fmt.Println("testName: " + testName)
-		fmt.Println(testCase)
-		//iterate through sexp (expected, digest).
+		// Iterate through expected/ digest bytes.
 		reader.Next()
 		fieldName := reader.FieldName()
 
@@ -235,12 +231,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 
 	switch ionType {
 	case ion.NullType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.NullType)
 			require.NoError(t, err)
@@ -254,12 +244,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		}
 
 	case ion.BoolType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.BoolType)
 			require.NoError(t, err)
@@ -275,12 +259,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		}
 
 	case ion.BlobType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.BlobType)
 			require.NoError(t, err)
@@ -296,12 +274,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		}
 
 	case ion.ClobType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.ClobType)
 			require.NoError(t, err)
@@ -317,12 +289,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		}
 
 	case ion.DecimalType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.DecimalType)
 			require.NoError(t, err)
@@ -338,12 +304,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		}
 
 	case ion.FloatType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.FloatType)
 			require.NoError(t, err)
@@ -362,12 +322,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		intSize, err := reader.IntSize()
 		require.NoError(t, err)
 
-		//if reader.FieldName() != "" {
-		//	err := textWriter.FieldName(reader.FieldName())
-		//	require.NoError(t, err)
-		//	err = binaryWriter.FieldName(reader.FieldName())
-		//	require.NoError(t, err)
-		//}
 		if reader.IsNull() {
 			err = textWriter.WriteNullType(ion.IntType)
 			require.NoError(t, err)
@@ -414,12 +368,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		}
 
 	case ion.StringType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.StringType)
 			require.NoError(t, err)
@@ -435,12 +383,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		}
 
 	case ion.SymbolType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.SymbolType)
 			require.NoError(t, err)
@@ -456,12 +398,6 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		}
 
 	case ion.TimestampType:
-		if reader.FieldName() != "" {
-			err := textWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-			err = binaryWriter.FieldName(reader.FieldName())
-			require.NoError(t, err)
-		}
 		if reader.IsNull() {
 			err := textWriter.WriteNullType(ion.TimestampType)
 			require.NoError(t, err)
@@ -540,6 +476,7 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 
 	case ion.StructType:
 		if reader.IsNull() {
+			textWriter.WriteNullType(ion.StructType)
 			err := textWriter.WriteNullType(ion.StructType)
 			require.NoError(t, err)
 			err = binaryWriter.WriteNullType(ion.StructType)
