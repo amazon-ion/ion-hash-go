@@ -18,6 +18,7 @@ package ionhash
 import (
 	"bytes"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/amzn/ion-go/ion"
@@ -78,7 +79,7 @@ func (baseSerializer *baseSerializer) sum(b []byte) []byte {
 }
 
 func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {
-	if baseSerializer.depth > 0 && ionValue.isInStruct() {
+	if baseSerializer.depth > 0 && ionValue.IsInStruct() {
 		fieldName := ionValue.getFieldName()
 
 		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available
@@ -327,7 +328,32 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	case ion.FloatType:
 		return writer.WriteFloat(ionValue.(float64))
 	case ion.IntType:
-		return writer.WriteInt(ionValue.(int64))
+		ionValInt64, ok := ionValue.(int64)
+		if ok {
+			return writer.WriteInt(ionValInt64)
+		}
+
+		ionValUint64, ok := ionValue.(uint64)
+		if ok {
+			return writer.WriteUint(ionValUint64)
+		}
+
+		ionValInt32, ok := ionValue.(int32)
+		if ok {
+			return writer.WriteInt(int64(ionValInt32))
+		}
+
+		ionValUint32, ok := ionValue.(uint32)
+		if ok {
+			return writer.WriteUint(uint64(ionValUint32))
+		}
+
+		ionValBigInt, ok := ionValue.(*big.Int)
+		if ok {
+			return writer.WriteBigInt(ionValBigInt)
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.StringType:
 		return writer.WriteString(ionValue.(string))
 	case ion.SymbolType:

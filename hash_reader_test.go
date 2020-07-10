@@ -16,347 +16,201 @@
 package ionhash
 
 import (
-	"fmt"
 	"io/ioutil"
-	"reflect"
 	"testing"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEmptyString(t *testing.T) {
-	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), tihp.getInstance())
-	if err != nil {
-		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
-	}
+	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	for i := 0; i < 2; i++ {
-		if !ionHashReader.Next() {
-			err = ionHashReader.Err()
-			if err != nil {
-				t.Errorf("expected ionHashReader.Next() to return false without errors; %s", err.Error())
-			}
-		}
+		assert.False(t, ionHashReader.Next())
+		assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
 
-		ionType := ionHashReader.Type()
-		if ionType != ion.NoType {
-			t.Errorf("expected ionHashReader.Type() to return ion.NoType rather than %s", ionType.String())
-		}
+		assert.Equal(t, ion.NoType.String(), ionHashReader.Type().String(), "ionHashReader.Type() was not as expected")
 
 		sum, err := ionHashReader.Sum(nil)
-		if err != nil {
-			t.Fatalf("expected Sum(nil) to execute without errors; %s", err.Error())
-		}
+		require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
-		if !reflect.DeepEqual(sum, []byte{}) {
-			t.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
-		}
+		assert.Equal(t, []byte{}, sum, "sum did not match expectation")
 	}
 }
 
 func TestTopLevelValues(t *testing.T) {
-	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), tihp.getInstance())
-	if err != nil {
-		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
-	}
+	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	expectedTypes := []ion.Type{ion.IntType, ion.IntType, ion.IntType, ion.NoType, ion.NoType}
 	expectedSums := [][]byte{[]byte{}, []byte{0x0b, 0x20, 0x01, 0x0e}, []byte{0x0b, 0x20, 0x02, 0x0e},
 		[]byte{0x0b, 0x20, 0x03, 0x0e}, []byte{}}
 
 	for i, expectedType := range expectedTypes {
-		if !ionHashReader.Next() {
-			err = ionHashReader.Err()
-			if err != nil {
-				t.Errorf("expected ionHashReader.Next() to return true; %s", err.Error())
-			} else if expectedType != ion.NoType {
-				t.Errorf("expected ionHashReader.Next() to return true")
-			}
+		if expectedType == ion.NoType {
+			assert.False(t, ionHashReader.Next())
+			assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
+		} else {
+			assert.True(t, ionHashReader.Next())
 		}
 
-		ionType := ionHashReader.Type()
-		if ionType != expectedType {
-			t.Errorf("expected ionHashReader.Type() to return %s rather than %s",
-				expectedType.String(), ionType.String())
-		}
+		assert.Equal(t, expectedType.String(), ionHashReader.Type().String(), "ionHashReader.Type() was not as expected")
 
 		sum, err := ionHashReader.Sum(nil)
-		if err != nil {
-			t.Fatalf("expected Sum(nil) to execute without errors; %s", err.Error())
-		}
+		require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
-		if !reflect.DeepEqual(sum, expectedSums[i]) {
-			t.Errorf("expected sum to be %v instead of %v", expectedSums[i], sum)
-		}
+		assert.Equal(t, expectedSums[i], sum, "sum did not match expectation")
 	}
 }
 
 func TestConsumeRemainderPartialConsume(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
-	err := consume(ConsumeRemainderPartialConsume)
-	if err != nil {
-		t.Error(err)
-	}
+	consume(t, ConsumeRemainderPartialConsume)
 }
 
 func TestConsumeRemainderStepInStepOutNested(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
-	err := consume(ConsumeRemainderStepInStepOutNested)
-	if err != nil {
-		t.Error(err)
-	}
+	consume(t, ConsumeRemainderStepInStepOutNested)
 }
 
 func TestConsumeRemainderStepInNextStepOut(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
-	err := consume(ConsumeRemainderStepInNextStepOut)
-	if err != nil {
-		t.Error(err)
-	}
+	consume(t, ConsumeRemainderStepInNextStepOut)
 }
 
 func TestConsumeRemainderStepInStepOutTopLevel(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
-	err := consume(ConsumeRemainderStepInStepOutTopLevel)
-	if err != nil {
-		t.Error(err)
-	}
+	consume(t, ConsumeRemainderStepInStepOutTopLevel)
 }
 
 func TestConsumeRemainderNext(t *testing.T) {
-	t.Skip() // Skipping test until reader's IsInStruct logic is updated to match dot net
-
-	err := consume(ConsumeRemainderNext)
-	if err != nil {
-		t.Error(err)
-	}
+	consume(t, ConsumeRemainderNext)
 }
 
 func TestReaderUnresolvedSid(t *testing.T) {
 	t.Skip() // Skipping test until SymbolToken is implemented
 
-	ionReader := ion.NewReaderBytes([]byte{0xd3, 0x8a, 0x21, 0x01})
+	reader := ion.NewReaderBytes([]byte{0xd3, 0x8a, 0x21, 0x01})
 
-	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(ionReader, tihp.getInstance())
-	if err != nil {
-		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
-	}
+	ionHashReader, err := NewHashReader(reader, newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
-	if ionHashReader.Next() {
-		t.Error("expected ionHashReader.Next() to return false")
-	}
+	assert.False(t, ionHashReader.Next())
 
-	if ionHashReader.Next() {
-		t.Error("expected ionHashReader.Next() to return false")
-	} else {
-		err := ionHashReader.Err()
-		_, ok := err.(*UnknownSymbolError)
-		if !ok {
-			t.Error("expected ionHashReader.Next() to result in an UnknownSymbolError")
-		}
-	}
+	require.False(t, ionHashReader.Next())
+	require.Error(t, ionHashReader.Err())
+	assert.IsType(t, &UnknownSymbolError{}, ionHashReader.Err())
 }
 
 func TestIonReaderContract(t *testing.T) {
 	t.Skip()
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
-	if err != nil {
-		t.Fatal("expected ion_hash_tests.ion to load properly")
-	}
+	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
-	ionReader := ion.NewReaderBytes(file)
+	reader := ion.NewReaderBytes(file)
 
-	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(ionReader, tihp.getInstance())
-	if err != nil {
-		t.Fatalf("expected NewHashReader() to successfully create a HashReader; %s", err.Error())
-	}
+	ionHashReader, err := NewHashReader(reader, newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
-	compare, err := compareReaders(ionReader, ionHashReader)
-	if !compare {
-		if err != nil {
-			t.Errorf("expected compareReaders(ionReader, ionHashReader) to return true; %s", err.Error())
-		} else {
-			t.Errorf("expected compareReaders(ionReader, ionHashReader) to return true")
-		}
-	}
+	compareReaders(t, reader, ionHashReader)
 }
 
-func ConsumeRemainderPartialConsume(ionHashReader HashReader) error {
+func ConsumeRemainderPartialConsume(t *testing.T, ionHashReader HashReader) {
 	ionHashReader.Next()
-	err := ionHashReader.StepIn()
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashReader.StepIn(), "Something went wrong executing ionHashReader.StepIn()")
 
 	ionHashReader.Next()
 	ionHashReader.Next()
 	ionHashReader.Next()
-	err = ionHashReader.StepIn()
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashReader.StepIn(), "Something went wrong executing ionHashReader.StepIn()")
 
 	ionHashReader.Next()
-	err = ionHashReader.StepOut() // we've only partially consumed the struct
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
-	}
+	// we've only partially consumed the struct
+	assert.NoError(t, ionHashReader.StepOut(), "Something went wrong executing ionHashReader.StepOut()")
 
-	err = ionHashReader.StepOut() // we've only partially consumed the list
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
-	}
-
-	return nil
+	// we've only partially consumed the list
+	assert.NoError(t, ionHashReader.StepOut(), "Something went wrong executing ionHashReader.StepOut()")
 }
 
-func ConsumeRemainderStepInStepOutNested(ionHashReader HashReader) error {
+func ConsumeRemainderStepInStepOutNested(t *testing.T, ionHashReader HashReader) {
 	ionHashReader.Next()
-	err := ionHashReader.StepIn()
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashReader.StepIn(), "Something went wrong executing ionHashReader.StepIn()")
 
 	ionHashReader.Next()
 	ionHashReader.Next()
 	ionHashReader.Next()
-	err = ionHashReader.StepIn()
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashReader.StepIn(), "Something went wrong executing ionHashReader.StepIn()")
 
-	err = ionHashReader.StepOut() // we haven't consumed ANY of the struct
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
-	}
+	// we haven't consumed ANY of the struct
+	assert.NoError(t, ionHashReader.StepOut(), "Something went wrong executing ionHashReader.StepOut()")
 
-	err = ionHashReader.StepOut() // we've only partially consumed the list
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
-	}
-
-	return nil
+	// we've only partially consumed the list
+	assert.NoError(t, ionHashReader.StepOut(), "Something went wrong executing ionHashReader.StepOut()")
 }
 
-func ConsumeRemainderStepInNextStepOut(ionHashReader HashReader) error {
+func ConsumeRemainderStepInNextStepOut(t *testing.T, ionHashReader HashReader) {
 	ionHashReader.Next()
-	err := ionHashReader.StepIn()
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashReader.StepIn(), "Something went wrong executing ionHashReader.StepIn()")
 
 	ionHashReader.Next()
-	err = ionHashReader.StepOut() // we've partially consumed the list
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
-	}
-
-	return nil
+	// we've partially consumed the list
+	assert.NoError(t, ionHashReader.StepOut(), "Something went wrong executing ionHashReader.StepOut()")
 }
 
-func ConsumeRemainderStepInStepOutTopLevel(ionHashReader HashReader) error {
+func ConsumeRemainderStepInStepOutTopLevel(t *testing.T, ionHashReader HashReader) {
 	ionHashReader.Next()
 	sum, err := ionHashReader.Sum(nil)
-	if err != nil {
-		return fmt.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
-	if !reflect.DeepEqual(sum, []byte{}) {
-		return fmt.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
-	}
+	assert.Equal(t, []byte{}, sum, "sum did not match expectation")
 
-	err = ionHashReader.StepIn()
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepIn() to successfully run without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashReader.StepIn(), "Something went wrong executing ionHashReader.StepIn()")
 
 	_, err = ionHashReader.Sum(nil)
-	if err != nil {
-		_, ok := err.(*InvalidOperationError)
-		if !ok {
-			return fmt.Errorf("expected ionHashReader.Sum(nil) to return an InvalidOperationError")
-		}
-	} else {
-		return fmt.Errorf("expected ionHashReader.Sum(nil) to return an error")
-	}
+	assert.Error(t, err, "Expected ionHashReader.Sum(nil) to return an error")
+	assert.IsType(t, &InvalidOperationError{}, err)
 
-	err = ionHashReader.StepOut() // we haven't consumed ANY of the list
-	if err != nil {
-		return fmt.Errorf("expected ionHashReader.StepOut() to successfully run without errors; %s", err.Error())
-	}
-
-	return nil
+	// we haven't consumed ANY of the list
+	assert.NoError(t, ionHashReader.StepOut(), "Something went wrong executing ionHashReader.StepOut()")
 }
 
-func ConsumeRemainderNext(ionHashReader HashReader) error {
-	ionHashReader.Next()
-	ionHashReader.Next()
+func ConsumeRemainderNext(t *testing.T, ionHashReader HashReader) {
+	assert.True(t, ionHashReader.Next())
+	assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
 
-	return nil
+	assert.False(t, ionHashReader.Next())
+	assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
 }
 
-type consumeFunction func(HashReader) error
+type consumeFunction func(*testing.T, HashReader)
 
-func consume(function consumeFunction) error {
-	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), tihp.getInstance())
-	if err != nil {
-		return err
-	}
+func consume(t *testing.T, function consumeFunction) {
+	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	sum, err := ionHashReader.Sum(nil)
-	if err != nil {
-		return fmt.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
-	if !reflect.DeepEqual(sum, []byte{}) {
-		return fmt.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
-	}
+	assert.Equal(t, []byte{}, sum, "sum did not match expectation")
 
-	err = function(ionHashReader)
-	if err != nil {
-		return err
-	}
+	function(t, ionHashReader)
 
 	sum, err = ionHashReader.Sum(nil)
-	if err != nil {
-		return fmt.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
 	expectedSum := []byte{0x0b, 0xb0, 0x0b, 0x20, 0x01, 0x0e, 0x0b, 0x20, 0x02, 0x0e, 0x0b, 0xd0, 0x0c, 0x0b, 0x70,
 		0x61, 0x0c, 0x0e, 0x0c, 0x0b, 0x20, 0x03, 0x0c, 0x0e, 0x0c, 0x0b, 0x70, 0x62, 0x0c, 0x0e, 0x0c, 0x0b, 0x20,
 		0x04, 0x0c, 0x0e, 0x0e, 0x0b, 0x20, 0x05, 0x0e, 0x0e}
 
-	if !reflect.DeepEqual(expectedSum, sum) {
-		return fmt.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
+	assert.Equal(t, expectedSum, sum, "sum did not match expectation")
 
-	if ionHashReader.Next() {
-		return fmt.Errorf("expected ionHashReader.Next() to return false")
-	}
+	assert.False(t, ionHashReader.Next())
+	assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
 
-	ionType := ionHashReader.Type()
-	if ionType != ion.NoType {
-		return fmt.Errorf("expected ionHashReader.Type() to return ion.NoType rather than %s", ionType.String())
-	}
+	assert.Equal(t, ion.NoType.String(), ionHashReader.Type().String(), "ionHashReader.Type() was not as expected")
 
 	sum, err = ionHashReader.Sum(nil)
-	if err != nil {
-		return fmt.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
-	if !reflect.DeepEqual(sum, []byte{}) {
-		return fmt.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
-	}
-
-	return nil
+	assert.Equal(t, []byte{}, sum, "sum did not match expectation")
 }
