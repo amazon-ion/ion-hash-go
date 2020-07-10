@@ -22,12 +22,21 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-// HashReader inherits functions from Ion's Reader interface and adds
-// the function Sum that allows read access to the hash value held by this reader.
+// HashReader is meant to share the same methods as the ion.Reader and hashValue interfaces.
+// However embedding both ion.Reader and hashValue results in a duplicate method build error because both interfaces
+// have an IsInStruct() method.
+// So we embed the ion.Reader interface and explicitly list the remaining hashValue methods to avoid the error.
+// HashReader also provides a Sum function which allows read access to the hash value held by this reader.
 type HashReader interface {
-	hashValue
 	// Embed interface of Ion reader.
 	ion.Reader
+
+	// Remaining hashValue methods.
+	getFieldName() string
+	getAnnotations() []string
+	isNull() bool
+	ionType() ion.Type
+	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
 	// It does not change the underlying hash state.
@@ -60,27 +69,23 @@ func (hashReader *hashReader) Next() bool {
 
 	if hashReader.currentType != ion.NoType {
 		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
-			err := hashReader.hasher.scalar(hashReader)
-			if err != nil {
-				hashReader.err = err
+			hashReader.err = hashReader.hasher.scalar(hashReader)
+			if hashReader.err != nil {
 				return false
 			}
 		} else {
-			err := hashReader.StepIn()
-			if err != nil {
-				hashReader.err = err
+			hashReader.err = hashReader.StepIn()
+			if hashReader.err != nil {
 				return false
 			}
 
-			err = hashReader.traverse()
-			if err != nil {
-				hashReader.err = err
+			hashReader.err = hashReader.traverse()
+			if hashReader.err != nil {
 				return false
 			}
 
-			err = hashReader.StepOut()
-			if err != nil {
-				hashReader.err = err
+			hashReader.err = hashReader.StepOut()
+			if hashReader.err != nil {
 				return false
 			}
 		}
@@ -222,7 +227,7 @@ func (hashReader *hashReader) traverse() error {
 	return hashReader.Err()
 }
 
-// The following implements HashValue interface.
+// The following implements hashValue interface.
 
 func (hashReader *hashReader) getFieldName() string {
 	return hashReader.FieldName()
@@ -259,14 +264,15 @@ func (hashReader *hashReader) value() (interface{}, error) {
 	return nil, &InvalidIonTypeError{hashReader.currentType}
 }
 
-func (hashReader *hashReader) isInStruct() bool {
-	return hashReader.currentType == ion.StructType
-}
-
 func (hashReader *hashReader) ionType() ion.Type {
 	return hashReader.Type()
 }
 
 func (hashReader *hashReader) isNull() bool {
 	return hashReader.IsNull()
+}
+
+// IsInStruct implements both the ion.Reader and hashValue interfaces.
+func (hashReader *hashReader) IsInStruct() bool {
+	return hashReader.ionReader.IsInStruct()
 }

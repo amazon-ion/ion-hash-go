@@ -17,321 +17,182 @@ package ionhash
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/amzn/ion-go/ion"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWriteNull(t *testing.T) {
-	t.Skip() // Skipping test until final str.String() check passes
-
 	str := strings.Builder{}
-	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
-	if err != nil {
-		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
-	}
+	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
-	ionHashWriter, ok := writer.(*hashWriter)
-	if !ok {
-		t.Fatal("expected ionHashWriter to be of type hashWriter")
-	}
+	ionHashWriter, ok := hw.(*hashWriter)
+	require.True(t, ok, "Expected hw to be of type hashWriter")
 
-	err = ionHashWriter.WriteNull()
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteNull() to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteNull(), "Something went wrong executing ionHashWriter.WriteNull()")
 
 	sum, err := ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum := []byte{0x0b, 0x0f, 0x0e}
+	assert.Equal(t, []byte{0x0b, 0x0f, 0x0e}, sum, "sum did not match expectation")
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
-
-	err = ionHashWriter.WriteNullType(ion.FloatType)
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteNullType(ion.FloatType) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.FloatType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.FloatType)")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum = []byte{0x0b, 0x4f, 0x0e}
+	assert.Equal(t, []byte{0x0b, 0x4f, 0x0e}, sum, "sum did not match expectation")
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
-
-	err = ionHashWriter.WriteNullType(ion.BlobType)
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteNullType(ion.BlobType) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.BlobType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.BlobType)")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum = []byte{0x0b, 0xaf, 0x0e}
+	assert.Equal(t, []byte{0x0b, 0xaf, 0x0e}, sum, "sum did not match expectation")
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
-
-	err = ionHashWriter.WriteNullType(ion.StructType)
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteNullType(ion.StructType) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteNullType(ion.StructType),
+		"Something went wrong executing ionHashWriter.WriteNullType(ion.StructType)")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum = []byte{0x0b, 0xdf, 0x0e}
+	assert.Equal(t, []byte{0x0b, 0xdf, 0x0e}, sum, "sum did not match expectation")
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
+	assert.NoError(t, ionHashWriter.Finish(), "Something went wrong executing ionHashWriter.Finish()")
 
-	err = ionHashWriter.Finish()
-	if err != nil {
-		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
-	}
+	// We're comparing splits because str.String() uses a cumbersome '\n' separator
+	expected := strings.Split("null null.float null.blob null.struct ", " ")
+	actual := strings.Split(str.String(), "\n")
 
-	expectedStr := "null null.float null.blob null.struct"
-
-	if str.String() != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
-	}
+	assert.Equal(t, expected, actual, "str.String() did not match expectation")
 }
 
 func TestWriteScalars(t *testing.T) {
 	t.Skip() // Skipping test until final str.String() check passes
 
 	str := strings.Builder{}
-	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
-	if err != nil {
-		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
-	}
+	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
-	ionHashWriter, ok := writer.(*hashWriter)
-	if !ok {
-		t.Fatal("expected ionHashWriter to be of type hashWriter")
-	}
+	ionHashWriter, ok := hw.(*hashWriter)
+	require.True(t, ok, "Expected hw to be of type hashWriter")
 
 	sum, err := ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	if !reflect.DeepEqual(sum, []byte{}) {
-		t.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
-	}
+	assert.Equal(t, []byte{}, sum, "sum did not match expectation")
 
-	err = ionHashWriter.WriteInt(5)
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteInt(5) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteInt(5), "Something went wrong executing ionHashWriter.WriteInt(5)")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum := []byte{0x0b, 0x20, 0x05, 0x0e}
+	assert.Equal(t, []byte{0x0b, 0x20, 0x05, 0x0e}, sum, "sum did not match expectation")
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
-
-	err = ionHashWriter.WriteFloat(3.14)
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteInt(5) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteFloat(3.14), "Something went wrong executing ionHashWriter.WriteInt(5)")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum = []byte{0x0b, 0x40, 0x40, 0x09, 0x1e, 0xb8, 0x51, 0xeb, 0x85, 0x1f, 0x0e}
+	assert.Equal(t, []byte{0x0b, 0x40, 0x40, 0x09, 0x1e, 0xb8, 0x51, 0xeb, 0x85, 0x1f, 0x0e}, sum,
+		"sum did not match expectation")
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
-
-	err = ionHashWriter.WriteTimestamp(time.Date(1941, time.December, 7, 18, 0, 0, 0, time.UTC))
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteTimestamp(time.Date(...)) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteTimestamp(time.Date(1941, time.December, 7, 18, 0, 0, 0, time.UTC)),
+		"Something went wrong executing ionHashWriter.WriteTimestamp(time.Date(...))")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum = []byte{0x0b, 0x60, 0x80, 0x0f, 0x95, 0x8c, 0x87, 0x92, 0x80, 0x80, 0x0e}
-
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
+	assert.Equal(t, []byte{0x0b, 0x60, 0x80, 0x0f, 0x95, 0x8c, 0x87, 0x92, 0x80, 0x80, 0x0e}, sum,
+		"sum did not match expectation")
 
 	err = ionHashWriter.WriteBlob(
 		[]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f})
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteBlob(...) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, err, "Something went wrong executing ionHashWriter.WriteBlob(...)")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum = []byte{0x0b, 0xa0, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+	expectedSum := []byte{0x0b, 0xa0, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 		0x09, 0x0a, 0x0c, 0x0b, 0x0c, 0x0c, 0x0d, 0x0c, 0x0e, 0x0f, 0x0e}
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
+	assert.Equal(t, expectedSum, sum, "sum did not match expectation")
 
-	err = ionHashWriter.Finish()
-	if err != nil {
-		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.Finish(), "Something went wrong executing ionHashWriter.Finish()")
 
-	expectedStr := "5 3.14e0 1941-12-07T18:00:00.0000000-00:00 {{AAECAwQFBgcICQoLDA0ODw==}}"
+	// We're comparing splits because str.String() uses a cumbersome '\n' separator
+	expected := strings.Split("5 3.14e0 1941-12-07T18:00:00.0000000-00:00 {{AAECAwQFBgcICQoLDA0ODw==}} ", " ")
+	actual := strings.Split(str.String(), "\n")
 
-	if str.String() != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
-	}
+	assert.Equal(t, expected, actual, "str.String() did not match expectation")
 }
 
 func TestWriteContainers(t *testing.T) {
-	t.Skip() // Skipping test until final str.String() check passes
-
 	str := strings.Builder{}
-	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
-	if err != nil {
-		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
-	}
+	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
-	ionHashWriter, ok := writer.(*hashWriter)
-	if !ok {
-		t.Fatal("expected ionHashWriter to be of type hashWriter")
-	}
+	ionHashWriter, ok := hw.(*hashWriter)
+	require.True(t, ok, "Expected hw to be of type hashWriter")
 
 	sum, err := ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	if !reflect.DeepEqual(sum, []byte{}) {
-		t.Errorf("expected sum to be %v instead of %v", []byte{}, sum)
-	}
+	assert.Equal(t, []byte{}, sum, "sum did not match expectation")
 
-	err = ionHashWriter.stepIn(ion.ListType)
-	if err != nil {
-		t.Errorf("expected ionHashWriter.stepIn(ion.ListType) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.BeginList(), "Something went wrong executing ionHashWriter.BeginList()")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		_, ok := err.(*InvalidOperationError)
-		if !ok {
-			t.Errorf("expected Sum(nil) to return an InvalidOperationError; %s", err.Error())
-		}
-	} else {
-		t.Error("expected Sum(nil) to return an error")
-	}
+	assert.Error(t, err, "Expected ionHashWriter.Sum(nil) to return an error")
+	assert.IsType(t, &InvalidOperationError{}, err, "Expected ionHashWriter.Sum(nil) to return an InvalidOperationError")
 
-	err = ionHashWriter.WriteBool(true)
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteBool(true) to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteBool(true), "Something went wrong executing ionHashWriter.WriteBool(true)")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		_, ok := err.(*InvalidOperationError)
-		if !ok {
-			t.Errorf("expected Sum(nil) to return an InvalidOperationError; %s", err.Error())
-		}
-	} else {
-		t.Error("expected Sum(nil) to return an error")
-	}
+	assert.Error(t, err, "Expected ionHashWriter.Sum(nil) to return an error")
+	assert.IsType(t, &InvalidOperationError{}, err, "Expected ionHashWriter.Sum(nil) to return an InvalidOperationError")
 
-	err = ionHashWriter.stepOut()
-	if err != nil {
-		t.Errorf("expected ionHashWriter.stepOut() to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.EndList(), "Something went wrong executing ionHashWriter.EndList()")
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum := []byte{0x0b, 0xb0, 0x0b, 0x11, 0x0e, 0x0e}
+	assert.Equal(t, []byte{0x0b, 0xb0, 0x0b, 0x11, 0x0e, 0x0e}, sum, "sum did not match expectation")
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
+	assert.False(t, ionHashWriter.IsInStruct())
 
-	if ionHashWriter.isInStruct() {
-		t.Error("expected ionHashWriter.isInStruct() to return false")
-	}
+	assert.NoError(t, ionHashWriter.BeginStruct(), "Something went wrong executing ionHashWriter.BeginStruct()")
 
-	err = ionHashWriter.stepIn(ion.StructType)
-	if err != nil {
-		t.Errorf("expected ionHashWriter.stepIn(ion.StructType) to execute without errors; %s", err.Error())
-	}
+	assert.True(t, ionHashWriter.IsInStruct())
 
-	if !ionHashWriter.isInStruct() {
-		t.Error("expected ionHashWriter.isInStruct() to return true")
-	}
+	assert.NoError(t, ionHashWriter.FieldName("hello"),
+		"Something went wrong executing ionHashWriter.FieldName(\"hello\")")
 
-	ionHashWriter.setFieldName("hello")
+	assert.NoError(t, ionHashWriter.Annotation("ion"),
+		"Something went wrong executing ionHashWriter.Annotation(\"ion\")")
 
-	err = ionHashWriter.Annotation("ion")
-	if err != nil {
-		t.Errorf("expected ionHashWriter.Annotation(\"ion\") to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.Annotation("hash"),
+		"Something went wrong executing ionHashWriter.Annotation(\"hash\")")
 
-	err = ionHashWriter.Annotation("hash")
-	if err != nil {
-		t.Errorf("expected ionHashWriter.Annotation(\"hash\") to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.WriteSymbol("world"),
+		"Something went wrong executing ionHashWriter.WriteSymbol(\"world\")")
 
-	err = ionHashWriter.WriteSymbol("world")
-	if err != nil {
-		t.Errorf("expected ionHashWriter.WriteSymbol(\"world\") to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.EndStruct(), "Something went wrong executing ionHashWriter.EndStruct()")
 
-	err = ionHashWriter.stepOut()
-	if err != nil {
-		t.Errorf("expected ionHashWriter.stepOut() to execute without errors; %s", err.Error())
-	}
-
-	if ionHashWriter.isInStruct() {
-		t.Error("expected ionHashWriter.isInStruct() to return false")
-	}
+	assert.False(t, ionHashWriter.IsInStruct())
 
 	sum, err = ionHashWriter.Sum(nil)
-	if err != nil {
-		t.Errorf("expected Sum(nil) to execute without errors; %s", err.Error())
-	}
+	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	expectedSum = []byte{0x0b, 0xd0,
+	expectedSum := []byte{0x0b, 0xd0,
 		0x0c, 0x0b, 0x70, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x0c, 0x0e, // hello:
 		0x0c, 0x0b, 0xe0,
 		0x0c, 0x0b, 0x70, 0x69, 0x6f, 0x6e, 0x0c, 0x0e, // ion::
@@ -340,109 +201,74 @@ func TestWriteContainers(t *testing.T) {
 		0x0c, 0x0e,
 		0x0e}
 
-	if !reflect.DeepEqual(sum, expectedSum) {
-		t.Errorf("expected sum to be %v instead of %v", expectedSum, sum)
-	}
+	assert.Equal(t, expectedSum, sum, "sum did not match expectation")
 
-	err = ionHashWriter.Finish()
-	if err != nil {
-		t.Errorf("expected ionHashWriter.Finish() to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, ionHashWriter.Finish(), "Something went wrong executing ionHashWriter.Finish()")
 
-	expectedStr := "[true] {hello:ion::hash::world}"
+	// We're comparing splits because str.String() uses a cumbersome '\n' separator
+	expected := strings.Split("[true] {hello:ion::hash::world} ", " ")
+	actual := strings.Split(str.String(), "\n")
 
-	if str.String() != expectedStr {
-		t.Errorf("expected str.String() to return \"%s\" instead of \"%s\"", expectedStr, str.String())
-	}
+	assert.Equal(t, expected, actual, "sum did not match expectation")
 }
 
-func TestExtraStepOut(t *testing.T) {
+func TestExtraEndContainer(t *testing.T) {
 	str := strings.Builder{}
-	writer, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
-	if err != nil {
-		t.Fatalf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
-	}
+	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
-	ionHashWriter, ok := writer.(*hashWriter)
-	if !ok {
-		t.Fatal("expected ionHashWriter to be of type hashWriter")
-	}
+	ionHashWriter, ok := hw.(*hashWriter)
+	require.True(t, ok, "Expected hw to be of type hashWriter")
 
-	err = ionHashWriter.stepOut()
-	if err != nil {
-		_, ok := err.(*InvalidOperationError)
-		if !ok {
-			t.Errorf("expected ionHashWriter.stepOut() to return an InvalidOperationError; %s", err.Error())
-		}
-	} else {
-		t.Error("expected ionHashWriter.stepOut() to return an error")
-	}
+	err = ionHashWriter.EndList()
+	assert.Error(t, err, "Expected ionHashWriter.EndList() to return an error")
+	assert.IsType(t, &InvalidOperationError{}, err, "Expected ionHashWriter.EndList() to return an InvalidOperationError")
+
+	err = ionHashWriter.EndSexp()
+	assert.Error(t, err, "Expected ionHashWriter.EndSexp() to return an error")
+	assert.IsType(t, &InvalidOperationError{}, err, "Expected ionHashWriter.EndSexp() to return an InvalidOperationError")
+
+	err = ionHashWriter.EndStruct()
+	assert.Error(t, err, "Expected ionHashWriter.EndStruct() to return an error")
+	assert.IsType(t, &InvalidOperationError{}, err, "Expected ionHashWriter.EndStruct() to return an InvalidOperationError")
 }
 
 func TestIonWriterContractWriteValue(t *testing.T) {
-	t.Skip() // Skipping test until length checks pass
+	// Skipping test until FieldNameSymbol logic is available.
+	// Test currently fails with empty field name ie. {'':1}
+	t.Skip()
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
-	if err != nil {
-		t.Fatal("expected ion_hash_tests.ion to load properly")
-	}
+	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
-	reader := ion.NewReaderBytes(file)
+	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriterAfterNext)
 
-	expected, err := ExerciseWriter(reader, false, nextWriteValue)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
+	actual := ExerciseWriter(t, ion.NewReaderBytes(file), true, writeFromReaderToWriterAfterNext)
 
-	actual, err := ExerciseWriter(reader, true, nextWriteValue)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
+	assert.Greater(t, len(expected), 10, "Expected the ion writer to write more than 10 bytes")
 
-	if len(expected) <= 10 {
-		t.Error("expected the ion writer to write more than 10 bytes")
-	}
+	assert.Greater(t, len(actual), 10, "Expected the ion writer to write more than 10 bytes")
 
-	if len(actual) <= 10 {
-		t.Error("expected the hash writer to write more than 10 bytes")
-	}
-
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("expected the hash writer to write %v instead of %v", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "sum did not match expectation")
 }
 
 func TestIonWriterContractWriteValues(t *testing.T) {
-	t.Skip() // Skipping test until length checks pass
+	// Skipping test until FieldNameSymbol logic is available.
+	// Test currently fails with empty field name ie. {'':1}
+	t.Skip()
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
-	if err != nil {
-		t.Fatal("expected ion_hash_tests.ion to load properly")
-	}
+	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
-	reader := ion.NewReaderBytes(file)
+	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriter)
 
-	expected, err := ExerciseWriter(reader, false, writeValues)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
+	actual := ExerciseWriter(t, ion.NewReaderBytes(file), true, writeFromReaderToWriter)
 
-	actual, err := ExerciseWriter(reader, true, writeValues)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
+	assert.Greater(t, len(expected), 1000, "Expected the ion writer to write more than 1000 bytes")
 
-	if len(expected) <= 1000 {
-		t.Error("expected the ion writer to write more than 1000 bytes")
-	}
+	assert.Greater(t, len(actual), 1000, "Expected the ion writer to write more than 1000 bytes")
 
-	if len(actual) <= 1000 {
-		t.Error("expected the hash writer to write more than 1000 bytes")
-	}
-
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("expected the hash writer to write %v instead of %v", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "sum did not match expectation")
 }
 
 func TestWriterUnresolvedSid(t *testing.T) {
@@ -451,7 +277,7 @@ func TestWriterUnresolvedSid(t *testing.T) {
 	// TODO: Implement test once SymbolToken is available
 }
 
-func ExerciseWriter(reader ion.Reader, useHashWriter bool, function writeFunction) ([]byte, error) {
+func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, function writeFunction) []byte {
 	var err error
 
 	buf := bytes.Buffer{}
@@ -459,42 +285,20 @@ func ExerciseWriter(reader ion.Reader, useHashWriter bool, function writeFunctio
 
 	if useHashWriter {
 		writer, err = NewHashWriter(writer, newIdentityHasherProvider())
-		if err != nil {
-			return nil, fmt.Errorf("expected NewHashWriter() to successfully create a HashWriter; %s", err.Error())
-		}
+		require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 	}
 
-	err = function(reader, writer)
-	if err != nil {
-		return nil, err
-	}
+	function(t, reader, writer)
 
-	err = writer.Finish()
-	if err != nil {
-		return nil, fmt.Errorf("expected writer.Finish() to execute without errors; %s", err.Error())
-	}
+	assert.NoError(t, writer.Finish(), "Something went wrong executing writer.Finish()")
 
-	return buf.Bytes(), nil
+	return buf.Bytes()
 }
 
-type writeFunction func(reader ion.Reader, writer ion.Writer) error
+type writeFunction func(*testing.T, ion.Reader, ion.Writer)
 
-func nextWriteValue(reader ion.Reader, writer ion.Writer) error {
-	next := reader.Next()
-	if !next {
-		err := reader.Err()
-		if err != nil {
-			return err
-		}
-	}
+func writeFromReaderToWriterAfterNext(t *testing.T, reader ion.Reader, writer ion.Writer) {
+	require.True(t, reader.Next())
 
-	// TODO: Implement WriteValue logic once writer.WriteValue() is available
-
-	return nil
-}
-
-func writeValues(reader ion.Reader, writer ion.Writer) error {
-	// TODO: Implement WriteValues logic once writer.WriteValues() is available
-
-	return nil
+	writeFromReaderToWriter(t, reader, writer)
 }
