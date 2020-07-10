@@ -30,9 +30,8 @@ func newTestIonHasherProvider(algorithm string) *testIonHasherProvider {
 func (tiop *testIonHasherProvider) getInstance() IonHasherProvider {
 	if tiop.algorithm == "identity" {
 		return newIdentityHasherProvider(tiop)
-	} else {
-		return newDefaultHasherProvider(strings.ToUpper(tiop.algorithm), tiop)
 	}
+	return newDefaultHasherProvider(strings.ToUpper(tiop.algorithm), tiop)
 }
 
 func (tiop *testIonHasherProvider) getUpdateHashLog() [][]byte {
