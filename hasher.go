@@ -15,12 +15,15 @@
 
 package ionhash
 
-import "github.com/amzn/ion-go/ion"
+import (
+	"github.com/amzn/ion-go/ion"
+	"github.com/amzn/ion-hash-go/internal"
+)
 
 type hasher struct {
 	hasherProvider IonHasherProvider
 	currentHasher  serializer
-	hasherStack    stack
+	hasherStack    internal.Stack
 }
 
 func newHasher(hasherProvider IonHasherProvider) (*hasher, error) {
@@ -31,8 +34,8 @@ func newHasher(hasherProvider IonHasherProvider) (*hasher, error) {
 
 	currentHasher := newScalarSerializer(newHasher, 0)
 
-	var hasherStack stack
-	hasherStack.push(currentHasher)
+	var hasherStack internal.Stack
+	hasherStack.Push(currentHasher)
 
 	return &hasher{hasherProvider, currentHasher, hasherStack}, nil
 }
@@ -67,7 +70,7 @@ func (h *hasher) stepIn(ionValue hashValue) error {
 		h.currentHasher = newScalarSerializer(hashFunction, h.depth())
 	}
 
-	h.hasherStack.push(h.currentHasher)
+	h.hasherStack.Push(h.currentHasher)
 	return h.currentHasher.stepIn(ionValue)
 }
 
@@ -81,13 +84,21 @@ func (h *hasher) stepOut() error {
 		return err
 	}
 
-	poppedHasher, err := h.hasherStack.pop()
+	poppedHasher, err := h.hasherStack.Pop()
 	if err != nil {
-		return err
+		return &InvalidOperationError{
+			"hasher",
+			"stepOut",
+			err.Error(),
+		}
 	}
-	peekedHasher, err := h.hasherStack.peek()
+	peekedHasher, err := h.hasherStack.Peek()
 	if err != nil {
-		return err
+		return &InvalidOperationError{
+			"hasher",
+			"stepOut",
+			err.Error(),
+		}
 	}
 
 	h.currentHasher = peekedHasher.(serializer)
@@ -111,5 +122,5 @@ func (h *hasher) sum(b []byte) ([]byte, error) {
 }
 
 func (h *hasher) depth() int {
-	return h.hasherStack.size() - 1
+	return h.hasherStack.Size() - 1
 }
