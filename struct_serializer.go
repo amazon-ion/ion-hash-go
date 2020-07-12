@@ -17,8 +17,6 @@ package ionhash
 
 import (
 	"sort"
-
-	"github.com/amzn/ion-go/ion"
 )
 
 type structSerializer struct {
@@ -74,24 +72,8 @@ func (structSerializer *structSerializer) stepIn(ionValue interface{}) error {
 	return structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
-func (structSerializer *structSerializer) sum(b []byte) []byte {
-	return structSerializer.baseSerializer.sum(b)
-}
-
 func (structSerializer *structSerializer) handleFieldName(ionValue interface{}) error {
 	return structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
-}
-
-func (structSerializer *structSerializer) write(bytes []byte) error {
-	return structSerializer.baseSerializer.write(bytes)
-}
-
-func (structSerializer *structSerializer) beginMarker() error {
-	return structSerializer.baseSerializer.beginMarker()
-}
-
-func (structSerializer *structSerializer) endMarker() error {
-	return structSerializer.baseSerializer.endMarker()
 }
 
 func (structSerializer *structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
@@ -102,26 +84,8 @@ func (structSerializer *structSerializer) handleAnnotationsEnd(ionValue interfac
 	return structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
 }
 
-func (structSerializer *structSerializer) writeSymbol(token string) error {
-	return structSerializer.baseSerializer.writeSymbol(token)
-}
-
-func (structSerializer *structSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
-	return structSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
-}
-
-func (structSerializer *structSerializer) getLengthFieldLength(bytes []byte) (int, error) {
-	return structSerializer.baseSerializer.getLengthFieldLength(bytes)
-}
-
 func (structSerializer *structSerializer) appendFieldHash(sum []byte) {
 	structSerializer.fieldHashes = append(structSerializer.fieldHashes, sum)
-}
-
-func (structSerializer *structSerializer) scalarOrNullSplitParts(
-	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
-
-	return structSerializer.baseSerializer.scalarOrNullSplitParts(ionType, isNull, bytes)
 }
 
 func compareBytes(bytes1, bytes2 []byte) int {
