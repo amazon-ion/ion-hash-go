@@ -17,19 +17,20 @@ package internal
 
 import "errors"
 
+// Stack implementation used internally.
 type Stack []interface{}
 
-// Check if Stack is empty
+// IsEmpty returns `true` if stack is empty, false otherwise.
 func (s *Stack) IsEmpty() bool {
 	return len(*s) == 0
 }
 
-// Push element into Stack
+// Push element into Stack.
 func (s *Stack) Push(element interface{}) {
 	*s = append(*s, element)
 }
 
-// Remove and return top element of Stack. Return error if Stack is empty.
+// Pop removes and return top element of Stack. Return error if Stack is empty.
 func (s *Stack) Pop() (interface{}, error) {
 	if s.IsEmpty() {
 		return nil, errors.New("Pop() called on an empty Stack")
@@ -42,7 +43,7 @@ func (s *Stack) Pop() (interface{}, error) {
 	return element, nil
 }
 
-// Return top element of Stack. Return error if Stack is empty.
+// Peek returns the top element of the Stack. Return error if Stack is empty.
 func (s *Stack) Peek() (interface{}, error) {
 	if s.IsEmpty() {
 		return nil, errors.New("Peek() called on an empty Stack")
@@ -54,7 +55,7 @@ func (s *Stack) Peek() (interface{}, error) {
 	return element, nil
 }
 
-// Return number of elements in Stack
+// Size returns the number of elements in the Stack
 func (s *Stack) Size() int {
 	return len(*s)
 }
