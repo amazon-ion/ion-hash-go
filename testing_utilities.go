@@ -356,76 +356,70 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 	assert.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 }
 
-func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binaryWriter ion.Writer) {
+func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 	ionType := reader.Type()
 
 	if reader.Annotations() != nil {
-		err := textWriter.Annotations(reader.Annotations()...)
-		require.NoError(t, err)
-		err = binaryWriter.Annotations(reader.Annotations()...)
-		require.NoError(t, err)
+		for _, writer := range writers {
+			err := writer.Annotations(reader.Annotations()...)
+			require.NoError(t, err)
+		}
 	}
 
-	if reader.FieldName() != "" && reader.FieldName() != "ion" && reader.FieldName() != "10n" {
-		err := textWriter.FieldName(reader.FieldName())
-		require.NoError(t, err)
-		err = binaryWriter.FieldName(reader.FieldName())
-		require.NoError(t, err)
+	if reader.FieldName() != "ion" && reader.FieldName() != "10n" {
+		for _, writer := range writers {
+			err := writer.FieldName(reader.FieldName())
+			require.NoError(t, err)
+		}
 	}
 
 	if reader.IsNull() {
-		err := textWriter.WriteNullType(reader.Type())
-		require.NoError(t, err)
-		err = binaryWriter.WriteNullType(reader.Type())
-		require.NoError(t, err)
+		for _, writer := range writers {
+			err := writer.WriteNullType(reader.Type())
+			require.NoError(t, err)
+		}
 	} else {
 		switch ionType {
 		case ion.NullType:
-			err := textWriter.WriteNull()
-			require.NoError(t, err)
-			err = binaryWriter.WriteNull()
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err := writer.WriteNull()
+				require.NoError(t, err)
+			}
 		case ion.BoolType:
 			boolValue, err := reader.BoolValue()
 			require.NoError(t, err)
-			err = textWriter.WriteBool(boolValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteBool(boolValue)
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err := writer.WriteBool(boolValue)
+				require.NoError(t, err)
+			}
 		case ion.BlobType:
 			byteValue, err := reader.ByteValue()
 			require.NoError(t, err)
-			err = textWriter.WriteBlob(byteValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteBlob(byteValue)
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err := writer.WriteBlob(byteValue)
+				require.NoError(t, err)
+			}
 		case ion.ClobType:
 			byteValue, err := reader.ByteValue()
 			require.NoError(t, err)
-			err = textWriter.WriteClob(byteValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteClob(byteValue)
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err = writer.WriteClob(byteValue)
+				require.NoError(t, err)
+			}
 		case ion.DecimalType:
 			decimalValue, err := reader.DecimalValue()
 			require.NoError(t, err)
-			err = textWriter.WriteDecimal(decimalValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteDecimal(decimalValue)
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err = writer.WriteDecimal(decimalValue)
+				require.NoError(t, err)
+			}
 		case ion.FloatType:
 			floatValue, err := reader.FloatValue()
 			require.NoError(t, err)
-			err = textWriter.WriteFloat(floatValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteFloat(floatValue)
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err = writer.WriteFloat(floatValue)
+				require.NoError(t, err)
+			}
 		case ion.IntType:
 			intSize, err := reader.IntSize()
 			require.NoError(t, err)
@@ -434,27 +428,24 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 			case ion.Int32, ion.Int64:
 				val, err := reader.Int64Value()
 				require.NoError(t, err)
-				err = textWriter.WriteInt(val)
-				require.NoError(t, err)
-				err = binaryWriter.WriteInt(val)
-				require.NoError(t, err)
-
+				for _, writer := range writers {
+					err = writer.WriteInt(val)
+					require.NoError(t, err)
+				}
 			case ion.Uint64:
 				intValue, err := reader.Uint64Value()
 				require.NoError(t, err)
-				err = textWriter.WriteUint(intValue)
-				require.NoError(t, err)
-				err = binaryWriter.WriteUint(intValue)
-				require.NoError(t, err)
-
+				for _, writer := range writers {
+					err = writer.WriteUint(intValue)
+					require.NoError(t, err)
+				}
 			case ion.BigInt:
 				intValue, err := reader.BigIntValue()
 				require.NoError(t, err)
-				err = textWriter.WriteBigInt(intValue)
-				require.NoError(t, err)
-				err = binaryWriter.WriteBigInt(intValue)
-				require.NoError(t, err)
-
+				for _, writer := range writers {
+					err = writer.WriteBigInt(intValue)
+					require.NoError(t, err)
+				}
 			default:
 				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
 			}
@@ -462,83 +453,77 @@ func writeToWriter(t *testing.T, reader ion.Reader, textWriter ion.Writer, binar
 		case ion.StringType:
 			stringValue, err := reader.StringValue()
 			require.NoError(t, err)
-			err = textWriter.WriteString(stringValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteString(stringValue)
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err = writer.WriteString(stringValue)
+				require.NoError(t, err)
+			}
 		case ion.SymbolType:
 			stringValue, err := reader.StringValue()
 			require.NoError(t, err)
-			err = textWriter.WriteSymbol(stringValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteSymbol(stringValue)
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err = writer.WriteSymbol(stringValue)
+				require.NoError(t, err)
+			}
 		case ion.TimestampType:
 			timeValue, err := reader.TimeValue()
 			require.NoError(t, err)
-			err = textWriter.WriteTimestamp(timeValue)
-			require.NoError(t, err)
-			err = binaryWriter.WriteTimestamp(timeValue)
-			require.NoError(t, err)
+			for _, writer := range writers {
+				err = writer.WriteTimestamp(timeValue)
+				require.NoError(t, err)
+			}
 
 		case ion.SexpType:
 			err := reader.StepIn()
 			require.NoError(t, err)
-			err = textWriter.BeginSexp()
-			require.NoError(t, err)
-			err = binaryWriter.BeginSexp()
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err = writer.BeginSexp()
+				require.NoError(t, err)
+			}
 			for reader.Next() {
-				writeToWriter(t, reader, textWriter, binaryWriter)
+				writeToWriters(t, reader, writers...)
 			}
 
 			err = reader.StepOut()
-			require.NoError(t, err)
-			err = textWriter.EndSexp()
-			require.NoError(t, err)
-			err = binaryWriter.EndSexp()
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err = writer.EndSexp()
+				require.NoError(t, err)
+			}
 		case ion.ListType:
 			err := reader.StepIn()
 			require.NoError(t, err)
-			err = textWriter.BeginList()
-			require.NoError(t, err)
-			err = binaryWriter.BeginList()
-			require.NoError(t, err)
+			for _, writer := range writers {
+				err = writer.BeginList()
+				require.NoError(t, err)
+			}
 
 			for reader.Next() {
-				writeToWriter(t, reader, textWriter, binaryWriter)
+				writeToWriters(t, reader, writers...)
 			}
 
 			err = reader.StepOut()
 			require.NoError(t, err)
-			err = textWriter.EndList()
-			require.NoError(t, err)
-			err = binaryWriter.EndList()
-			require.NoError(t, err)
-
+			for _, writer := range writers {
+				err = writer.EndList()
+				require.NoError(t, err)
+			}
 		case ion.StructType:
 			err := reader.StepIn()
 			require.NoError(t, err)
-			err = textWriter.BeginStruct()
-			require.NoError(t, err)
-			err = binaryWriter.BeginStruct()
-			require.NoError(t, err)
+			for _, writer := range writers {
+				err = writer.BeginStruct()
+				require.NoError(t, err)
+			}
 
 			for reader.Next() {
-				writeToWriter(t, reader, textWriter, binaryWriter)
+				writeToWriters(t, reader, writers...)
 			}
 
 			err = reader.StepOut()
 			require.NoError(t, err)
-			err = textWriter.EndStruct()
-			require.NoError(t, err)
-			err = binaryWriter.EndStruct()
-			require.NoError(t, err)
+			for _, writer := range writers {
+				err = writer.EndStruct()
+				require.NoError(t, err)
+			}
 
 		default:
 			t.Fatal(InvalidIonTypeError{ionType})

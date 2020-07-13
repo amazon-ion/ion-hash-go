@@ -110,7 +110,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 			buf := bytes.Buffer{}
 			binaryWriter := ion.NewBinaryWriter(&buf)
 
-			writeToWriter(t, reader, textWriter, binaryWriter)
+			writeToWriters(t, reader, textWriter, binaryWriter)
 
 			assert.NoError(t, textWriter.Finish(), "Something went wrong executing textWriter.Finish().")
 			assert.NoError(t, binaryWriter.Finish(), "Something went wrong executing binaryWriter.Finish().")
