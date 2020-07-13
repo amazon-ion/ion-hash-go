@@ -90,7 +90,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 
 		assert.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
-		reader.Next() // Read the initial Ion value.
+		assert.True(t, reader.Next()) // Read the initial Ion value.
 
 		testCase := []byte{}
 		if reader.FieldName() == "10n" {
@@ -125,8 +125,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 			}
 		}
 
-		// Iterate through expected/ digest bytes.
-		reader.Next()
+		assert.True(t, reader.Next()) // Iterate through expected/ digest bytes.
 		fieldName := reader.FieldName()
 
 		if fieldName == "expect" {
