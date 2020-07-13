@@ -366,7 +366,7 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 		}
 	}
 
-	if reader.FieldName() != "ion" && reader.FieldName() != "10n" {
+	if reader.FieldName() != "" && reader.FieldName() != "ion" && reader.FieldName() != "10n" {
 		for _, writer := range writers {
 			err := writer.FieldName(reader.FieldName())
 			require.NoError(t, err)

@@ -76,7 +76,9 @@ func ionHashDataSource(t *testing.T) []testObject {
 	var dataList []testObject
 
 	//todo revert to original file name
-	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests_2.ion")
+	//file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
+	file, err := ioutil.ReadFile("ion_hash_tests.ion")
+
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	reader := ion.NewReaderBytes(file)
