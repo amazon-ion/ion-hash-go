@@ -43,7 +43,7 @@ func (s *Stack) Pop() (interface{}, error) {
 	return element, nil
 }
 
-// Peek returns the top element of the Stack. Return error if Stack is empty.
+// Peek returns the top element of the Stack. Returns an error if the Stack is empty.
 func (s *Stack) Peek() (interface{}, error) {
 	if s.IsEmpty() {
 		return nil, errors.New("Peek() called on an empty Stack")
