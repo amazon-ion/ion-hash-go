@@ -37,20 +37,20 @@ func TestIonHash(t *testing.T) {
 		Traverse(t, reader, provider.getInstance())
 
 		if len(parameters[i].expectedHashLog.identityUpdateList) > 0 {
-			assert.Equal(t, provider.getUpdateHashLog(), parameters[i].expectedHashLog.identityUpdateList, parameters[i].hasherName+" failed")
+			assert.Equal(t, parameters[i].expectedHashLog.identityUpdateList, provider.getUpdateHashLog(), parameters[i].hasherName+" failed")
 		}
 		if len(parameters[i].expectedHashLog.identityDigestList) > 0 {
-			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityDigestList, parameters[i].hasherName+" failed")
+			assert.Equal(t, parameters[i].expectedHashLog.identityDigestList, provider.getDigestHashLog(), parameters[i].hasherName+" failed")
 		}
 		if len(parameters[i].expectedHashLog.identityFinalDigestList) > 0 {
-			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.identityFinalDigestList, parameters[i].hasherName+" failed")
+			assert.Equal(t, parameters[i].expectedHashLog.identityFinalDigestList, provider.getDigestHashLog(), parameters[i].hasherName+" failed")
 		}
 
 		if len(parameters[i].expectedHashLog.md5UpdateList) > 0 {
-			assert.Equal(t, provider.getUpdateHashLog(), parameters[i].expectedHashLog.md5UpdateList, parameters[i].hasherName+" failed")
+			assert.Equal(t, parameters[i].expectedHashLog.md5UpdateList, provider.getDigestHashLog(), parameters[i].hasherName+" failed")
 		}
 		if len(parameters[i].expectedHashLog.md5DigestList) > 0 {
-			assert.Equal(t, provider.getDigestHashLog(), parameters[i].expectedHashLog.md5DigestList, parameters[i].hasherName+" failed")
+			assert.Equal(t, parameters[i].expectedHashLog.md5DigestList, provider.getDigestHashLog(), parameters[i].hasherName+" failed")
 		}
 	}
 }
