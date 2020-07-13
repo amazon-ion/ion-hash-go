@@ -17,6 +17,8 @@ package ionhash
 
 import (
 	"sort"
+
+	"github.com/amzn/ion-go/ion"
 )
 
 type structSerializer struct {
@@ -87,7 +89,6 @@ func (structSerializer *structSerializer) handleAnnotationsEnd(ionValue interfac
 func (structSerializer *structSerializer) appendFieldHash(sum []byte) {
 	structSerializer.fieldHashes = append(structSerializer.fieldHashes, sum)
 }
-
 
 func (structSerializer *structSerializer) scalarOrNullSplitParts(
 	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
