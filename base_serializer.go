@@ -348,6 +348,11 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 			return writer.WriteUint(uint64(ionValUint32))
 		}
 
+		ionValInt, ok := ionValue.(int)
+		if ok {
+			return writer.WriteInt(int64(ionValInt))
+		}
+
 		ionValBigInt, ok := ionValue.(*big.Int)
 		if ok {
 			return writer.WriteBigInt(ionValBigInt)
@@ -383,4 +388,34 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 func typeQualifier(ionValue hashValue) byte {
 	typeCode := byte(ionValue.ionType())
 	return typeCode << 4
+}
+
+func compareBytes(bytes1, bytes2 []byte) int {
+	for i := 0; i < len(bytes1) && i < len(bytes2); i++ {
+		byte1 := bytes1[i]
+		byte2 := bytes2[i]
+		if byte1 != byte2 {
+			return int(byte1) - int(byte2)
+		}
+	}
+
+	return len(bytes1) - len(bytes2)
+}
+
+// sortableBytes implements the sort.Interface so we can sort fieldHashes
+type sortableBytes [][]byte
+
+func (sb sortableBytes) Len() int {
+	return len(sb)
+}
+
+func (sb sortableBytes) Less(i, j int) bool {
+	bytes1 := sb[i]
+	bytes2 := sb[j]
+
+	return compareBytes(bytes1, bytes2) < 0
+}
+
+func (sb sortableBytes) Swap(i, j int) {
+	sb[i], sb[j] = sb[j], sb[i]
 }

@@ -102,14 +102,14 @@ func TestReaderUnresolvedSid(t *testing.T) {
 }
 
 func TestIonReaderContract(t *testing.T) {
-	t.Skip()
+	t.Skip() // Skipping test until SymbolToken is implemented
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	reader := ion.NewReaderBytes(file)
 
-	ionHashReader, err := NewHashReader(reader, newIdentityHasherProvider())
+	ionHashReader, err := NewHashReader(ion.NewReaderBytes(file), newIdentityHasherProvider())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	compareReaders(t, reader, ionHashReader)
