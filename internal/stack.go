@@ -30,7 +30,7 @@ func (s *Stack) Push(element interface{}) {
 	*s = append(*s, element)
 }
 
-// Pop removes and return top element of Stack. Return error if Stack is empty.
+// Pop removes and returns the top element of the Stack. Returns an error if the Stack is empty.
 func (s *Stack) Pop() (interface{}, error) {
 	if s.IsEmpty() {
 		return nil, errors.New("Pop() called on an empty Stack")
