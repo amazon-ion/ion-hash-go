@@ -3,6 +3,8 @@ github.com/amzn/ion-go v0.0.0-20200520044940-e32dee6c36bc/go.mod h1:EZ4HohQB+x+U
 github.com/amzn/ion-go v0.0.0-20200527212156-30f3e38dc649 h1:MeTMbaAJBgzWe52goAkhDHDo1ZAOyfV6wUo8XViacnM=
 github.com/amzn/ion-go v0.0.0-20200527212156-30f3e38dc649/go.mod h1:EZ4HohQB+x+U+xenCu/pm4jAwlBtHhQ02V2asw8LCfo=
 github.com/amzn/ion-go v0.0.0-20200623134041-78eeb7783dea h1:0/JQXUrrBeKpfv3eLv2Huwz3tYQaUaPUtqzMcLrAl/k=
+github.com/amzn/ion-go v0.0.0-20200702220820-7d3cd45adbee h1:a8iWR7kl0+Lje+Pt9DFYn0/5YpHxQF5/hYJ3v4hylqg=
+github.com/amzn/ion-go v0.0.0-20200702220820-7d3cd45adbee/go.mod h1:EZ4HohQB+x+U+xenCu/pm4jAwlBtHhQ02V2asw8LCfo=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

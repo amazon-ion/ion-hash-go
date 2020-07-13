@@ -13,37 +13,40 @@
  * permissions and limitations under the License.
  */
 
-package ionhash
+package internal
 
-type stack []interface{}
+import "errors"
 
-// Check if stack is empty
-func (s *stack) isEmpty() bool {
+// Stack implementation used internally.
+type Stack []interface{}
+
+// IsEmpty returns `true` if stack is empty, false otherwise.
+func (s *Stack) IsEmpty() bool {
 	return len(*s) == 0
 }
 
-// Push element into stack
-func (s *stack) push(element interface{}) {
+// Push element into Stack.
+func (s *Stack) Push(element interface{}) {
 	*s = append(*s, element)
 }
 
-// Remove and return top element of stack. Return error if stack is empty.
-func (s *stack) pop() (interface{}, error) {
-	if s.isEmpty() {
-		return nil, &InvalidOperationError{"stack", "pop", "stack is empty"}
+// Pop removes and returns the top element of the Stack. Returns an error if the Stack is empty.
+func (s *Stack) Pop() (interface{}, error) {
+	if s.IsEmpty() {
+		return nil, errors.New("Pop() called on an empty Stack")
 	}
 
 	index := len(*s) - 1   // Get the index of the top most element.
 	element := (*s)[index] // Index into the slice and obtain the element.
-	*s = (*s)[:index]      // Remove it from the stack by slicing it off.
+	*s = (*s)[:index]      // Remove it from the Stack by slicing it off.
 
 	return element, nil
 }
 
-// Return top element of stack. Return error if stack is empty.
-func (s *stack) peek() (interface{}, error) {
-	if s.isEmpty() {
-		return nil, &InvalidOperationError{"stack", "pop", "stack is empty"}
+// Peek returns the top element of the Stack. Returns an error if the Stack is empty.
+func (s *Stack) Peek() (interface{}, error) {
+	if s.IsEmpty() {
+		return nil, errors.New("Peek() called on an empty Stack")
 	}
 
 	index := len(*s) - 1   // Get the index of the top most element.
@@ -52,7 +55,7 @@ func (s *stack) peek() (interface{}, error) {
 	return element, nil
 }
 
-// Return number of elements in stack
-func (s *stack) size() int {
+// Size returns the number of elements in the Stack
+func (s *Stack) Size() int {
 	return len(*s)
 }
