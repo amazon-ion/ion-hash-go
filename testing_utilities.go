@@ -56,16 +56,20 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 			assert.True(t, isNull2, "Expected reader2.IsNull() to return true")
 		} else if ion.IsScalar(type1) {
 			compareScalars(t, type1, reader1, reader2)
-		} else if ion.IsContainer(type1) && !isNull1 {
-			assert.NoError(t, reader1.StepIn(), "Something went wrong executing reader1.StepIn()")
+		} else if ion.IsContainer(type1) {
+			if !isNull1 {
+				assert.NoError(t, reader1.StepIn(), "Something went wrong executing reader1.StepIn()")
 
-			assert.NoError(t, reader2.StepIn(), "Something went wrong executing reader2.StepIn()")
+				assert.NoError(t, reader2.StepIn(), "Something went wrong executing reader2.StepIn()")
 
-			compareReaders(t, reader1, reader2)
+				compareReaders(t, reader1, reader2)
 
-			assert.NoError(t, reader1.StepOut(), "Something went wrong executing reader1.StepOut()")
+				assert.NoError(t, reader1.StepOut(), "Something went wrong executing reader1.StepOut()")
 
-			assert.NoError(t, reader2.StepOut(), "Something went wrong executing reader2.StepOut()")
+				assert.NoError(t, reader2.StepOut(), "Something went wrong executing reader2.StepOut()")
+			}
+		} else {
+			t.Error(&InvalidIonTypeError{type1})
 		}
 	}
 
