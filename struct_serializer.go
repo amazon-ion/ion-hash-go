@@ -74,24 +74,8 @@ func (structSerializer *structSerializer) stepIn(ionValue interface{}) error {
 	return structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
-func (structSerializer *structSerializer) sum(b []byte) []byte {
-	return structSerializer.baseSerializer.sum(b)
-}
-
 func (structSerializer *structSerializer) handleFieldName(ionValue interface{}) error {
 	return structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
-}
-
-func (structSerializer *structSerializer) write(bytes []byte) error {
-	return structSerializer.baseSerializer.write(bytes)
-}
-
-func (structSerializer *structSerializer) beginMarker() error {
-	return structSerializer.baseSerializer.beginMarker()
-}
-
-func (structSerializer *structSerializer) endMarker() error {
-	return structSerializer.baseSerializer.endMarker()
 }
 
 func (structSerializer *structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
@@ -102,18 +86,6 @@ func (structSerializer *structSerializer) handleAnnotationsEnd(ionValue interfac
 	return structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
 }
 
-func (structSerializer *structSerializer) writeSymbol(token string) error {
-	return structSerializer.baseSerializer.writeSymbol(token)
-}
-
-func (structSerializer *structSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
-	return structSerializer.baseSerializer.getBytes(ionType, ionValue.(hashValue), isNull)
-}
-
-func (structSerializer *structSerializer) getLengthFieldLength(bytes []byte) (int, error) {
-	return structSerializer.baseSerializer.getLengthFieldLength(bytes)
-}
-
 func (structSerializer *structSerializer) appendFieldHash(sum []byte) {
 	structSerializer.fieldHashes = append(structSerializer.fieldHashes, sum)
 }
@@ -122,34 +94,4 @@ func (structSerializer *structSerializer) scalarOrNullSplitParts(
 	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
 
 	return structSerializer.baseSerializer.scalarOrNullSplitParts(ionType, isNull, bytes)
-}
-
-func compareBytes(bytes1, bytes2 []byte) int {
-	for i := 0; i < len(bytes1) && i < len(bytes2); i++ {
-		byte1 := bytes1[i]
-		byte2 := bytes2[i]
-		if byte1 != byte2 {
-			return int(byte1 - byte2)
-		}
-	}
-
-	return len(bytes1) - len(bytes2)
-}
-
-// sortableBytes implements the sort.Interface so we can sort fieldHashes in stepOut()
-type sortableBytes [][]byte
-
-func (sb sortableBytes) Len() int {
-	return len(sb)
-}
-
-func (sb sortableBytes) Less(i, j int) bool {
-	bytes1 := sb[i]
-	bytes2 := sb[j]
-
-	return compareBytes(bytes1, bytes2) < 0
-}
-
-func (sb sortableBytes) Swap(i, j int) {
-	sb[i], sb[j] = sb[j], sb[i]
 }
