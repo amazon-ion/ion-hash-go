@@ -59,7 +59,8 @@ func Traverse(t *testing.T, reader ion.Reader, provider IonHasherProvider) {
 	hr, err := NewHashReader(reader, provider)
 	require.NoError(t, err, "Something went wrong executing NewHashReader()")
 	TraverseReader(hr)
-	hr.Sum(nil)
+	_, err = hr.Sum(nil)
+	require.NoError(t, err, "Something went wrong with executing hr.Sum()")
 }
 
 func TraverseReader(hr HashReader) {
@@ -75,8 +76,6 @@ func TraverseReader(hr HashReader) {
 func ionHashDataSource(t *testing.T) []testObject {
 	var dataList []testObject
 
-	//todo revert to original file name
-	//file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	file, err := ioutil.ReadFile("ion_hash_tests.ion")
 
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
