@@ -58,7 +58,9 @@ func TestIonHash(t *testing.T) {
 func Traverse(t *testing.T, reader ion.Reader, provider IonHasherProvider) {
 	hr, err := NewHashReader(reader, provider)
 	require.NoError(t, err, "Something went wrong executing NewHashReader()")
+
 	TraverseReader(t, hr)
+
 	_, err = hr.Sum(nil)
 	require.NoError(t, err, "Something went wrong with executing hr.Sum()")
 }
@@ -67,7 +69,9 @@ func TraverseReader(t *testing.T, hr HashReader) {
 	for hr.Next() {
 		if hr.Type() != ion.NoType && hr.IsInStruct() {
 			require.NoError(t, hr.StepIn(), "Something went wrong executing hr.StepIn()")
+
 			TraverseReader(t, hr)
+
 			require.NoError(t, hr.StepOut(), "Something went wrong executing hr.StepOut()")
 		}
 	}
