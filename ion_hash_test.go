@@ -192,7 +192,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 					testName = testName + "." + hasherName
 				}
 
-				dataList = append(dataList, testObject{testName, testCase, expectedHashLog, newTestIonHasherProvider(hasherName)})
+				dataList = append(dataList, testObject{testName, testCase, &expectedHashLog, newTestIonHasherProvider(hasherName)})
 			}
 			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 		}
@@ -204,7 +204,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 type testObject struct {
 	hasherName      string
 	testCase        []byte
-	expectedHashLog hashLog
+	expectedHashLog *hashLog
 	provider        *testIonHasherProvider
 }
 
