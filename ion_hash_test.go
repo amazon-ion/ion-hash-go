@@ -75,6 +75,7 @@ func TraverseReader(t *testing.T, hr HashReader) {
 			require.NoError(t, hr.StepOut(), "Something went wrong executing hr.StepOut()")
 		}
 	}
+	require.NoError(t, hr.Err(), "Something went wrong executing hr.Next()")
 }
 
 func ionHashDataSource(t *testing.T) []testObject {
