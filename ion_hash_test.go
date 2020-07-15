@@ -94,11 +94,13 @@ func ionHashDataSource(t *testing.T) []testObject {
 		if reader.FieldName() == "10n" {
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
+			testCase = append(testCase, []byte{0xE0, 0x01, 0x00, 0xEA}...)
 			for reader.Next() {
 				intValue, err := reader.Int64Value()
 				require.NoError(t, err, "Something went wrong executing reader.IntValue()")
 				testCase = append(testCase, byte(intValue))
 			}
+			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 
 		} else {
@@ -159,6 +161,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 							}
 						}
 					}
+					require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 					require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 				} else if fieldName == "md5" {
 					require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
@@ -177,6 +180,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 							}
 						}
 					}
+					require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 					require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 				}
 
@@ -194,10 +198,13 @@ func ionHashDataSource(t *testing.T) []testObject {
 
 				dataList = append(dataList, testObject{testName, testCase, &expectedHashLog, newTestIonHasherProvider(hasherName)})
 			}
+			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 		}
 		require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 	}
+	require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
+
 	return dataList
 }
 

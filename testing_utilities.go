@@ -465,27 +465,25 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 			timeValue, err := reader.TimeValue()
 			require.NoError(t, err)
 			for _, writer := range writers {
-				err = writer.WriteTimestamp(timeValue)
 				require.NoError(t, writer.WriteTimestamp(timeValue), "Something went wrong executing writer.WriterTimestamp()")
 			}
 
 		case ion.SexpType:
-			err := reader.StepIn()
-			require.NoError(t, err)
+			require.NoError(t, reader.StepIn())
 			for _, writer := range writers {
 				require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
 			}
 			for reader.Next() {
 				writeToWriters(t, reader, writers...)
 			}
+			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 
-			err = reader.StepOut()
+			require.NoError(t, reader.StepOut())
 			for _, writer := range writers {
 				require.NoError(t, writer.EndSexp(), "Something went wrong executing writer.EndSexp()")
 			}
 		case ion.ListType:
-			err := reader.StepIn()
-			require.NoError(t, err)
+			require.NoError(t, reader.StepIn())
 			for _, writer := range writers {
 				require.NoError(t, writer.BeginList(), "Something went wrong executing writer.BeginList()")
 			}
@@ -493,15 +491,14 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 			for reader.Next() {
 				writeToWriters(t, reader, writers...)
 			}
+			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 
-			err = reader.StepOut()
-			require.NoError(t, err)
+			require.NoError(t, reader.StepOut())
 			for _, writer := range writers {
 				require.NoError(t, writer.EndList(), "Something went wrong executing writer.EndList()")
 			}
 		case ion.StructType:
-			err := reader.StepIn()
-			require.NoError(t, err)
+			require.NoError(t, reader.StepIn())
 			for _, writer := range writers {
 				require.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
 			}
@@ -509,9 +506,9 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 			for reader.Next() {
 				writeToWriters(t, reader, writers...)
 			}
+			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 
-			err = reader.StepOut()
-			require.NoError(t, err)
+			require.NoError(t, reader.StepOut())
 			for _, writer := range writers {
 				require.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
 			}
@@ -530,6 +527,7 @@ func readSexpAndAppendToList(t *testing.T, reader ion.Reader) []byte {
 		require.NoError(t, err, "Something went wrong executing reader.Int64Value()")
 		updateBytes = append(updateBytes, byte(intValue))
 	}
-	require.NoError(t, reader.StepOut())
+	require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
+	require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 	return updateBytes
 }
