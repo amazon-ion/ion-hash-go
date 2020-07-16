@@ -62,7 +62,7 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 	}
 
 	tq := typeQualifier(ionValue)
-	if ionValue.isNull() {
+	if ionValue.IsNull() {
 		tq = tq | 0x0F
 	}
 
@@ -386,7 +386,7 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 }
 
 func typeQualifier(ionValue hashValue) byte {
-	typeCode := byte(ionValue.ionType())
+	typeCode := byte(ionValue.Type())
 	return typeCode << 4
 }
 

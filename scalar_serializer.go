@@ -40,7 +40,7 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 
 	var ionVal interface{}
 	var ionType ion.Type
-	if ionHashValue.isNull() {
+	if ionHashValue.IsNull() {
 		ionVal = nil
 		ionType = ion.NoType
 	} else {
@@ -48,20 +48,20 @@ func (scalarSerializer *scalarSerializer) scalar(ionValue interface{}) error {
 		if err != nil {
 			return err
 		}
-		ionType = ionHashValue.ionType()
+		ionType = ionHashValue.Type()
 	}
 
-	scalarBytes, err := scalarSerializer.getBytes(ionHashValue.ionType(), ionVal, ionHashValue.isNull())
+	scalarBytes, err := scalarSerializer.getBytes(ionHashValue.Type(), ionVal, ionHashValue.IsNull())
 	if err != nil {
 		return err
 	}
 
-	if ionHashValue.ionType() != ion.SymbolType {
+	if ionHashValue.Type() != ion.SymbolType {
 		ionVal = nil
 	}
 
 	tq, representation, err :=
-		scalarSerializer.scalarOrNullSplitParts(ionType, ionHashValue.isNull(), scalarBytes)
+		scalarSerializer.scalarOrNullSplitParts(ionType, ionHashValue.IsNull(), scalarBytes)
 	if err != nil {
 		return err
 	}

@@ -251,8 +251,8 @@ func decimalStrictEquals(t *testing.T, decimal1, decimal2 *ion.Decimal) {
 func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer) {
 	for reader.Next() {
 		name := reader.FieldName()
-		if name != "" {
-			require.NoError(t, writer.FieldName(name), "Something went wrong executing writer.FieldName(name)")
+		if name != nil {
+			require.NoError(t, writer.FieldName(*name), "Something went wrong executing writer.FieldName(name)")
 		}
 
 		an := reader.Annotations()
@@ -376,9 +376,10 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 		}
 	}
 
-	if reader.FieldName() != "" && reader.FieldName() != "ion" && reader.FieldName() != "10n" {
+	fieldName := reader.FieldName()
+	if fieldName != nil && *fieldName != "ion" && *fieldName != "10n" {
 		for _, writer := range writers {
-			require.NoError(t, writer.FieldName(reader.FieldName()), "Something went wrong executing writer.FieldName()")
+			require.NoError(t, writer.FieldName(*fieldName), "Something went wrong executing writer.FieldName()")
 		}
 	}
 

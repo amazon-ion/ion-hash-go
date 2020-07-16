@@ -34,8 +34,8 @@ type HashWriter interface {
 	// Remaining hashValue methods.
 	getFieldName() string
 	getAnnotations() []string
-	isNull() bool
-	ionType() ion.Type
+	IsNull() bool
+	Type() ion.Type
 	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
@@ -255,11 +255,11 @@ func (hashWriter *hashWriter) getAnnotations() []string {
 	return hashWriter.annotations
 }
 
-func (hashWriter *hashWriter) isNull() bool {
+func (hashWriter *hashWriter) IsNull() bool {
 	return hashWriter.currentIsNull
 }
 
-func (hashWriter *hashWriter) ionType() ion.Type {
+func (hashWriter *hashWriter) Type() ion.Type {
 	return hashWriter.currentType
 }
 

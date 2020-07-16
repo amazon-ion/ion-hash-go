@@ -25,9 +25,9 @@ type hashValue interface {
 	// SymbolTokens are not available right now.
 	//fieldNameSymbol() ion.FieldNameSymbol
 
-	isNull() bool
+	IsNull() bool
 
-	ionType() ion.Type
+	Type() ion.Type
 
 	value() (interface{}, error)
 
