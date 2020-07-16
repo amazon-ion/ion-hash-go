@@ -486,7 +486,7 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 		case ion.SexpType:
 			require.NoError(t, reader.StepIn())
 			for _, writer := range writers {
-				require.NoError(t, writer.BeginSexp(),"Something went wrong executing writer.BeginSexp()")
+				require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
 			}
 			for reader.Next() {
 				writeToWriters(t, reader, writers...)
