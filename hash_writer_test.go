@@ -133,7 +133,8 @@ var scalarTests = []struct {
 
 func TestWriteNull(t *testing.T) {
 	str := strings.Builder{}
-	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	hw, err := NewHashWriter(ion.NewTextWriter(&str), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
 	ionHashWriter, ok := hw.(*hashWriter)
@@ -163,7 +164,8 @@ func TestWriteNull(t *testing.T) {
 
 func TestWriteScalars(t *testing.T) {
 	str := strings.Builder{}
-	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	hw, err := NewHashWriter(ion.NewTextWriter(&str), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
 	ionHashWriter, ok := hw.(*hashWriter)
@@ -230,7 +232,8 @@ func TestWriteScalars(t *testing.T) {
 
 func TestWriteContainers(t *testing.T) {
 	str := strings.Builder{}
-	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	hw, err := NewHashWriter(ion.NewTextWriter(&str), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
 	ionHashWriter, ok := hw.(*hashWriter)
@@ -305,7 +308,8 @@ func TestWriteContainers(t *testing.T) {
 
 func TestExtraEndContainer(t *testing.T) {
 	str := strings.Builder{}
-	hw, err := NewHashWriter(ion.NewTextWriter(&str), newIdentityHasherProvider())
+	tihp := newTestIonHasherProvider("identity")
+	hw, err := NewHashWriter(ion.NewTextWriter(&str), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 
 	ionHashWriter, ok := hw.(*hashWriter)
@@ -378,7 +382,8 @@ func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, functio
 	writer := ion.NewBinaryWriter(&buf)
 
 	if useHashWriter {
-		writer, err = NewHashWriter(writer, newIdentityHasherProvider())
+		tihp := newTestIonHasherProvider("identity")
+		writer, err = NewHashWriter(writer, tihp.getInstance())
 		require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 	}
 

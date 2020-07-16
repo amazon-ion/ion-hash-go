@@ -19,26 +19,31 @@ type identityHasher struct {
 	IonHasher
 
 	identityHash []byte
+	provider     *testIonHasherProvider
 }
 
-func newIdentityIonHasher() IonHasher {
-	return &identityHasher{identityHash: []byte{}}
+func newIdentityIonHasher(provider *testIonHasherProvider) IonHasher {
+	return &identityHasher{identityHash: []byte{}, provider: provider}
 }
 
-func (identityHasher *identityHasher) Write(bytes []byte) (int, error) {
+func (ih *identityHasher) Write(bytes []byte) (int, error) {
 	for _, b := range bytes {
-		identityHasher.identityHash = append(identityHasher.identityHash, b)
+		ih.identityHash = append(ih.identityHash, b)
 	}
 
+	if bytes != nil {
+		ih.provider.updateHashLog = append(ih.provider.updateHashLog, bytes)
+	}
 	return len(bytes), nil
 }
 
-func (identityHasher *identityHasher) Sum(bytes []byte) []byte {
+func (ih *identityHasher) Sum(bytes []byte) []byte {
 	// We ignore the error here because we know this particular Write() implementation does not error
-	_, _ = identityHasher.Write(bytes)
+	_, _ = ih.Write(bytes)
 
-	identityHash := identityHasher.identityHash
-	identityHasher.identityHash = []byte{}
+	identityHash := ih.identityHash
+	ih.identityHash = []byte{}
 
+	ih.provider.digestHashLog = append(ih.provider.digestHashLog, identityHash)
 	return identityHash
 }
