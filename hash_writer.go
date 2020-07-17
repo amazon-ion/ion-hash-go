@@ -32,7 +32,7 @@ type HashWriter interface {
 	ion.Writer
 
 	// Remaining hashValue methods.
-	getFieldName() string
+	getFieldName() *string
 	getAnnotations() []string
 	IsNull() bool
 	Type() ion.Type
@@ -247,8 +247,8 @@ func (hashWriter *hashWriter) Sum(b []byte) ([]byte, error) {
 
 // The following implements hashValue interface.
 
-func (hashWriter *hashWriter) getFieldName() string {
-	return hashWriter.currentFieldName
+func (hashWriter *hashWriter) getFieldName() *string {
+	return &hashWriter.currentFieldName
 }
 
 func (hashWriter *hashWriter) getAnnotations() []string {

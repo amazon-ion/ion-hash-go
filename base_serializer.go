@@ -84,7 +84,9 @@ func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error 
 
 		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available
 
-		return baseSerializer.writeSymbol(fieldName)
+		if fieldName != nil {
+			return baseSerializer.writeSymbol(*fieldName)
+		}
 	}
 
 	return nil

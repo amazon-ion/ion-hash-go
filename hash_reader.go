@@ -32,7 +32,7 @@ type HashReader interface {
 	ion.Reader
 
 	// Remaining hashValue methods.
-	getFieldName() string
+	getFieldName() *string
 	getAnnotations() []string
 	value() (interface{}, error)
 
@@ -227,14 +227,8 @@ func (hashReader *hashReader) traverse() error {
 
 // The following implements hashValue interface.
 
-func (hashReader *hashReader) getFieldName() string {
-	fieldName := hashReader.FieldName()
-
-	if fieldName == nil {
-		return ""
-	}
-
-	return *fieldName
+func (hashReader *hashReader) getFieldName() *string {
+	return hashReader.FieldName()
 }
 
 func (hashReader *hashReader) getAnnotations() []string {
