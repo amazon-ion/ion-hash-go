@@ -18,16 +18,16 @@ package ionhash
 import "github.com/amzn/ion-go/ion"
 
 type hashValue interface {
-	getFieldName() string
+	getFieldName() *string
 
 	getAnnotations() []string
 
 	// SymbolTokens are not available right now.
 	//fieldNameSymbol() ion.FieldNameSymbol
 
-	isNull() bool
+	IsNull() bool
 
-	ionType() ion.Type
+	Type() ion.Type
 
 	value() (interface{}, error)
 
