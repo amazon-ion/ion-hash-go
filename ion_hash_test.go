@@ -43,7 +43,7 @@ func TestIonHash(t *testing.T) {
 			assert.Equal(t, parameters[i].expectedHashLog.identityDigestList, provider.getDigestHashLog(), parameters[i].hasherName+" failed")
 		}
 		if len(parameters[i].expectedHashLog.identityFinalDigestList) > 0 {
-			assert.Equal(t, parameters[i].expectedHashLog.identityFinalDigestList, provider.getDigestHashLog(), parameters[i].hasherName+" failed")
+			assert.Equal(t, parameters[i].expectedHashLog.identityFinalDigestList, provider.getFinalDigestHashLog(), parameters[i].hasherName+" failed")
 		}
 
 		if len(parameters[i].expectedHashLog.md5UpdateList) > 0 {
@@ -145,7 +145,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 
 				identityUpdateList := [][]byte{}
 				identityDigestList := [][]byte{}
-				identityFinalDigestList := [][]byte{}
+				identityFinalDigestList := []byte{}
 				md5UpdateList := [][]byte{}
 				md5DigestList := [][]byte{}
 
@@ -166,7 +166,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 								identityDigestList = append(identityDigestList, digestBytes)
 							case "final_digest":
 								digestBytes := readSexpAndAppendToList(t, reader)
-								identityFinalDigestList = append(identityFinalDigestList, digestBytes)
+								identityFinalDigestList = digestBytes
 							}
 						}
 					}
@@ -227,7 +227,7 @@ type testObject struct {
 type hashLog struct {
 	identityUpdateList      [][]byte
 	identityDigestList      [][]byte
-	identityFinalDigestList [][]byte
+	identityFinalDigestList []byte
 	md5UpdateList           [][]byte
 	md5DigestList           [][]byte
 }

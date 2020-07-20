@@ -37,6 +37,11 @@ func (tiop *testIonHasherProvider) getInstance() IonHasherProvider {
 func (tiop *testIonHasherProvider) getUpdateHashLog() [][]byte {
 	return tiop.updateHashLog
 }
+
 func (tiop *testIonHasherProvider) getDigestHashLog() [][]byte {
 	return tiop.digestHashLog
+}
+
+func (tiop *testIonHasherProvider) getFinalDigestHashLog() []byte {
+	return tiop.digestHashLog[len(tiop.digestHashLog)-1]
 }
