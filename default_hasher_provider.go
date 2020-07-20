@@ -15,16 +15,21 @@
 
 package ionhash
 
-type identityHasherProvider struct {
+type defaultHasherProvider struct {
 	IonHasherProvider
 
-	provider *testIonHasherProvider
+	algorithm algorithm
+	provider  *testIonHasherProvider
 }
 
-func newIdentityHasherProvider(provider *testIonHasherProvider) *identityHasherProvider {
-	return &identityHasherProvider{provider: provider}
+func newDefaultHasherProvider(algo string, provider *testIonHasherProvider) *defaultHasherProvider {
+	return &defaultHasherProvider{algorithm: algorithm(algo), provider: provider}
 }
 
-func (ihp *identityHasherProvider) NewHasher() (IonHasher, error) {
-	return newIdentityIonHasher(ihp.provider), nil
+func (dhp *defaultHasherProvider) NewHasher() (IonHasher, error) {
+	ionHasher, err := newDefaultIonHasher(dhp.algorithm, dhp.provider)
+	if err != nil {
+		return nil, err
+	}
+	return ionHasher, nil
 }
