@@ -24,7 +24,7 @@ import (
 
 // HashReader is meant to share the same methods as the ion.Reader and hashValue interfaces.
 // However embedding both ion.Reader and hashValue results in a duplicate method build error because both interfaces
-// have an IsInStruct() method.
+// have IsNull(), Type(), and IsInStruct() methods defined.
 // So we embed the ion.Reader interface and explicitly list the remaining hashValue methods to avoid the error.
 // HashReader also provides a Sum function which allows read access to the hash value held by this reader.
 type HashReader interface {
@@ -32,10 +32,8 @@ type HashReader interface {
 	ion.Reader
 
 	// Remaining hashValue methods.
-	getFieldName() string
+	getFieldName() *string
 	getAnnotations() []string
-	isNull() bool
-	ionType() ion.Type
 	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
@@ -113,7 +111,7 @@ func (hashReader *hashReader) IsNull() bool {
 	return hashReader.ionReader.IsNull()
 }
 
-func (hashReader *hashReader) FieldName() string {
+func (hashReader *hashReader) FieldName() *string {
 	return hashReader.ionReader.FieldName()
 }
 
@@ -229,7 +227,7 @@ func (hashReader *hashReader) traverse() error {
 
 // The following implements hashValue interface.
 
-func (hashReader *hashReader) getFieldName() string {
+func (hashReader *hashReader) getFieldName() *string {
 	return hashReader.FieldName()
 }
 
@@ -279,14 +277,6 @@ func (hashReader *hashReader) value() (interface{}, error) {
 	}
 
 	return nil, &InvalidIonTypeError{hashReader.currentType}
-}
-
-func (hashReader *hashReader) ionType() ion.Type {
-	return hashReader.Type()
-}
-
-func (hashReader *hashReader) isNull() bool {
-	return hashReader.IsNull()
 }
 
 // IsInStruct implements both the ion.Reader and hashValue interfaces.
