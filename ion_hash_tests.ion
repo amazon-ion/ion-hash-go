@@ -1063,7 +1063,9 @@ structCount14::{
     final_digest::(0x0b 0xd0 0x0c 0x0b 0x70 0x66 0x6c 0x6f 0x61 0x74 0x5f 0x7a 0x65 0x72 0x6f 0x0c 0x0e 0x0c 0x0b 0x40 0x0c 0x0e 0x0e)
   ) }
 }
-/* FAILING struct tests
+/* FAILING struct tests (due to data type limitations and lack of symbol support)
+
+// Failing due to lack of symbol support (zero symbol)
 {
   ion:{$0:1},              // SID0
   expect:{ identity:(
@@ -1077,7 +1079,7 @@ structCount14::{
   ) }
 }
 
-// Failing due to timestamps, need to rerun once timestamp fix is in.
+// Failing due to timestamps bugs on Ion Go, need to rerun once timestamp fix is in.
 {
   ion:{               // verify various types get added to a struct
     'null':null,
@@ -1123,7 +1125,7 @@ structCount14::{
   ) }
 }
 
-// Failing due to symbol value : ms
+// Failing due to lack of symbol support (ms)
 // the following test fails if digests of struct fields are escaped prior to sorting;
 // struct field digests must be sorted first, then escaped
 {
