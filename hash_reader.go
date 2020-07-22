@@ -185,8 +185,8 @@ func (hashReader *hashReader) DecimalValue() (*ion.Decimal, error) {
 	return hashReader.ionReader.DecimalValue()
 }
 
-func (hashReader *hashReader) TimeValue() (ion.Timestamp, error) {
-	return hashReader.ionReader.TimeValue()
+func (hashReader *hashReader) TimestampValue() (ion.Timestamp, error) {
+	return hashReader.ionReader.TimestampValue()
 }
 
 func (hashReader *hashReader) StringValue() (string, error) {
@@ -270,7 +270,7 @@ func (hashReader *hashReader) value() (interface{}, error) {
 	case ion.SymbolType:
 		return hashReader.StringValue()
 	case ion.TimestampType:
-		return hashReader.TimeValue()
+		return hashReader.TimestampValue()
 	case ion.NoType:
 		return ion.NoType, nil
 	}

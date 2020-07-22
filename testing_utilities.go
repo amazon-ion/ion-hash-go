@@ -196,11 +196,11 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 
 
 		decimalStrictEquals(t, decimal1, decimal2)
 	case ion.TimestampType:
-		timestamp1, err := reader1.TimeValue()
-		assert.NoError(t, err, "Something went wrong executing reader1.TimeValue()")
+		timestamp1, err := reader1.TimestampValue()
+		assert.NoError(t, err, "Something went wrong executing reader1.TimestampValue()")
 
-		timestamp2, err := reader2.TimeValue()
-		assert.NoError(t, err, "Something went wrong executing reader2.TimeValue()")
+		timestamp2, err := reader2.TimestampValue()
+		assert.NoError(t, err, "Something went wrong executing reader2.TimestampValue()")
 
 		assert.Equal(t, timestamp1, timestamp2, "Expected timestamp values to match")
 	case ion.StringType:
@@ -307,7 +307,7 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 
 			assert.NoError(t, writer.WriteDecimal(val), "Something went wrong when writing Decimal value")
 		case ion.TimestampType:
-			val, err := reader.TimeValue()
+			val, err := reader.TimestampValue()
 			assert.NoError(t, err, "Something went wrong when reading Timestamp value")
 
 			assert.NoError(t, writer.WriteTimestamp(val), "Something went wrong when writing Timestamp value")
@@ -476,11 +476,11 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 					"Something went wrong executing writer.WriteSymbol(stringValue)")
 			}
 		case ion.TimestampType:
-			timeValue, err := reader.TimeValue()
+			timestampValue, err := reader.TimestampValue()
 			require.NoError(t, err)
 			for _, writer := range writers {
-				require.NoError(t, writer.WriteTimestamp(timeValue),
-					"Something went wrong executing writer.WriterTimestamp(timeValue)")
+				require.NoError(t, writer.WriteTimestamp(timestampValue),
+					"Something went wrong executing writer.WriterTimestamp(timestampValue)")
 			}
 
 		case ion.SexpType:
