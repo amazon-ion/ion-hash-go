@@ -96,7 +96,8 @@ func ionHashDataSource(t *testing.T) []testObject {
 		require.True(t, reader.Next()) // Read the initial Ion value.
 
 		testCase := []byte{}
-		if reader.FieldName() == "10n" {
+		fieldName := reader.FieldName()
+		if fieldName != nil && *fieldName == "10n" {
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 			testCase = append(testCase, []byte{0xE0, 0x01, 0x00, 0xEA}...)
@@ -131,22 +132,25 @@ func ionHashDataSource(t *testing.T) []testObject {
 		}
 
 		require.True(t, reader.Next()) // Iterate through expected/ digest bytes.
-		fieldName := reader.FieldName()
 
-		if fieldName == "expect" {
+		fieldName = reader.FieldName()
+		if fieldName != nil && *fieldName == "expect" {
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 			for reader.Next() {
+				hasherName := reader.FieldName()
+				if hasherName == nil {
+					continue
+				}
+
 				identityUpdateList := [][]byte{}
 				identityDigestList := [][]byte{}
 				identityFinalDigestList := [][]byte{}
 				md5UpdateList := [][]byte{}
 				md5DigestList := [][]byte{}
 
-				fieldName = reader.FieldName()
-				hasherName := fieldName
-
-				if fieldName == "identity" {
+				switch *hasherName {
+				case "identity":
 					require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 					for reader.Next() {
@@ -168,7 +172,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 					}
 					require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 					require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
-				} else if fieldName == "md5" {
+				case "md5":
 					require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 
 					for reader.Next() {
@@ -189,6 +193,10 @@ func ionHashDataSource(t *testing.T) []testObject {
 					require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
 				}
 
+				if *hasherName != "identity" {
+					testName = testName + "." + *hasherName
+				}
+
 				expectedHashLog := hashLog{
 					identityUpdateList:      identityUpdateList,
 					identityDigestList:      identityDigestList,
@@ -197,11 +205,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 					md5DigestList:           md5DigestList,
 				}
 
-				if hasherName != "identity" {
-					testName = testName + "." + hasherName
-				}
-
-				dataList = append(dataList, testObject{testName, testCase, &expectedHashLog, newTestIonHasherProvider(hasherName)})
+				dataList = append(dataList, testObject{testName, testCase, &expectedHashLog, newTestIonHasherProvider(*hasherName)})
 			}
 			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
