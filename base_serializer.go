@@ -19,7 +19,6 @@ import (
 	"bytes"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/amzn/ion-go/ion"
 )
@@ -381,7 +380,7 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 
 		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.TimestampType:
-		return writer.WriteTimestamp(ionValue.(time.Time))
+		return writer.WriteTimestamp(ionValue.(ion.Timestamp))
 	case ion.NullType:
 		return writer.WriteNull()
 	}
