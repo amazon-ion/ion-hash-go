@@ -49,6 +49,8 @@ func TestHasher(t *testing.T) {
 
 	assert.Equal(t, expected, hasher.Sum(nil), "sum did not match expectation")
 
+	hasher.Reset()
+
 	// Verify that the hasher has reset
 	assert.Equal(t, emptyHasherDigest, hasher.Sum(nil), "sum did not match expectation")
 }

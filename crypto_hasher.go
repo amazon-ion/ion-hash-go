@@ -111,6 +111,9 @@ func (ch *cryptoHasher) Write(b []byte) (n int, err error) {
 
 func (ch *cryptoHasher) Sum(b []byte) []byte {
 	hash := ch.hashAlgorithm.Sum(b)
-	ch.hashAlgorithm.Reset()
 	return hash
+}
+
+func (ch *cryptoHasher) Reset() {
+	ch.hashAlgorithm.Reset()
 }
