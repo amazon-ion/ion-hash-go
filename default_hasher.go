@@ -38,3 +38,7 @@ func (dh *defaultHasher) Sum(b []byte) []byte {
 	dh.provider.digestHashLog = append(dh.provider.digestHashLog, hash)
 	return hash
 }
+
+func (dh *defaultHasher) Reset() {
+	dh.cryptoHasher.Reset()
+}

@@ -269,7 +269,7 @@ func (hashReader *hashReader) value() (interface{}, error) {
 	case ion.StringType:
 		return hashReader.StringValue()
 	case ion.SymbolType:
-		return hashReader.SymbolTable(), nil
+		return hashReader.StringValue()
 	case ion.TimestampType:
 		return hashReader.TimeValue()
 	case ion.NoType:
