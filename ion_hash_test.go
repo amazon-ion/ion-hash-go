@@ -164,8 +164,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 								digestBytes := readSexpAndAppendToList(t, reader)
 								identityDigestList = append(identityDigestList, digestBytes)
 							case "final_digest":
-								digestBytes := readSexpAndAppendToList(t, reader)
-								identityFinalDigestList = digestBytes
+								identityFinalDigestList = readSexpAndAppendToList(t, reader)
 							}
 						}
 					}
