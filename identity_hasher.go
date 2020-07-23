@@ -47,3 +47,6 @@ func (ih *identityHasher) Sum(bytes []byte) []byte {
 	ih.provider.digestHashLog = append(ih.provider.digestHashLog, identityHash)
 	return identityHash
 }
+
+func (ih *identityHasher) Reset() {
+}

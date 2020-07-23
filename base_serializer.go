@@ -75,7 +75,9 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 }
 
 func (baseSerializer *baseSerializer) sum(b []byte) []byte {
-	return baseSerializer.hashFunction.Sum(b)
+	hash := baseSerializer.hashFunction.Sum(b)
+	baseSerializer.hashFunction.Reset()
+	return hash
 }
 
 func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {

@@ -26,4 +26,7 @@ type IonHasher interface {
 	// Sum appends the current hash to b and returns the resulting slice.
 	// It does not change the underlying hash state.
 	Sum(b []byte) []byte
+
+	// Reset resets the Hash to its initial state.
+	Reset()
 }
