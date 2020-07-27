@@ -20,7 +20,7 @@ type defaultHasher struct {
 	provider     *testIonHasherProvider
 }
 
-func newDefaultIonHasher(algorithm algorithm, provider *testIonHasherProvider) (IonHasher, error) {
+func newDefaultIonHasher(algorithm Algorithm, provider *testIonHasherProvider) (IonHasher, error) {
 	cryptoHasher, err := newCryptoHasher(algorithm)
 	if err != nil {
 		return nil, &InvalidArgumentError{"algorithm", algorithm}

@@ -29,11 +29,11 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-type algorithm string
+type Algorithm string
 
 // Constants for each of the algorithm names supported.
 const (
-	MD4        algorithm = "MD4"
+	MD4        Algorithm = "MD4"
 	MD5                  = "MD5"
 	SHA1                 = "SHA1"
 	SHA224               = "SHA224"
@@ -57,7 +57,7 @@ type cryptoHasher struct {
 	hashAlgorithm hash.Hash
 }
 
-func newCryptoHasher(algorithm algorithm) (IonHasher, error) {
+func newCryptoHasher(algorithm Algorithm) (IonHasher, error) {
 	var hashAlgorithm hash.Hash
 
 	switch algorithm {
@@ -110,8 +110,7 @@ func (ch *cryptoHasher) Write(b []byte) (n int, err error) {
 }
 
 func (ch *cryptoHasher) Sum(b []byte) []byte {
-	hash := ch.hashAlgorithm.Sum(b)
-	return hash
+	return ch.hashAlgorithm.Sum(b)
 }
 
 func (ch *cryptoHasher) Reset() {
