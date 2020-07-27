@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package tools
+package main
 
 import (
 	"encoding/hex"
