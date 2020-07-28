@@ -1,0 +1,3 @@
+#!/bin/sh
+
+go run $(dirname "$0")/ion-hash.go $@
