@@ -16,6 +16,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
@@ -33,7 +34,7 @@ func check(e error) {
 }
 
 func main() {
-	if len(os.Args) < 4 {
+	if len(os.Args) < 3 {
 		fmt.Println("Utility that prints the Ion Hash of the top-level values in a file.")
 		fmt.Println()
 		fmt.Println("Usage:")
@@ -47,13 +48,8 @@ func main() {
 	algorithm := os.Args[1]
 	fileName := os.Args[2]
 
-	fmt.Println(algorithm)
-	fmt.Println(fileName)
-
 	data, err := ioutil.ReadFile(fileName)
 	check(err)
-	fmt.Println(data)
-
 
 	ionReader := ion.NewReaderBytes(data)
 	hashReader, err := ionhash.NewHashReader(ionReader, ionhash.NewCryptoHasherProvider(ionhash.Algorithm(strings.ToUpper(algorithm))))
@@ -64,7 +60,20 @@ func main() {
 		if err != nil {
 			fmt.Printf(`[unable to digest:%v]`, err)
 		} else {
-			fmt.Printf("%s", hex.Dump(digest))
+			fmt.Println(toHexString(digest))
 		}
 	}
+}
+
+func toHexString(b []byte) string {
+	s := hex.EncodeToString(b)
+
+	buffer := bytes.Buffer{}
+	for i, rune := range s {
+		buffer.WriteRune(rune)
+		if i % 2 == 1 {
+			buffer.WriteRune(' ')
+		}
+	}
+	return buffer.String()
 }
