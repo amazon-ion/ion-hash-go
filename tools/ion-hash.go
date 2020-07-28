@@ -47,8 +47,13 @@ func main() {
 	algorithm := os.Args[1]
 	fileName := os.Args[2]
 
+	fmt.Println(algorithm)
+	fmt.Println(fileName)
+
 	data, err := ioutil.ReadFile(fileName)
 	check(err)
+	fmt.Println(data)
+
 
 	ionReader := ion.NewReaderBytes(data)
 	hashReader, err := ionhash.NewHashReader(ionReader, ionhash.NewCryptoHasherProvider(ionhash.Algorithm(strings.ToUpper(algorithm))))
