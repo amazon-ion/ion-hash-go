@@ -33,7 +33,7 @@ func check(e error) {
 }
 
 func main() {
-	if len(os.Args) < 3 {
+	if len(os.Args) < 4 {
 		fmt.Println("Utility that prints the Ion Hash of the top-level values in a file.")
 		fmt.Println()
 		fmt.Println("Usage:")
