@@ -15,12 +15,15 @@
 
 package ionhash
 
+// defaultHasher computes the hash of the given algorithm and appends the hash to the provider hash logs.
+// Used for testing purposes only.
 type defaultHasher struct {
 	cryptoHasher IonHasher
 	provider     *testIonHasherProvider
 }
 
-func newDefaultIonHasher(algorithm Algorithm, provider *testIonHasherProvider) (IonHasher, error) {
+// newDefaultHasher returns a new defaultHasher. Returns an error if the algorithm argument is invalid.
+func newDefaultHasher(algorithm Algorithm, provider *testIonHasherProvider) (IonHasher, error) {
 	cryptoHasher, err := newCryptoHasher(algorithm)
 	if err != nil {
 		return nil, &InvalidArgumentError{"algorithm", algorithm}
@@ -28,17 +31,21 @@ func newDefaultIonHasher(algorithm Algorithm, provider *testIonHasherProvider) (
 	return &defaultHasher{cryptoHasher: cryptoHasher, provider: provider}, nil
 }
 
+// Write adds more data to the running hash and provider hash logs
 func (dh *defaultHasher) Write(b []byte) (n int, err error) {
 	dh.provider.updateHashLog = append(dh.provider.updateHashLog, b)
 	return dh.cryptoHasher.Write(b)
 }
 
+// Sum appends the current hash to b and provider hash logs and returns the resulting slice.
+// It does not change the underlying hash state.
 func (dh *defaultHasher) Sum(b []byte) []byte {
 	hash := dh.cryptoHasher.Sum(b)
 	dh.provider.digestHashLog = append(dh.provider.digestHashLog, hash)
 	return hash
 }
 
+// Reset resets the Hash to its initial state.
 func (dh *defaultHasher) Reset() {
 	dh.cryptoHasher.Reset()
 }
