@@ -164,7 +164,7 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 		return err
 	}
 
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 
 	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, token, false)
 	if err != nil {
@@ -201,7 +201,7 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 		var typeCode byte
 		if ionType <= ion.IntType {
 			// The Ion binary encodings of NoType, NullType, BoolType, and IntType
-			// differ from their enum values by one
+			// differ from their enum values by one.
 			typeCode = byte(ionType - 1)
 		} else {
 			typeCode = byte(ionType)
@@ -209,7 +209,7 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 
 		return []byte{(typeCode << 4) | 0x0F}, nil
 	} else if ionType == ion.FloatType && ionValue == 0 && int64(ionValue.(float64)) >= 0 {
-		// value is 0.0, not -0.0
+		// Value is 0.0, not -0.0.
 		return []byte{0x40}, nil
 	} else {
 		buf := bytes.Buffer{}
@@ -231,7 +231,7 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 
 func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 	if (bytes[0] & 0x0F) == 0x0E {
-		// read subsequent byte(s) as the "length" field
+		// Read subsequent byte(s) as the "length" field.
 		for i := 1; i < len(bytes); i++ {
 			if (bytes[i] & 0x80) != 0 {
 				return i, nil
@@ -254,28 +254,28 @@ func (baseSerializer *baseSerializer) scalarOrNullSplitParts(
 	offset++
 
 	if ionType == ion.IntType && len(bytes) > offset {
-		// ignore sign byte when the magnitude ends at byte boundary
+		// Ignore sign byte when the magnitude ends at byte boundary.
 		if (bytes[offset] & 0xFF) == 0 {
 			offset++
 		}
 	}
 
-	// the representation is everything after TL (first byte) and length
+	// The representation is everything after TL (first byte) and length.
 	representation := bytes[offset:]
 	tq := bytes[0]
 
 	if ionType == ion.SymbolType {
-		// symbols are serialized as strings; use the correct TQ:
+		// Symbols are serialized as strings; use the correct TQ:
 		tq = 0x70
 		if isNull {
 			tq = tq | 0x0F
 		}
 
-		// TODO: Add SymbolToken logic here once SymbolTokens are available
+		// TODO: Add SymbolToken logic here once SymbolTokens are available.
 
 	} else if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
-		// not a symbol, bool, or null value
-		// zero - out the L nibble
+		// Not a symbol, bool, or null value.
+		// Zero - out the L nibble.
 		tq = tq & 0xF0
 	}
 
@@ -299,8 +299,8 @@ func escape(bytes []byte) []byte {
 	for i := 0; i < len(bytes); i++ {
 		b := bytes[i]
 		if needsEscape(b) {
-			// found a byte that needs to be escaped; build a new byte array that
-			// escapes that byte as well as any others
+			// Found a byte that needs to be escaped; build a new byte array that
+			// escapes that byte as well as any others.
 			var escapedBytes []byte
 
 			for j := 0; j < len(bytes); j++ {
@@ -406,7 +406,7 @@ func compareBytes(bytes1, bytes2 []byte) int {
 	return len(bytes1) - len(bytes2)
 }
 
-// sortableBytes implements the sort.Interface so we can sort fieldHashes
+// sortableBytes implements the sort.Interface so we can sort fieldHashes.
 type sortableBytes [][]byte
 
 func (sb sortableBytes) Len() int {

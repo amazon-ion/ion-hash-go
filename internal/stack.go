@@ -20,7 +20,7 @@ import "errors"
 // Stack implementation used internally.
 type Stack []interface{}
 
-// IsEmpty returns `true` if stack is empty, false otherwise.
+// IsEmpty returns true if stack is empty, false otherwise.
 func (s *Stack) IsEmpty() bool {
 	return len(*s) == 0
 }
@@ -55,7 +55,7 @@ func (s *Stack) Peek() (interface{}, error) {
 	return element, nil
 }
 
-// Size returns the number of elements in the Stack
+// Size returns the number of elements in the Stack.
 func (s *Stack) Size() int {
 	return len(*s)
 }
