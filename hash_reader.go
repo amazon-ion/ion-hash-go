@@ -21,22 +21,71 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-// HashReader is meant to share the same methods as the ion.Reader and hashValue interfaces.
-// However embedding both ion.Reader and hashValue results in a duplicate method build error because both interfaces
-// have IsNull(), Type(), and IsInStruct() methods defined.
-// So we embed the ion.Reader interface and explicitly list the remaining hashValue methods to avoid the error.
-// HashReader also provides a Sum function which allows read access to the hash value held by this reader.
+// A HashReader reads a stream of Ion values and calculates the hash.
+//
+// The HashReader has a logical position within the stream of values, influencing the
+// values returned from its methods. Initially, the HashReader is positioned before the
+// first value in the stream. A call to Next advances the HashReader to the first value
+// in the stream, with subsequent calls advancing to subsequent values. When a call to
+// Next moves the HashReader to the position after the final value in the stream, it returns
+// false, making it easy to loop through the values in a stream.
+//
+// 	var r HashReader
+// 	for r.Next() {
+// 		// ...
+// 	}
+//
+// Next also returns false in case of error. This can be distinguished from a legitimate
+// end-of-stream by calling Err after exiting the loop.
+//
+// When positioned on an Ion value, the type of the value can be retrieved by calling
+// Type. If it has an associated field name (inside a struct) or annotations, they can
+// be read by calling FieldName and Annotations respectively.
+//
+// For atomic values, an appropriate XxxValue method can be called to read the value.
+// For lists, sexps, and structs, you should instead call StepIn to move the HashReader in
+// to the contained sequence of values. The HashReader will initially be positioned before
+// the first value in the container. Calling Next without calling StepIn will skip over
+// the composite value and return the next value in the outer value stream.
+//
+// At any point while reading through a composite value, including when Next returns false
+// to indicate the end of the contained values, you may call StepOut to move back to the
+// outer sequence of values. The HashReader will be positioned at the end of the composite value,
+// such that a call to Next will move to the immediately-following value (if any).
+//
+// Sum will return the hash of the entire stream of Ion values that have been looped through.
+//
+//  cryptoHasherProvider := NewCryptoHasherProvider(SHA256)
+// 	r := NewTextReaderStr("[foo, bar] [baz]")
+//  hr := NewHashReader(r, cryptoHasherProvider)
+// 	for hr.Next() {
+// 		if err := hr.StepIn(); err != nil {
+// 			return err
+// 		}
+// 		for hr.Next() {
+// 			fmt.Println(hr.StringValue())
+// 		}
+// 		if err := hr.StepOut(); err != nil {
+// 			return err
+// 		}
+// 	}
+// 	if err := hr.Err(); err != nil {
+// 		return err
+// 	}
+//
+//  fmt.Printf("%v", hr.sum(nil))
+//
 type HashReader interface {
 	// Embed interface of Ion reader.
 	ion.Reader
 
-	// Remaining hashValue methods.
+	// hashValue methods.
 	getFieldName() *string
 	getAnnotations() []string
 	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
-	// It does not change the underlying hash state.
+	// It resets the Hash to its initial state.
 	Sum(b []byte) ([]byte, error)
 }
 
@@ -47,7 +96,7 @@ type hashReader struct {
 	err         error
 }
 
-// NewHashReader takes an Ion reader and a hash provider and returns a new HashReader
+// NewHashReader takes an Ion reader and a hash provider and returns a new HashReader.
 func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) (HashReader, error) {
 	newHasher, err := newHasher(hasherProvider)
 	if err != nil {
@@ -57,95 +106,118 @@ func NewHashReader(ionReader ion.Reader, hasherProvider IonHasherProvider) (Hash
 	return &hashReader{ionReader: ionReader, hasher: *newHasher}, nil
 }
 
-func (hashReader *hashReader) SymbolTable() ion.SymbolTable {
-	return hashReader.ionReader.SymbolTable()
+// SymbolTable returns the current symbol table, or nil if there isn't one.
+// Text Readers do not, generally speaking, have an associated symbol table.
+// Binary Readers do.
+func (hr *hashReader) SymbolTable() ion.SymbolTable {
+	return hr.ionReader.SymbolTable()
 }
 
-func (hashReader *hashReader) Next() bool {
-	hashReader.err = nil
+// Next advances the Reader to the next position in the current value stream.
+// It returns true if this is the position of an Ion value, and false if it
+// is not. On error, it returns false and sets Err.
+func (hr *hashReader) Next() bool {
+	hr.err = nil
 
-	if hashReader.currentType != ion.NoType {
-		if ion.IsScalar(hashReader.currentType) || hashReader.IsNull() {
-			hashReader.err = hashReader.hasher.scalar(hashReader)
-			if hashReader.err != nil {
+	if hr.currentType != ion.NoType {
+		if ion.IsScalar(hr.currentType) || hr.IsNull() {
+			hr.err = hr.hasher.scalar(hr)
+			if hr.err != nil {
 				return false
 			}
 		} else {
-			hashReader.err = hashReader.StepIn()
-			if hashReader.err != nil {
+			hr.err = hr.StepIn()
+			if hr.err != nil {
 				return false
 			}
 
-			hashReader.err = hashReader.traverse()
-			if hashReader.err != nil {
+			hr.err = hr.traverse()
+			if hr.err != nil {
 				return false
 			}
 
-			hashReader.err = hashReader.StepOut()
-			if hashReader.err != nil {
+			hr.err = hr.StepOut()
+			if hr.err != nil {
 				return false
 			}
 		}
 	}
 
-	next := hashReader.ionReader.Next()
+	next := hr.ionReader.Next()
 	if !next {
-		hashReader.err = hashReader.ionReader.Err()
+		hr.err = hr.ionReader.Err()
 	}
 
-	hashReader.currentType = hashReader.ionReader.Type()
+	hr.currentType = hr.ionReader.Type()
 
 	return next
 }
 
-func (hashReader *hashReader) Err() error {
-	return hashReader.err
+// Err returns an error if a previous call call to Next has failed.
+func (hr *hashReader) Err() error {
+	return hr.err
 }
 
-func (hashReader *hashReader) Type() ion.Type {
-	return hashReader.ionReader.Type()
+// Type returns the type of the Ion value the Reader is currently positioned on.
+// It returns NoType if the Reader is positioned before or after a value.
+func (hr *hashReader) Type() ion.Type {
+	return hr.ionReader.Type()
 }
 
-func (hashReader *hashReader) IsNull() bool {
-	return hashReader.ionReader.IsNull()
+// IsNull returns true if the current value is an explicit null. This may be true
+// even if the Type is not NullType (for example, null.struct has type Struct). Yes,
+// that's a bit confusing.
+func (hr *hashReader) IsNull() bool {
+	return hr.ionReader.IsNull()
 }
 
-func (hashReader *hashReader) FieldName() *string {
-	return hashReader.ionReader.FieldName()
+// FieldName returns the field name associated with the current value. It returns
+// nil if there is no current value or the current value has no field name.
+func (hr *hashReader) FieldName() *string {
+	return hr.ionReader.FieldName()
 }
 
-func (hashReader *hashReader) Annotations() []string {
-	return hashReader.ionReader.Annotations()
+// Annotations returns the set of annotations associated with the current value.
+// It returns nil if there is no current value or the current value has no annotations.
+func (hr *hashReader) Annotations() []string {
+	return hr.ionReader.Annotations()
 }
 
-func (hashReader *hashReader) StepIn() error {
-	err := hashReader.hasher.stepIn(hashReader)
+// StepIn steps in to the current value if it is a container. It returns an error if there
+// is no current value or if the value is not a container. On success, the Reader is
+// positioned before the first value in the container.
+func (hr *hashReader) StepIn() error {
+	err := hr.hasher.stepIn(hr)
 	if err != nil {
 		return err
 	}
 
-	err = hashReader.ionReader.StepIn()
+	err = hr.ionReader.StepIn()
 	if err != nil {
 		return err
 	}
 
-	hashReader.currentType = ion.NoType
+	hr.currentType = ion.NoType
 
 	return nil
 }
 
-func (hashReader *hashReader) StepOut() error {
-	err := hashReader.traverse()
+// StepOut steps out of the current container value being read. It returns an error if
+// this Reader is not currently stepped in to a container. On success, the Reader is
+// positioned after the end of the container, but before any subsequent values in the
+// stream.
+func (hr *hashReader) StepOut() error {
+	err := hr.traverse()
 	if err != nil {
 		return err
 	}
 
-	err = hashReader.ionReader.StepOut()
+	err = hr.ionReader.StepOut()
 	if err != nil {
 		return err
 	}
 
-	err = hashReader.hasher.stepOut()
+	err = hr.hasher.stepOut()
 	if err != nil {
 		return err
 	}
@@ -153,132 +225,157 @@ func (hashReader *hashReader) StepOut() error {
 	return nil
 }
 
-func (hashReader *hashReader) BoolValue() (bool, error) {
-	return hashReader.ionReader.BoolValue()
+// BoolValue returns the current value as a boolean (if that makes sense). It returns
+// an error if the current value is not an Ion bool.
+func (hr *hashReader) BoolValue() (bool, error) {
+	return hr.ionReader.BoolValue()
 }
 
-func (hashReader *hashReader) IntSize() (ion.IntSize, error) {
-	return hashReader.ionReader.IntSize()
+// IntSize returns the size of integer needed to losslessly represent the current value
+// (if that makes sense). It returns an error if the current value is not an Ion int.
+func (hr *hashReader) IntSize() (ion.IntSize, error) {
+	return hr.ionReader.IntSize()
 }
 
-func (hashReader *hashReader) IntValue() (int, error) {
-	return hashReader.ionReader.IntValue()
+// IntValue returns the current value as a 32-bit integer (if that makes sense). It
+// returns an error if the current value is not an Ion integer or requires more than
+// 32 bits to represent losslessly.
+func (hr *hashReader) IntValue() (int, error) {
+	return hr.ionReader.IntValue()
 }
 
-func (hashReader *hashReader) Int64Value() (int64, error) {
-	return hashReader.ionReader.Int64Value()
+// Int64Value returns the current value as a 64-bit integer (if that makes sense). It
+// returns an error if the current value is not an Ion integer or requires more than
+// 64 bits to represent losslessly.
+func (hr *hashReader) Int64Value() (int64, error) {
+	return hr.ionReader.Int64Value()
 }
 
-func (hashReader *hashReader) Uint64Value() (uint64, error) {
-	return hashReader.ionReader.Uint64Value()
+// Uint64Value returns the current value as an unsigned 64-bit integer (if that makes
+// sense). It returns an error if the current value is not an Ion integer, is negative,
+// or requires more than 64 bits to represent losslessly.
+func (hr *hashReader) Uint64Value() (uint64, error) {
+	return hr.ionReader.Uint64Value()
 }
 
-func (hashReader *hashReader) BigIntValue() (*big.Int, error) {
-	return hashReader.ionReader.BigIntValue()
+// BigIntValue returns the current value as a big.Integer (if that makes sense). It
+// returns an error if the current value is not an Ion integer.
+func (hr *hashReader) BigIntValue() (*big.Int, error) {
+	return hr.ionReader.BigIntValue()
 }
 
-func (hashReader *hashReader) FloatValue() (float64, error) {
-	return hashReader.ionReader.FloatValue()
+// FloatValue returns the current value as a 64-bit floating point number (if that
+// makes sense). It returns an error if the current value is not an Ion float.
+func (hr *hashReader) FloatValue() (float64, error) {
+	return hr.ionReader.FloatValue()
 }
 
-func (hashReader *hashReader) DecimalValue() (*ion.Decimal, error) {
-	return hashReader.ionReader.DecimalValue()
+// DecimalValue returns the current value as an arbitrary-precision Decimal (if that
+// makes sense). It returns an error if the current value is not an Ion decimal.
+func (hr *hashReader) DecimalValue() (*ion.Decimal, error) {
+	return hr.ionReader.DecimalValue()
 }
 
-func (hashReader *hashReader) TimestampValue() (ion.Timestamp, error) {
-	return hashReader.ionReader.TimestampValue()
+// TimeValue returns the current value as a timestamp (if that makes sense). It returns
+// an error if the current value is not an Ion timestamp.
+func (hr *hashReader) TimestampValue() (ion.Timestamp, error) {
+	return hr.ionReader.TimestampValue()
 }
 
-func (hashReader *hashReader) StringValue() (string, error) {
-	return hashReader.ionReader.StringValue()
+// StringValue returns the current value as a string (if that makes sense). It returns
+// an error if the current value is not an Ion symbol or an Ion string.
+func (hr *hashReader) StringValue() (string, error) {
+	return hr.ionReader.StringValue()
 }
 
-func (hashReader *hashReader) ByteValue() ([]byte, error) {
-	return hashReader.ionReader.ByteValue()
+// ByteValue returns the current value as a byte slice (if that makes sense). It returns
+// an error if the current value is not an Ion clob or an Ion blob.
+func (hr *hashReader) ByteValue() ([]byte, error) {
+	return hr.ionReader.ByteValue()
 }
 
-func (hashReader *hashReader) Sum(b []byte) ([]byte, error) {
-	return hashReader.hasher.sum(b)
+func (hr *hashReader) Sum(b []byte) ([]byte, error) {
+	return hr.hasher.sum(b)
 }
 
-func (hashReader *hashReader) traverse() error {
-	for hashReader.Next() {
-		if ion.IsContainer(hashReader.currentType) && !hashReader.IsNull() {
-			err := hashReader.StepIn()
+func (hr *hashReader) traverse() error {
+	for hr.Next() {
+		if ion.IsContainer(hr.currentType) && !hr.IsNull() {
+			err := hr.StepIn()
 			if err != nil {
 				return err
 			}
 
-			err = hashReader.traverse()
+			err = hr.traverse()
 			if err != nil {
 				return err
 			}
 
-			err = hashReader.StepOut()
+			err = hr.StepOut()
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	return hashReader.Err()
+	return hr.Err()
 }
 
 // The following implements hashValue interface.
 
-func (hashReader *hashReader) getFieldName() *string {
-	return hashReader.FieldName()
+func (hr *hashReader) getFieldName() *string {
+	return hr.FieldName()
 }
 
-func (hashReader *hashReader) getAnnotations() []string {
-	return hashReader.Annotations()
+func (hr *hashReader) getAnnotations() []string {
+	return hr.Annotations()
 }
 
-func (hashReader *hashReader) value() (interface{}, error) {
-	switch hashReader.currentType {
+func (hr *hashReader) value() (interface{}, error) {
+	switch hr.currentType {
 	case ion.BoolType:
-		return hashReader.BoolValue()
+		return hr.BoolValue()
 	case ion.BlobType:
-		return hashReader.ionReader.ByteValue()
+		return hr.ionReader.ByteValue()
 	case ion.ClobType:
-		return hashReader.ionReader.ByteValue()
+		return hr.ionReader.ByteValue()
 	case ion.DecimalType:
-		return hashReader.DecimalValue()
+		return hr.DecimalValue()
 	case ion.FloatType:
-		return hashReader.FloatValue()
+		return hr.FloatValue()
 	case ion.IntType:
-		intSize, err := hashReader.IntSize()
+		intSize, err := hr.IntSize()
 		if err != nil {
 			return nil, err
 		}
 
 		switch intSize {
 		case ion.Int32:
-			return hashReader.IntValue()
+			return hr.IntValue()
 		case ion.Int64:
-			return hashReader.Int64Value()
+			return hr.Int64Value()
 		case ion.Uint64:
-			return hashReader.Uint64Value()
+			return hr.Uint64Value()
 		case ion.BigInt:
-			return hashReader.BigIntValue()
+			return hr.BigIntValue()
 		default:
 			return nil, &InvalidOperationError{
 				"hashReader", "value", "Expected intSize to be one of Int32, Int64, Uint64, or BigInt"}
 		}
 	case ion.StringType:
-		return hashReader.StringValue()
+		return hr.StringValue()
 	case ion.SymbolType:
-		return hashReader.StringValue()
+		return hr.StringValue()
 	case ion.TimestampType:
-		return hashReader.TimestampValue()
+		return hr.TimestampValue()
 	case ion.NoType:
 		return ion.NoType, nil
 	}
 
-	return nil, &InvalidIonTypeError{hashReader.currentType}
+	return nil, &InvalidIonTypeError{hr.currentType}
 }
 
-// IsInStruct implements both the ion.Reader and hashValue interfaces.
-func (hashReader *hashReader) IsInStruct() bool {
-	return hashReader.ionReader.IsInStruct()
+// IsInStruct indicates if the reader is currently positioned in a struct.
+func (hr *hashReader) IsInStruct() bool {
+	return hr.ionReader.IsInStruct()
 }

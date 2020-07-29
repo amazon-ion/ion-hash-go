@@ -16,12 +16,11 @@
 package ionhash
 
 import (
-	"io/ioutil"
-	"testing"
-
 	"github.com/amzn/ion-go/ion"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
+	"testing"
 )
 
 func TestEmptyString(t *testing.T) {
@@ -63,7 +62,6 @@ func TestTopLevelValues(t *testing.T) {
 
 		sum, err := ionHashReader.Sum(nil)
 		require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
-
 		assert.Equal(t, expectedSums[i], sum, "sum did not match expectation")
 	}
 }
