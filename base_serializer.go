@@ -230,15 +230,16 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 	bytes := buf.Bytes()[4:]
 
 	if ionType == ion.FloatType && len(bytes) == 5 {
-		// We got back a float32 but we want to hash it as a float64.
-		// So we will create and return the equivalent float64 bytes instead.
+		// As per the ion-hash spec (https://amzn.github.io/ion-hash/docs/spec.html#4-float),
+		// Floats are to be encoded in 64 bits (8 bytes) but we got back a 32 bit (4 byte) float.
+		// Let's create the data for the equivalent float64 instead.
 		float32bits := binary.BigEndian.Uint32(bytes[1:])
 		newFloat64 := float64(math.Float32frombits(float32bits))
+		float64Bits := math.Float64bits(newFloat64)
 
 		bytes = make([]byte, 9)
 		bytes[0] = 0x48
 
-		float64Bits := math.Float64bits(newFloat64)
 		binary.BigEndian.PutUint64(bytes[1:], float64Bits)
 	}
 
