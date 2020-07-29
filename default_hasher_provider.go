@@ -15,6 +15,8 @@
 
 package ionhash
 
+// defaultHasherProvider struct for default hasher provider.
+// Used for testing purposes only.
 type defaultHasherProvider struct {
 	IonHasherProvider
 
@@ -22,12 +24,14 @@ type defaultHasherProvider struct {
 	provider  *testIonHasherProvider
 }
 
+// newDefaultHasherProvider returns a new DefaultHasherProvider.
 func newDefaultHasherProvider(algo string, provider *testIonHasherProvider) *defaultHasherProvider {
 	return &defaultHasherProvider{algorithm: Algorithm(algo), provider: provider}
 }
 
+// NewHasher returns a new defaultHasher.
 func (dhp *defaultHasherProvider) NewHasher() (IonHasher, error) {
-	ionHasher, err := newDefaultIonHasher(dhp.algorithm, dhp.provider)
+	ionHasher, err := newDefaultHasher(dhp.algorithm, dhp.provider)
 	if err != nil {
 		return nil, err
 	}
