@@ -22,9 +22,6 @@ type hashValue interface {
 
 	getAnnotations() []string
 
-	// SymbolTokens are not available right now.
-	//fieldNameSymbol() ion.FieldNameSymbol
-
 	IsNull() bool
 
 	Type() ion.Type
