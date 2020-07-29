@@ -20,33 +20,33 @@ import "errors"
 // Stack implementation used internally.
 type Stack []interface{}
 
-// IsEmpty returns true if stack is empty, false otherwise.
+// IsEmpty returns true if the stack is empty, false otherwise.
 func (s *Stack) IsEmpty() bool {
 	return len(*s) == 0
 }
 
-// Push element into Stack.
+// Push element into the stack.
 func (s *Stack) Push(element interface{}) {
 	*s = append(*s, element)
 }
 
-// Pop removes and returns the top element of the Stack. Returns an error if the Stack is empty.
+// Pop removes and returns the top element of the stack. Returns an error if the stack is empty.
 func (s *Stack) Pop() (interface{}, error) {
 	if s.IsEmpty() {
-		return nil, errors.New("Pop() called on an empty Stack")
+		return nil, errors.New("pop function called on an empty stack")
 	}
 
 	index := len(*s) - 1   // Get the index of the top most element.
 	element := (*s)[index] // Index into the slice and obtain the element.
-	*s = (*s)[:index]      // Remove it from the Stack by slicing it off.
+	*s = (*s)[:index]      // Remove it from the stack by slicing it off.
 
 	return element, nil
 }
 
-// Peek returns the top element of the Stack. Returns an error if the Stack is empty.
+// Peek returns the top element of the stack. Returns an error if the stack is empty.
 func (s *Stack) Peek() (interface{}, error) {
 	if s.IsEmpty() {
-		return nil, errors.New("Peek() called on an empty Stack")
+		return nil, errors.New("peek function called on an empty stack")
 	}
 
 	index := len(*s) - 1   // Get the index of the top most element.
