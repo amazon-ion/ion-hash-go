@@ -57,7 +57,7 @@ func (structSerializer *structSerializer) scalar(ionValue interface{}) error {
 }
 
 func (structSerializer *structSerializer) stepOut() error {
-	// Sort fieldHashes using the sortableBytes sorting interface
+	// Sort fieldHashes using the sortableBytes sorting interface.
 	sort.Sort(sortableBytes(structSerializer.fieldHashes))
 
 	for _, digest := range structSerializer.fieldHashes {

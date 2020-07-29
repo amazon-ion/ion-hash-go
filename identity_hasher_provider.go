@@ -15,16 +15,20 @@
 
 package ionhash
 
+// identityHasherProvider struct for identity hasher provider.
+// Used for testing purposes only.
 type identityHasherProvider struct {
 	IonHasherProvider
 
 	provider *testIonHasherProvider
 }
 
+// newIdentityHasherProvider returns a new identityHasherProvider.
 func newIdentityHasherProvider(provider *testIonHasherProvider) *identityHasherProvider {
 	return &identityHasherProvider{provider: provider}
 }
 
+// NewHasher returns a new identityHasher.
 func (ihp *identityHasherProvider) NewHasher() (IonHasher, error) {
 	return newIdentityIonHasher(ihp.provider), nil
 }

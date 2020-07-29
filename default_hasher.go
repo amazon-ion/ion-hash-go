@@ -31,13 +31,13 @@ func newDefaultHasher(algorithm Algorithm, provider *testIonHasherProvider) (Ion
 	return &defaultHasher{cryptoHasher: cryptoHasher, provider: provider}, nil
 }
 
-// Write adds more data to the running hash and provider hash logs
+// Write adds more data to the running hash and appends to provider updateHashlog.
 func (dh *defaultHasher) Write(b []byte) (n int, err error) {
 	dh.provider.updateHashLog = append(dh.provider.updateHashLog, b)
 	return dh.cryptoHasher.Write(b)
 }
 
-// Sum appends the current hash to b and provider hash logs and returns the resulting slice.
+// Sum appends the current hash to b and provider digestHashlog, and returns the resulting slice.
 // It does not change the underlying hash state.
 func (dh *defaultHasher) Sum(b []byte) []byte {
 	hash := dh.cryptoHasher.Sum(b)
