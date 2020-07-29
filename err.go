@@ -46,7 +46,7 @@ func (e *InvalidArgumentError) Error() string {
 	return fmt.Sprintf(`ionhash: Invalid value: "%v" specified for argument: %s`, e.argumentValue, e.argumentName)
 }
 
-// An InvalidIonTypeError is returned when processing an unexpected ion type.
+// InvalidIonTypeError is returned when processing an unexpected Ion type.
 type InvalidIonTypeError struct {
 	ionType ion.Type
 }
@@ -55,7 +55,7 @@ func (e *InvalidIonTypeError) Error() string {
 	return fmt.Sprintf(`ionhash: Invalid Ion type: %s`, e.ionType.String())
 }
 
-// An UnknownSymbolError is returned when processing an unknown field name symbol.
+// UnknownSymbolError is returned when processing an unknown field name symbol.
 type UnknownSymbolError struct {
 	sid int
 }
