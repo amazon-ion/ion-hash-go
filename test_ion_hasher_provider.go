@@ -17,16 +17,20 @@ package ionhash
 
 import "strings"
 
+// testIonHasherProvider struct for test Ion hasher provider.
+// Used for testing purposes only.
 type testIonHasherProvider struct {
 	algorithm     string
 	updateHashLog [][]byte
 	digestHashLog [][]byte
 }
 
+// newTestIonHasherProvider returns a new testIonHasherProvider.
 func newTestIonHasherProvider(algorithm string) *testIonHasherProvider {
 	return &testIonHasherProvider{algorithm: algorithm}
 }
 
+// getInstance returns either an identityHasherProvider or defaultHasherProvider depending on the algorithm.
 func (tiop *testIonHasherProvider) getInstance() IonHasherProvider {
 	if tiop.algorithm == "identity" {
 		return newIdentityHasherProvider(tiop)
@@ -34,14 +38,17 @@ func (tiop *testIonHasherProvider) getInstance() IonHasherProvider {
 	return newDefaultHasherProvider(strings.ToUpper(tiop.algorithm), tiop)
 }
 
+// getUpdateHashlog returns the updateHashLog.
 func (tiop *testIonHasherProvider) getUpdateHashLog() [][]byte {
 	return tiop.updateHashLog
 }
 
+// getDigestHashLog returns the digestHashLog.
 func (tiop *testIonHasherProvider) getDigestHashLog() [][]byte {
 	return tiop.digestHashLog
 }
 
+// getFinalDigestHashLog returns the last value in the digestHashLog.
 func (tiop *testIonHasherProvider) getFinalDigestHashLog() []byte {
 	return tiop.digestHashLog[len(tiop.digestHashLog)-1]
 }
