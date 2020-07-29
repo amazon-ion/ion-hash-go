@@ -99,7 +99,8 @@ var scalarTests = []struct {
 	},
 	{
 		ion.TimestampType,
-		ion.NewTimestamp(time.Date(1941, time.December, 7, 18, 0, 0, 0, time.UTC), ion.Second, ion.UTC),
+		ion.NewTimestamp(time.Date(1941, time.December, 7, 18, 0, 0, 0, time.UTC),
+			ion.TimestampPrecisionSecond, ion.TimezoneUTC),
 		[]byte{0x0b, 0x60, 0x80, 0x0f, 0x95, 0x8c, 0x87, 0x92, 0x80, 0x80, 0x0e},
 		"1941-12-07T18:00:00Z",
 	},
