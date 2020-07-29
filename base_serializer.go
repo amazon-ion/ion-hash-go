@@ -25,20 +25,20 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-// Holds the commonalities between scalar and struct serializers.
+// baseSerializer holds the commonalities between scalar and struct serializers.
 type baseSerializer struct {
 	hashFunction           IonHasher
 	depth                  int
 	hasContainerAnnotation bool
 }
 
-func (baseSerializer *baseSerializer) stepOut() error {
-	err := baseSerializer.endMarker()
+func (bs *baseSerializer) stepOut() error {
+	err := bs.endMarker()
 	if err != nil {
 		return err
 	}
 
-	err = baseSerializer.handleAnnotationsEnd(nil, true)
+	err = bs.handleAnnotationsEnd(nil, true)
 	if err != nil {
 		return err
 	}
@@ -46,18 +46,18 @@ func (baseSerializer *baseSerializer) stepOut() error {
 	return nil
 }
 
-func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
-	err := baseSerializer.handleFieldName(ionValue)
+func (bs *baseSerializer) stepIn(ionValue hashValue) error {
+	err := bs.handleFieldName(ionValue)
 	if err != nil {
 		return err
 	}
 
-	err = baseSerializer.handleAnnotationsBegin(ionValue, true)
+	err = bs.handleAnnotationsBegin(ionValue, true)
 	if err != nil {
 		return err
 	}
 
-	err = baseSerializer.beginMarker()
+	err = bs.beginMarker()
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 		tq = tq | 0x0F
 	}
 
-	err = baseSerializer.write([]byte{tq})
+	err = bs.write([]byte{tq})
 	if err != nil {
 		return err
 	}
@@ -75,121 +75,121 @@ func (baseSerializer *baseSerializer) stepIn(ionValue hashValue) error {
 	return nil
 }
 
-func (baseSerializer *baseSerializer) sum(b []byte) []byte {
-	hash := baseSerializer.hashFunction.Sum(b)
-	baseSerializer.hashFunction.Reset()
+func (bs *baseSerializer) sum(b []byte) []byte {
+	hash := bs.hashFunction.Sum(b)
+	bs.hashFunction.Reset()
 	return hash
 }
 
-func (baseSerializer *baseSerializer) handleFieldName(ionValue hashValue) error {
-	if baseSerializer.depth > 0 && ionValue.IsInStruct() {
+func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
+	if bs.depth > 0 && ionValue.IsInStruct() {
 		fieldName := ionValue.getFieldName()
 
-		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available
+		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available.
 
 		if fieldName != nil {
-			return baseSerializer.writeSymbol(*fieldName)
+			return bs.writeSymbol(*fieldName)
 		}
 	}
 
 	return nil
 }
 
-func (baseSerializer *baseSerializer) write(bytes []byte) error {
-	_, err := baseSerializer.hashFunction.Write(bytes)
+func (bs *baseSerializer) write(bytes []byte) error {
+	_, err := bs.hashFunction.Write(bytes)
 	return err
 }
 
-func (baseSerializer *baseSerializer) beginMarker() error {
-	_, err := baseSerializer.hashFunction.Write([]byte{beginMarkerByte})
+func (bs *baseSerializer) beginMarker() error {
+	_, err := bs.hashFunction.Write([]byte{beginMarkerByte})
 	return err
 }
 
-func (baseSerializer *baseSerializer) endMarker() error {
-	_, err := baseSerializer.hashFunction.Write([]byte{endMarkerByte})
+func (bs *baseSerializer) endMarker() error {
+	_, err := bs.hashFunction.Write([]byte{endMarkerByte})
 	return err
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer bool) error {
+func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer bool) error {
 	if ionValue == nil {
 		return &InvalidArgumentError{"ionValue", ionValue}
 	}
 
 	annotations := ionValue.getAnnotations()
 	if len(annotations) > 0 {
-		err := baseSerializer.beginMarker()
+		err := bs.beginMarker()
 		if err != nil {
 			return err
 		}
 
-		err = baseSerializer.write([]byte{tqValue})
+		err = bs.write([]byte{tqValue})
 		if err != nil {
 			return err
 		}
 
 		for _, annotation := range annotations {
-			err = baseSerializer.writeSymbol(annotation)
+			err = bs.writeSymbol(annotation)
 			if err != nil {
 				return err
 			}
 		}
 
 		if isContainer {
-			baseSerializer.hasContainerAnnotation = true
+			bs.hasContainerAnnotation = true
 		}
 	}
 
 	return nil
 }
 
-func (baseSerializer *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) error {
+func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) error {
 	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) ||
-		(isContainer && baseSerializer.hasContainerAnnotation) {
+		(isContainer && bs.hasContainerAnnotation) {
 
-		err := baseSerializer.endMarker()
+		err := bs.endMarker()
 		if err != nil {
 			return err
 		}
 
 		if isContainer {
-			baseSerializer.hasContainerAnnotation = false
+			bs.hasContainerAnnotation = false
 		}
 	}
 
 	return nil
 }
 
-func (baseSerializer *baseSerializer) writeSymbol(token string) error {
-	err := baseSerializer.beginMarker()
+func (bs *baseSerializer) writeSymbol(token string) error {
+	err := bs.beginMarker()
 	if err != nil {
 		return err
 	}
 
 	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 
-	scalarBytes, err := baseSerializer.getBytes(ion.SymbolType, token, false)
+	scalarBytes, err := bs.getBytes(ion.SymbolType, token, false)
 	if err != nil {
 		return err
 	}
 
-	tq, representation, err := baseSerializer.scalarOrNullSplitParts(ion.SymbolType, false, scalarBytes)
+	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, false, scalarBytes)
 	if err != nil {
 		return err
 	}
 
-	err = baseSerializer.write([]byte{tq})
+	err = bs.write([]byte{tq})
 	if err != nil {
 		return err
 	}
 
 	if len(representation) > 0 {
-		err = baseSerializer.write(escape(representation))
+		err = bs.write(escape(representation))
 		if err != nil {
 			return err
 		}
 	}
 
-	err = baseSerializer.endMarker()
+	err = bs.endMarker()
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,7 @@ func (baseSerializer *baseSerializer) writeSymbol(token string) error {
 	return nil
 }
 
-func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
+func (bs *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error) {
 	if isNull {
 		var typeCode byte
 		if ionType <= ion.IntType {
@@ -246,7 +246,7 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 	return bytes, nil
 }
 
-func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
+func (bs *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 	if (bytes[0] & 0x0F) == 0x0E {
 		// Read subsequent byte(s) as the "length" field.
 		for i := 1; i < len(bytes); i++ {
@@ -261,10 +261,10 @@ func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, e
 	return 0, nil
 }
 
-func (baseSerializer *baseSerializer) scalarOrNullSplitParts(
+func (bs *baseSerializer) scalarOrNullSplitParts(
 	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
 
-	offset, err := baseSerializer.getLengthFieldLength(bytes)
+	offset, err := bs.getLengthFieldLength(bytes)
 	if err != nil {
 		return byte(0), nil, err
 	}
