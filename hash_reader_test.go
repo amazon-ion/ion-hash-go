@@ -16,11 +16,12 @@
 package ionhash
 
 import (
+	"io/ioutil"
+	"testing"
+
 	"github.com/amzn/ion-go/ion"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
-	"testing"
 )
 
 func TestEmptyString(t *testing.T) {

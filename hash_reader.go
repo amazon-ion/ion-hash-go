@@ -166,8 +166,7 @@ func (hr *hashReader) Type() ion.Type {
 }
 
 // IsNull returns true if the current value is an explicit null. This may be true
-// even if the Type is not NullType (for example, null.struct has type Struct). Yes,
-// that's a bit confusing.
+// even if the Type is not NullType (for example, null.struct has type Struct).
 func (hr *hashReader) IsNull() bool {
 	return hr.ionReader.IsNull()
 }
@@ -295,6 +294,8 @@ func (hr *hashReader) ByteValue() ([]byte, error) {
 	return hr.ionReader.ByteValue()
 }
 
+// Sum appends the current hash to b and returns the resulting slice.
+// It resets the Hash to its initial state.
 func (hr *hashReader) Sum(b []byte) ([]byte, error) {
 	return hr.hasher.sum(b)
 }
