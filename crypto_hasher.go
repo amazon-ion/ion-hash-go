@@ -53,10 +53,12 @@ const (
 	BLAKE2b512           = "BLAKE2b_512"
 )
 
+// cryptoHasher computes the hash of the given algorithm.
 type cryptoHasher struct {
 	hashAlgorithm hash.Hash
 }
 
+// newCryptoHasher returns a new cryptoHasher. Returns an error if the algorithm argument is invalid.
 func newCryptoHasher(algorithm Algorithm) (IonHasher, error) {
 	var hashAlgorithm hash.Hash
 
@@ -105,14 +107,18 @@ func newCryptoHasher(algorithm Algorithm) (IonHasher, error) {
 	return ch, nil
 }
 
+// Write adds more data to the running hash.
 func (ch *cryptoHasher) Write(b []byte) (n int, err error) {
 	return ch.hashAlgorithm.Write(b)
 }
 
+// Sum appends the current hash to b and returns the resulting slice.
+// It does not change the underlying hash state.
 func (ch *cryptoHasher) Sum(b []byte) []byte {
 	return ch.hashAlgorithm.Sum(b)
 }
 
+// Reset resets the Hash to its initial state.
 func (ch *cryptoHasher) Reset() {
 	ch.hashAlgorithm.Reset()
 }
