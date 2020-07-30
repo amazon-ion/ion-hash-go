@@ -16,8 +16,9 @@
 package ionhash
 
 import (
-	"github.com/amzn/ion-go/ion"
 	"math/big"
+
+	"github.com/amzn/ion-go/ion"
 )
 
 // A HashReader reads a stream of Ion values and calculates its hash.
