@@ -29,6 +29,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// Algorithm is the name of the hash algorithm used to calculate the hash.
 type Algorithm string
 
 // Constants for each of the algorithm names supported.

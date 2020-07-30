@@ -73,7 +73,7 @@ func toHexString(b []byte) string {
 	buffer := bytes.Buffer{}
 	for i, rune := range s {
 		buffer.WriteRune(rune)
-		if i % 2 == 1 {
+		if i%2 == 1 {
 			buffer.WriteRune(' ')
 		}
 	}
