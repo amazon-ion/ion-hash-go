@@ -27,13 +27,12 @@ func newIdentityIonHasher(provider *testIonHasherProvider) IonHasher {
 }
 
 func (ih *identityHasher) Write(bytes []byte) (int, error) {
-	for _, b := range bytes {
-		ih.identityHash = append(ih.identityHash, b)
-	}
+	ih.identityHash = append(ih.identityHash, bytes...)
 
 	if bytes != nil {
 		ih.provider.updateHashLog = append(ih.provider.updateHashLog, bytes)
 	}
+
 	return len(bytes), nil
 }
 

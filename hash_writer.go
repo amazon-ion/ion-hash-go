@@ -17,7 +17,6 @@ package ionhash
 
 import (
 	"math/big"
-	"time"
 
 	"github.com/amzn/ion-go/ion"
 )
@@ -143,7 +142,7 @@ func (hashWriter *hashWriter) WriteDecimal(val *ion.Decimal) error {
 	return hashWriter.ionWriter.WriteDecimal(val)
 }
 
-func (hashWriter *hashWriter) WriteTimestamp(val time.Time) error {
+func (hashWriter *hashWriter) WriteTimestamp(val ion.Timestamp) error {
 	err := hashWriter.hashScalar(ion.TimestampType, val)
 	if err != nil {
 		return err

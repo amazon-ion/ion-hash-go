@@ -158,10 +158,10 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 
 	writeFromReaderToWriter(t, reader, ionHashWriter)
 
-	actual, err := ionHashWriter.Sum(nil)
+	actualBytes, err := ionHashWriter.Sum(nil)
 	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
-	assert.Equal(t, actual, expectedBytes, "sum did not match expectation")
+	assert.Equal(t, expectedBytes, actualBytes, "sum did not match expectation")
 
 	assert.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
 
@@ -193,7 +193,7 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 		assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
 	}
 
-	actualBytes, err := ionHashReader.Sum(nil)
+	actualBytes, err = ionHashReader.Sum(nil)
 	require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
 
 	assert.Equal(t, expectedBytes, actualBytes, "sum did not match expectation")
