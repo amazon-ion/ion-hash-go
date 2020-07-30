@@ -17,7 +17,6 @@ package ionhash
 
 import (
 	"math/big"
-	"time"
 
 	"github.com/amzn/ion-go/ion"
 )
@@ -186,8 +185,8 @@ func (hashReader *hashReader) DecimalValue() (*ion.Decimal, error) {
 	return hashReader.ionReader.DecimalValue()
 }
 
-func (hashReader *hashReader) TimeValue() (time.Time, error) {
-	return hashReader.ionReader.TimeValue()
+func (hashReader *hashReader) TimestampValue() (ion.Timestamp, error) {
+	return hashReader.ionReader.TimestampValue()
 }
 
 func (hashReader *hashReader) StringValue() (string, error) {
@@ -271,7 +270,7 @@ func (hashReader *hashReader) value() (interface{}, error) {
 	case ion.SymbolType:
 		return hashReader.StringValue()
 	case ion.TimestampType:
-		return hashReader.TimeValue()
+		return hashReader.TimestampValue()
 	case ion.NoType:
 		return ion.NoType, nil
 	}

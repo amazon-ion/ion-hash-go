@@ -99,7 +99,8 @@ var scalarTests = []struct {
 	},
 	{
 		ion.TimestampType,
-		time.Date(1941, time.December, 7, 18, 0, 0, 0, time.UTC),
+		ion.NewTimestamp(time.Date(1941, time.December, 7, 18, 0, 0, 0, time.UTC),
+			ion.TimestampPrecisionSecond, ion.TimezoneUTC),
 		[]byte{0x0b, 0x60, 0x80, 0x0f, 0x95, 0x8c, 0x87, 0x92, 0x80, 0x80, 0x0e},
 		"1941-12-07T18:00:00Z",
 	},
@@ -199,8 +200,8 @@ func TestWriteScalars(t *testing.T) {
 			assert.NoError(t, ionHashWriter.WriteDecimal(dec),
 				"Something went wrong executing ionHashWriter.WriteDecimal(dec)")
 		case ion.TimestampType:
-			assert.NoError(t, ionHashWriter.WriteTimestamp(test.value.(time.Time)),
-				"Something went wrong executing ionHashWriter.WriteTimestamp(time.Date(...))")
+			assert.NoError(t, ionHashWriter.WriteTimestamp(test.value.(ion.Timestamp)),
+				"Something went wrong executing ionHashWriter.WriteTimestamp(...)")
 		case ion.SymbolType:
 			assert.NoErrorf(t, ionHashWriter.WriteSymbol(test.value.(string)),
 				"Something went wrong executing ionHashWriter.WriteSymbol(\"%s\")", test.String)
