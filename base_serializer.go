@@ -17,9 +17,10 @@ package ionhash
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
+	"math"
 	"math/big"
-	"time"
 
 	"github.com/amzn/ion-go/ion"
 )
@@ -211,22 +212,38 @@ func (baseSerializer *baseSerializer) getBytes(ionType ion.Type, ionValue interf
 	} else if ionType == ion.FloatType && ionValue == 0 && int64(ionValue.(float64)) >= 0 {
 		// value is 0.0, not -0.0
 		return []byte{0x40}, nil
-	} else {
-		buf := bytes.Buffer{}
-		writer := ion.NewBinaryWriter(&buf)
-
-		err := serializers(ionType, ionValue, writer)
-		if err != nil {
-			return nil, err
-		}
-
-		err = writer.Finish()
-		if err != nil {
-			return nil, err
-		}
-
-		return buf.Bytes()[4:], nil
 	}
+
+	buf := bytes.Buffer{}
+	writer := ion.NewBinaryWriter(&buf)
+
+	err := serializers(ionType, ionValue, writer)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writer.Finish()
+	if err != nil {
+		return nil, err
+	}
+
+	bytes := buf.Bytes()[4:]
+
+	if ionType == ion.FloatType && len(bytes) == 5 {
+		// As per the ion-hash spec (https://amzn.github.io/ion-hash/docs/spec.html#4-float),
+		// Floats are to be encoded in 64 bits (8 bytes) but we got back a 32 bit (4 byte) float.
+		// Let's create the data for the equivalent float64 instead.
+		float32bits := binary.BigEndian.Uint32(bytes[1:])
+		newFloat64 := float64(math.Float32frombits(float32bits))
+		float64Bits := math.Float64bits(newFloat64)
+
+		bytes = make([]byte, 9)
+		bytes[0] = 0x48
+
+		binary.BigEndian.PutUint64(bytes[1:], float64Bits)
+	}
+
+	return bytes, nil
 }
 
 func (baseSerializer *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
@@ -381,7 +398,7 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 
 		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.TimestampType:
-		return writer.WriteTimestamp(ionValue.(time.Time))
+		return writer.WriteTimestamp(ionValue.(ion.Timestamp))
 	case ion.NullType:
 		return writer.WriteNull()
 	}
