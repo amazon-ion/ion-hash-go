@@ -18,12 +18,12 @@ package ionhash
 type defaultHasherProvider struct {
 	IonHasherProvider
 
-	algorithm algorithm
+	algorithm Algorithm
 	provider  *testIonHasherProvider
 }
 
 func newDefaultHasherProvider(algo string, provider *testIonHasherProvider) *defaultHasherProvider {
-	return &defaultHasherProvider{algorithm: algorithm(algo), provider: provider}
+	return &defaultHasherProvider{algorithm: Algorithm(algo), provider: provider}
 }
 
 func (dhp *defaultHasherProvider) NewHasher() (IonHasher, error) {
