@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/amzn/ion-go/ion"
-	"github.com/amzn/ion-hash-go"
+	ionhash "github.com/amzn/ion-hash-go"
 )
 
 func check(e error) {
