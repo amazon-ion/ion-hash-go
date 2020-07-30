@@ -21,59 +21,59 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-// A HashReader reads a stream of Ion values and calculates the hash.
+// A HashReader reads a stream of Ion values and calculates its hash.
 //
 // The HashReader has a logical position within the stream of values, influencing the
 // values returned from its methods. Initially, the HashReader is positioned before the
 // first value in the stream. A call to Next advances the HashReader to the first value
 // in the stream, with subsequent calls advancing to subsequent values. When a call to
 // Next moves the HashReader to the position after the final value in the stream, it returns
-// false, making it easy to loop through the values in a stream.
+// false, making it easy to loop through the values in a stream. e.g.,
 //
-// 	var r HashReader
-// 	for r.Next() {
-// 		// ...
-// 	}
+// 	   var r HashReader
+// 	   for r.Next() {
+// 		   // ...
+// 	   }
 //
 // Next also returns false in case of error. This can be distinguished from a legitimate
-// end-of-stream by calling Err after exiting the loop.
+// end-of-stream by calling HashReader.Err after exiting the loop.
 //
 // When positioned on an Ion value, the type of the value can be retrieved by calling
-// Type. If it has an associated field name (inside a struct) or annotations, they can
-// be read by calling FieldName and Annotations respectively.
+// HashReader.Type. If it has an associated field name (inside a struct) or annotations, they can
+// be read by calling HashReader.FieldName and HashReader.Annotations respectively.
 //
 // For atomic values, an appropriate XxxValue method can be called to read the value.
-// For lists, sexps, and structs, you should instead call StepIn to move the HashReader in
+// For lists, sexps, and structs, you should instead call HashReader.StepIn to move the HashReader in
 // to the contained sequence of values. The HashReader will initially be positioned before
-// the first value in the container. Calling Next without calling StepIn will skip over
+// the first value in the container. Calling HashReader.Next without calling HashReader.StepIn will skip over
 // the composite value and return the next value in the outer value stream.
 //
-// At any point while reading through a composite value, including when Next returns false
-// to indicate the end of the contained values, you may call StepOut to move back to the
+// At any point while reading through a composite value, including when HashReader.Next returns false
+// to indicate the end of the contained values, you may call HashReader.StepOut to move back to the
 // outer sequence of values. The HashReader will be positioned at the end of the composite value,
-// such that a call to Next will move to the immediately-following value (if any).
+// such that a call to HashReader.Next will move to the immediately-following value (if any).
 //
-// Sum will return the hash of the entire stream of Ion values that have been looped through.
+// HashReader.Sum will return the hash of the entire stream of Ion values that have been seen thus far, e.g.,
 //
-//  cryptoHasherProvider := NewCryptoHasherProvider(SHA256)
-// 	r := NewTextReaderStr("[foo, bar] [baz]")
-//  hr := NewHashReader(r, cryptoHasherProvider)
-// 	for hr.Next() {
-// 		if err := hr.StepIn(); err != nil {
-// 			return err
-// 		}
-// 		for hr.Next() {
-// 			fmt.Println(hr.StringValue())
-// 		}
-// 		if err := hr.StepOut(); err != nil {
-// 			return err
-// 		}
-// 	}
-// 	if err := hr.Err(); err != nil {
-// 		return err
-// 	}
+//     cryptoHasherProvider := NewCryptoHasherProvider(SHA256)
+// 	   r := NewTextReaderStr("[foo, bar] [baz]")
+//     hr := NewHashReader(r, cryptoHasherProvider)
+// 	   for hr.Next() {
+// 		   if err := hr.StepIn(); err != nil {
+// 			   return err
+// 		   }
+// 		   for hr.Next() {
+// 			   fmt.Println(hr.StringValue())
+// 		   }
+// 		   if err := hr.StepOut(); err != nil {
+// 			   return err
+// 		   }
+// 	   }
+// 	   if err := hr.Err(); err != nil {
+// 		   return err
+// 	   }
 //
-//  fmt.Printf("%v", hr.sum(nil))
+//     fmt.Printf("%v", hr.Sum(nil))
 //
 type HashReader interface {
 	// Embed interface of Ion reader.
@@ -153,7 +153,7 @@ func (hr *hashReader) Next() bool {
 	return next
 }
 
-// Err returns an error if a previous call call to Next has failed.
+// Err returns an error if a previous call to Next failed.
 func (hr *hashReader) Err() error {
 	return hr.err
 }
@@ -170,7 +170,7 @@ func (hr *hashReader) IsNull() bool {
 	return hr.ionReader.IsNull()
 }
 
-// FieldName returns the field name associated with the current value. It returns
+// FieldName returns the field name associated with the current value as a pointer. It returns
 // nil if there is no current value or the current value has no field name.
 func (hr *hashReader) FieldName() *string {
 	return hr.ionReader.FieldName()

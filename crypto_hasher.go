@@ -29,7 +29,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-// Algorithm is the hash algorithm to calculate the hash.
+// Algorithm is the name of the hash algorithm used to calculate the hash.
 type Algorithm string
 
 // Constants for each of the algorithm names supported.
@@ -54,12 +54,13 @@ const (
 	BLAKE2b512           = "BLAKE2b_512"
 )
 
-// cryptoHasher computes the hash of the given algorithm.
+// cryptoHasher computes the hash using given algorithm.
 type cryptoHasher struct {
 	hashAlgorithm hash.Hash
 }
 
-// newCryptoHasher returns a new cryptoHasher. Returns an error if the algorithm argument is invalid.
+// newCryptoHasher returns a new cryptoHasher. Returns an error if the algorithm name provided is unknown.
+// Here is a list of available hash functions: https://golang.org/pkg/crypto/#Hash.
 func newCryptoHasher(algorithm Algorithm) (IonHasher, error) {
 	var hashAlgorithm hash.Hash
 
