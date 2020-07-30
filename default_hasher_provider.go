@@ -24,7 +24,6 @@ type defaultHasherProvider struct {
 	provider  *testIonHasherProvider
 }
 
-// newDefaultHasherProvider returns a new DefaultHasherProvider.
 func newDefaultHasherProvider(algo string, provider *testIonHasherProvider) *defaultHasherProvider {
 	return &defaultHasherProvider{algorithm: Algorithm(algo), provider: provider}
 }

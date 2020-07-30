@@ -372,7 +372,7 @@ func TestIonWriterContractWriteValues(t *testing.T) {
 func TestWriterUnresolvedSid(t *testing.T) {
 	t.Skip() // Skipping test until test is implemented once SymbolToken is available
 
-	// TODO: Implement test once SymbolToken is available
+	// TODO: Implement test once SymbolToken is available.
 }
 
 func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, function writeFunction) []byte {

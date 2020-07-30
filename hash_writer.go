@@ -22,36 +22,36 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-// A HashWriter writes a stream of Ion values and calculates the hash.
+// A HashWriter writes a stream of Ion values and calculates its hash.
 //
-// The various Write methods write atomic values to the current output stream. The
-// Begin methods begin writing a list, sexp, or struct respectively. Subsequent
+// The various Write methods write atomic values to the current output stream. Methods
+// prefixed with Begin start writing a list, sexp, or struct respectively. Subsequent
 // calls to Write will write values inside of the container until a matching
-// End method is called.
+// End method is called, e.g.,
 //
-// 	var hw HashWriter
-// 	hw.BeginSexp()
-// 	{
-// 		hw.WriteInt(1)
-// 		hw.WriteSymbol("+")
-// 		hw.WriteInt(1)
-// 	}
-// 	hw.EndSexp()
+// 	   var hw HashWriter
+// 	   hw.BeginSexp()
+// 	   {
+// 		   hw.WriteInt(1)
+// 		   hw.WriteSymbol("+")
+// 		   hw.WriteInt(1)
+// 	   }
+// 	   hw.EndSexp()
 //
 // When writing values inside a struct, the FieldName method must be called before
 // each value to set the value's field name. The Annotation method may likewise
 // be called before writing any value to add an annotation to the value.
 //
-// 	var hw HashWriter
-// 	hw.Annotation("user")
-// 	hw.BeginStruct()
-// 	{
-// 		hw.FieldName("id")
-// 		hw.WriteString("foo")
-// 		hw.FieldName("name")
-// 		hw.WriteString("bar")
-// 	}
-// 	hw.EndStruct()
+// 	   var hw HashWriter
+// 	   hw.Annotation("user")
+// 	   hw.BeginStruct()
+// 	   {
+// 		   hw.FieldName("id")
+// 		   hw.WriteString("foo")
+// 		   hw.FieldName("name")
+// 		   hw.WriteString("bar")
+// 	   }
+// 	   hw.EndStruct()
 //
 // When you're done writing values, you should call Finish to ensure everything has
 // been flushed from in-memory buffers. While individual methods all return an error
@@ -59,14 +59,14 @@ import (
 // return the previous error. This lets you keep code a bit cleaner by only checking
 // the return value of the final method call (generally Finish).
 //
-// Sum will return the hash of the entire stream of Ion values that have been looped through.
+// Sum will return the hash of the entire stream of Ion values that have been written thus far.
 //
-// 	var hw HashWriter
-// 	writeSomeStuff(hw)
-// 	if err := hw.Finish(); err != nil {
-// 		return err
-// 	}
-//  fmt.Printf("%v", hw.sum(nil))
+// 	   var hw HashWriter
+// 	   writeSomeStuff(hw)
+// 	   if err := hw.Finish(); err != nil {
+// 		   return err
+// 	   }
+//     fmt.Printf("%v", hw.Sum(nil))
 //
 type HashWriter interface {
 	// Embed interface of Ion writer.
@@ -338,7 +338,7 @@ func (hw *hashWriter) value() (interface{}, error) {
 	return hw.currentValue, nil
 }
 
-// IsInStruct indicates if the reader is currently positioned in a struct.
+// IsInStruct indicates if the writer is currently positioned inside a struct.
 func (hw *hashWriter) IsInStruct() bool {
 	return hw.ionWriter.IsInStruct()
 }

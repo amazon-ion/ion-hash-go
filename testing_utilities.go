@@ -94,21 +94,21 @@ func hasNext(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) bool {
 }
 
 func compareFieldNames(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 }
 
 func compareAnnotations(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 
 	assert.Equal(t, reader1.Annotations(), reader2.Annotations(), "Expected symbol sequences to match")
 }
 
 func compareAnnotationSymbols(t *testing.T, reader1, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 }
 
 func compareHasAnnotations(t *testing.T, reader1, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 }
 
 func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 ion.Reader) {
@@ -206,7 +206,7 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 
 
 		assert.Equal(t, str1, str2, "Expected string values to match")
 	case ion.SymbolType:
-		// TODO: Add SymbolToken logic here once SymbolTokens are available
+		// TODO: Add SymbolToken logic here once SymbolTokens are available.
 		t.Fatal("No SymbolToken support yet")
 	case ion.BlobType, ion.ClobType:
 		b1, err := reader1.ByteValue()

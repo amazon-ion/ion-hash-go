@@ -60,8 +60,7 @@ func (ss *scalarSerializer) scalar(ionValue interface{}) error {
 		ionVal = nil
 	}
 
-	tq, representation, err :=
-		ss.scalarOrNullSplitParts(ionType, ionHashValue.IsNull(), scalarBytes)
+	tq, representation, err := ss.scalarOrNullSplitParts(ionType, ionHashValue.IsNull(), scalarBytes)
 	if err != nil {
 		return err
 	}
