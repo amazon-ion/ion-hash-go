@@ -55,6 +55,8 @@ func main() {
 	hashReader, err := ionhash.NewHashReader(ionReader, ionhash.NewCryptoHasherProvider(ionhash.Algorithm(strings.ToUpper(algorithm))))
 	check(err)
 
+	hashReader.Next()
+
 	for hashReader.Next() {
 		digest, err := hashReader.Sum(nil)
 		if err != nil {
