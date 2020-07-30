@@ -23,7 +23,6 @@ type identityHasherProvider struct {
 	provider *testIonHasherProvider
 }
 
-// newIdentityHasherProvider returns a new identityHasherProvider.
 func newIdentityHasherProvider(provider *testIonHasherProvider) *identityHasherProvider {
 	return &identityHasherProvider{provider: provider}
 }

@@ -183,7 +183,7 @@ func (hr *hashReader) Annotations() []string {
 }
 
 // StepIn steps in to the current value if it is a container. It returns an error if there
-// is no current value or if the value is not a container. On success, the Reader is
+// is no current value or if the current value is not a container. On success, the Reader is
 // positioned before the first value in the container.
 func (hr *hashReader) StepIn() error {
 	err := hr.hasher.stepIn(hr)
@@ -202,8 +202,8 @@ func (hr *hashReader) StepIn() error {
 }
 
 // StepOut steps out of the current container value being read. It returns an error if
-// this Reader is not currently stepped in to a container. On success, the Reader is
-// positioned after the end of the container, but before any subsequent values in the
+// this Reader is not currently positioned inside a container. On success, the Reader is
+// positioned after the end of the container, but before any subsequent value(s) in the
 // stream.
 func (hr *hashReader) StepOut() error {
 	err := hr.traverse()
@@ -224,71 +224,71 @@ func (hr *hashReader) StepOut() error {
 	return nil
 }
 
-// BoolValue returns the current value as a boolean (if that makes sense). It returns
-// an error if the current value is not an Ion bool.
+// BoolValue returns the current value as a boolean if the current value is an Ion boolean.
+// It returns an error if the current value is not an Ion bool.
 func (hr *hashReader) BoolValue() (bool, error) {
 	return hr.ionReader.BoolValue()
 }
 
-// IntSize returns the size of integer needed to losslessly represent the current value
-// (if that makes sense). It returns an error if the current value is not an Ion int.
+// IntSize returns the size of integer needed to losslessly represent the current value.
+// It returns an error if the current value is not an Ion int.
 func (hr *hashReader) IntSize() (ion.IntSize, error) {
 	return hr.ionReader.IntSize()
 }
 
-// IntValue returns the current value as a 32-bit integer (if that makes sense). It
-// returns an error if the current value is not an Ion integer or requires more than
-// 32 bits to represent losslessly.
+// IntValue returns the current value as a 32-bit integer.
+// It returns an error if the current value is not an Ion integer or requires more than
+// 32 bits to represent the Ion integer.
 func (hr *hashReader) IntValue() (int, error) {
 	return hr.ionReader.IntValue()
 }
 
-// Int64Value returns the current value as a 64-bit integer (if that makes sense). It
-// returns an error if the current value is not an Ion integer or requires more than
-// 64 bits to represent losslessly.
+// Int64Value returns the current value as a 64-bit integer.
+// It returns an error if the current value is not an Ion integer or requires more than
+// 64 bits to represent the Ion integer.
 func (hr *hashReader) Int64Value() (int64, error) {
 	return hr.ionReader.Int64Value()
 }
 
-// Uint64Value returns the current value as an unsigned 64-bit integer (if that makes
-// sense). It returns an error if the current value is not an Ion integer, is negative,
-// or requires more than 64 bits to represent losslessly.
+// Uint64Value returns the current value as an unsigned 64-bit integer.
+// It returns an error if the current value is not an Ion integer, is negative,
+// or requires more than 64 bits to represent to represent the Ion integer.
 func (hr *hashReader) Uint64Value() (uint64, error) {
 	return hr.ionReader.Uint64Value()
 }
 
-// BigIntValue returns the current value as a big.Integer (if that makes sense). It
-// returns an error if the current value is not an Ion integer.
+// BigIntValue returns the current value as a big.Integer.
+// It returns an error if the current value is not an Ion integer.
 func (hr *hashReader) BigIntValue() (*big.Int, error) {
 	return hr.ionReader.BigIntValue()
 }
 
-// FloatValue returns the current value as a 64-bit floating point number (if that
-// makes sense). It returns an error if the current value is not an Ion float.
+// FloatValue returns the current value as a 64-bit floating point number.
+// It returns an error if the current value is not an Ion float.
 func (hr *hashReader) FloatValue() (float64, error) {
 	return hr.ionReader.FloatValue()
 }
 
-// DecimalValue returns the current value as an arbitrary-precision Decimal (if that
-// makes sense). It returns an error if the current value is not an Ion decimal.
+// DecimalValue returns the current value as an arbitrary-precision Decimal.
+// It returns an error if the current value is not an Ion decimal.
 func (hr *hashReader) DecimalValue() (*ion.Decimal, error) {
 	return hr.ionReader.DecimalValue()
 }
 
-// TimeValue returns the current value as a timestamp (if that makes sense). It returns
-// an error if the current value is not an Ion timestamp.
+// TimeValue returns the current value as a timestamp.
+// It returns an error if the current value is not an Ion timestamp.
 func (hr *hashReader) TimestampValue() (ion.Timestamp, error) {
 	return hr.ionReader.TimestampValue()
 }
 
-// StringValue returns the current value as a string (if that makes sense). It returns
-// an error if the current value is not an Ion symbol or an Ion string.
+// StringValue returns the current value as a string.
+// It returns an error if the current value is not an Ion symbol or an Ion string.
 func (hr *hashReader) StringValue() (string, error) {
 	return hr.ionReader.StringValue()
 }
 
-// ByteValue returns the current value as a byte slice (if that makes sense). It returns
-// an error if the current value is not an Ion clob or an Ion blob.
+// ByteValue returns the current value as a byte slice.
+// It returns an error if the current value is not an Ion clob or an Ion blob.
 func (hr *hashReader) ByteValue() ([]byte, error) {
 	return hr.ionReader.ByteValue()
 }
@@ -376,7 +376,7 @@ func (hr *hashReader) value() (interface{}, error) {
 	return nil, &InvalidIonTypeError{hr.currentType}
 }
 
-// IsInStruct indicates if the reader is currently positioned in a struct.
+// IsInStruct indicates if the reader is currently positioned inside a struct.
 func (hr *hashReader) IsInStruct() bool {
 	return hr.ionReader.IsInStruct()
 }
