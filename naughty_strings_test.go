@@ -105,9 +105,9 @@ func NaughtyStrings(t *testing.T, tv testValue, s string) {
 	ionHashWriter, ok := hw.(*hashWriter)
 	require.True(t, ok, "Expected hw to be of type hashWriter")
 
-	writeFromReaderToWriter(t, ion.NewReaderStr(s), ionHashWriter)
+	writeFromReaderToWriter(t, ion.NewReaderString(s), ionHashWriter)
 
-	hr, err := NewHashReader(ion.NewReaderStr(s), hasherProvider)
+	hr, err := NewHashReader(ion.NewReaderString(s), hasherProvider)
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	ionHashReader, ok := hr.(*hashReader)
