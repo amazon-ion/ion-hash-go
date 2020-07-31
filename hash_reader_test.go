@@ -26,7 +26,7 @@ import (
 
 func TestEmptyString(t *testing.T) {
 	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(ion.NewReaderStr(""), tihp.getInstance())
+	ionHashReader, err := NewHashReader(ion.NewReaderString(""), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	for i := 0; i < 2; i++ {
@@ -44,7 +44,7 @@ func TestEmptyString(t *testing.T) {
 
 func TestTopLevelValues(t *testing.T) {
 	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("1 2 3"), tihp.getInstance())
+	ionHashReader, err := NewHashReader(ion.NewReaderString("1 2 3"), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	expectedTypes := []ion.Type{ion.IntType, ion.IntType, ion.IntType, ion.NoType, ion.NoType}
@@ -187,7 +187,7 @@ type consumeFunction func(*testing.T, HashReader)
 
 func consume(t *testing.T, function consumeFunction) {
 	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(ion.NewReaderStr("[1,2,{a:3,b:4},5]"), tihp.getInstance())
+	ionHashReader, err := NewHashReader(ion.NewReaderString("[1,2,{a:3,b:4},5]"), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	sum, err := ionHashReader.Sum(nil)

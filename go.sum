@@ -4,6 +4,8 @@ github.com/amzn/ion-go v0.0.0-20200716003120-52ac8c46955a h1:FmB+lu5fhHSgBI1mbeh
 github.com/amzn/ion-go v0.0.0-20200716003120-52ac8c46955a/go.mod h1:ZuzRHzi/dpnh5Y7jstvkKKXnA6D9vt+840eNrtoSvtw=
 github.com/amzn/ion-go v0.0.0-20200729210808-de186c33b676 h1:J10GECGm6RDO5TrIMoHqvuFP/Rg6DAwFABhicv/dD8k=
 github.com/amzn/ion-go v0.0.0-20200729210808-de186c33b676/go.mod h1:ZuzRHzi/dpnh5Y7jstvkKKXnA6D9vt+840eNrtoSvtw=
+github.com/amzn/ion-go v0.0.0-20200731204227-1913ef1f66be h1:dPaAU3Zb9EmGlFQlf++jfWms1yQvpRh9hWutTEr+H0U=
+github.com/amzn/ion-go v0.0.0-20200731204227-1913ef1f66be/go.mod h1:ZuzRHzi/dpnh5Y7jstvkKKXnA6D9vt+840eNrtoSvtw=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/go-cmp v0.5.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=

@@ -139,7 +139,7 @@ func TestNoFieldNameInCurrentHash(t *testing.T) {
 func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []byte) {
 	var err error
 
-	reader := ion.NewReaderStr(value)
+	reader := ion.NewReaderString(value)
 
 	buf := bytes.Buffer{}
 	writer := ion.NewBinaryWriter(&buf)
