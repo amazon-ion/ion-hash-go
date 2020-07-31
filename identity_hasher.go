@@ -15,6 +15,8 @@
 
 package ionhash
 
+// identityHasher appends the hash to the provider hash logs.
+// Used for testing purposes only.
 type identityHasher struct {
 	IonHasher
 
@@ -22,10 +24,12 @@ type identityHasher struct {
 	provider     *testIonHasherProvider
 }
 
+// newIdentityIonHasher returns a new identityHasher.
 func newIdentityIonHasher(provider *testIonHasherProvider) IonHasher {
 	return &identityHasher{identityHash: []byte{}, provider: provider}
 }
 
+// Write appends data to the provider updateHasLog.
 func (ih *identityHasher) Write(bytes []byte) (int, error) {
 	ih.identityHash = append(ih.identityHash, bytes...)
 
@@ -36,8 +40,10 @@ func (ih *identityHasher) Write(bytes []byte) (int, error) {
 	return len(bytes), nil
 }
 
+// Sum appends b to the provider digestHashlog and returns the resulting slice.
+// It does not change the underlying hash state.
 func (ih *identityHasher) Sum(bytes []byte) []byte {
-	// We ignore the error here because we know this particular Write() implementation does not error
+	// We ignore the error here because we know this particular Write() implementation does not error.
 	_, _ = ih.Write(bytes)
 
 	identityHash := ih.identityHash
@@ -47,5 +53,6 @@ func (ih *identityHasher) Sum(bytes []byte) []byte {
 	return identityHash
 }
 
+// Reset does not do anything because this hasher does not hash anything.
 func (ih *identityHasher) Reset() {
 }

@@ -63,7 +63,6 @@ func TestTopLevelValues(t *testing.T) {
 
 		sum, err := ionHashReader.Sum(nil)
 		require.NoError(t, err, "Something went wrong executing ionHashReader.Sum(nil)")
-
 		assert.Equal(t, expectedSums[i], sum, "sum did not match expectation")
 	}
 }

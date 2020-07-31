@@ -15,14 +15,14 @@
 
 package ionhash
 
-// CryptoHasherProvider struct for crypto hasher provider
+// CryptoHasherProvider struct for crypto hasher provider.
 type CryptoHasherProvider struct {
 	IonHasherProvider
 
 	algorithm Algorithm
 }
 
-// NewCryptoHasherProvider returns a new CryptoHasherProvider.
+// NewCryptoHasherProvider returns a new CryptoHasherProvider for the provided algorithm.
 func NewCryptoHasherProvider(algorithm Algorithm) *CryptoHasherProvider {
 	return &CryptoHasherProvider{algorithm: algorithm}
 }
