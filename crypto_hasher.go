@@ -29,11 +29,12 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-type algorithm string
+// Algorithm is the name of the hash algorithm used to calculate the hash.
+type Algorithm string
 
 // Constants for each of the algorithm names supported.
 const (
-	MD4        algorithm = "MD4"
+	MD4        Algorithm = "MD4"
 	MD5                  = "MD5"
 	SHA1                 = "SHA1"
 	SHA224               = "SHA224"
@@ -53,11 +54,14 @@ const (
 	BLAKE2b512           = "BLAKE2b_512"
 )
 
+// cryptoHasher computes the hash using given algorithm.
 type cryptoHasher struct {
 	hashAlgorithm hash.Hash
 }
 
-func newCryptoHasher(algorithm algorithm) (IonHasher, error) {
+// newCryptoHasher returns a new cryptoHasher. Returns an error if the algorithm name provided is unknown.
+// Here is a list of available hash functions: https://golang.org/pkg/crypto/#Hash.
+func newCryptoHasher(algorithm Algorithm) (IonHasher, error) {
 	var hashAlgorithm hash.Hash
 
 	switch algorithm {
@@ -105,15 +109,18 @@ func newCryptoHasher(algorithm algorithm) (IonHasher, error) {
 	return ch, nil
 }
 
+// Write adds more data to the running hash.
 func (ch *cryptoHasher) Write(b []byte) (n int, err error) {
 	return ch.hashAlgorithm.Write(b)
 }
 
+// Sum appends the current hash to b and returns the resulting slice.
+// It does not change the underlying hash state.
 func (ch *cryptoHasher) Sum(b []byte) []byte {
-	hash := ch.hashAlgorithm.Sum(b)
-	return hash
+	return ch.hashAlgorithm.Sum(b)
 }
 
+// Reset resets the Hash to its initial state.
 func (ch *cryptoHasher) Reset() {
 	ch.hashAlgorithm.Reset()
 }

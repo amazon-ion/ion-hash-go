@@ -22,17 +22,17 @@ import (
 )
 
 func TestEscape(t *testing.T) {
-	// null case
+	// Null case.
 	assert.Nil(t, escape(nil))
 
-	// happy cases
+	// Happy cases.
 	var empty []byte
 	assert.Equal(t, empty, escape(empty))
 
 	bytes := []byte{0x10, 0x11, 0x12, 0x13}
 	assert.Equal(t, bytes, escape(bytes))
 
-	// escape cases
+	// Escape cases.
 	assert.Equal(t, []byte{escapeByte, 0x0B}, escape([]byte{0x0B}))
 	assert.Equal(t, []byte{escapeByte, 0x0E}, escape([]byte{0x0E}))
 	assert.Equal(t, []byte{escapeByte, 0x0C}, escape([]byte{0x0C}))

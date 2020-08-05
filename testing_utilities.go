@@ -76,7 +76,7 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 	assert.False(t, hasNext(t, reader1, reader2), "Expected hasNext() to return false")
 }
 
-// hasNext() checks that the readers have a Next value
+// hasNext() checks that the readers have a Next value.
 func hasNext(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) bool {
 	next1 := reader1.Next()
 	next2 := reader2.Next()
@@ -94,27 +94,21 @@ func hasNext(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) bool {
 }
 
 func compareFieldNames(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
-}
-
-func compareNonNullStrings(t *testing.T, str1, str2 string) {
-	assert.NotNil(t, str1, "Expected str1 to be not null")
-	assert.NotNil(t, str2, "Expected str2 to be not null")
-	assert.Equal(t, str1, str2, "Expected strings to match")
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 }
 
 func compareAnnotations(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 
 	assert.Equal(t, reader1.Annotations(), reader2.Annotations(), "Expected symbol sequences to match")
 }
 
 func compareAnnotationSymbols(t *testing.T, reader1, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 }
 
 func compareHasAnnotations(t *testing.T, reader1, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available
+	// TODO: Add SymbolToken logic here once SymbolTokens are available.
 }
 
 func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 ion.Reader) {
@@ -212,7 +206,7 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 
 
 		assert.Equal(t, str1, str2, "Expected string values to match")
 	case ion.SymbolType:
-		// TODO: Add SymbolToken logic here once SymbolTokens are available
+		// TODO: Add SymbolToken logic here once SymbolTokens are available.
 		t.Fatal("No SymbolToken support yet")
 	case ion.BlobType, ion.ClobType:
 		b1, err := reader1.ByteValue()
@@ -247,7 +241,7 @@ func decimalStrictEquals(t *testing.T, decimal1, decimal2 *ion.Decimal) {
 	assert.True(t, decimal2.Equal(decimal1), "Expected decimal2.Equal(decimal1) to return true")
 }
 
-// Read all the values in the reader and write them in the writer
+// Read all the values in the reader and write them in the writer.
 func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer) {
 	for reader.Next() {
 		name := reader.FieldName()

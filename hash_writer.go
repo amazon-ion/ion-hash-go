@@ -21,11 +21,52 @@ import (
 	"github.com/amzn/ion-go/ion"
 )
 
-// HashWriter is meant to share the same methods as the ion.Writer and hashValue interfaces.
-// However embedding both ion.Writer and hashValue results in a duplicate method build error because both interfaces
-// have an IsInStruct() method.
-// So we embed the ion.Writer interface and explicitly list the remaining hashValue methods to avoid the error.
-// HashWriter also provides a Sum function which allows read access to the hash value in the current writer.
+// A HashWriter writes a stream of Ion values and calculates its hash.
+//
+// The various Write methods write atomic values to the current output stream. Methods
+// prefixed with Begin start writing a list, sexp, or struct respectively. Subsequent
+// calls to Write will write values inside of the container until a matching
+// End method is called, e.g.,
+//
+// 	   var hw HashWriter
+// 	   hw.BeginSexp()
+// 	   {
+// 		   hw.WriteInt(1)
+// 		   hw.WriteSymbol("+")
+// 		   hw.WriteInt(1)
+// 	   }
+// 	   hw.EndSexp()
+//
+// When writing values inside a struct, the FieldName method must be called before
+// each value to set the value's field name. The Annotation method may likewise
+// be called before writing any value to add an annotation to the value.
+//
+// 	   var hw HashWriter
+// 	   hw.Annotation("user")
+// 	   hw.BeginStruct()
+// 	   {
+// 		   hw.FieldName("id")
+// 		   hw.WriteString("foo")
+// 		   hw.FieldName("name")
+// 		   hw.WriteString("bar")
+// 	   }
+// 	   hw.EndStruct()
+//
+// When you're done writing values, you should call Finish to ensure everything has
+// been flushed from in-memory buffers. While individual methods all return an error
+// on failure, implementations will remember any errors, no-op subsequent calls, and
+// return the previous error. This lets you keep code a bit cleaner by only checking
+// the return value of the final method call (generally Finish).
+//
+// Sum will return the hash of the entire stream of Ion values that have been written thus far.
+//
+// 	   var hw HashWriter
+// 	   writeSomeStuff(hw)
+// 	   if err := hw.Finish(); err != nil {
+// 		   return err
+// 	   }
+//     fmt.Printf("%v", hw.Sum(nil))
+//
 type HashWriter interface {
 	// Embed interface of Ion writer.
 	ion.Writer
@@ -38,7 +79,7 @@ type HashWriter interface {
 	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
-	// It does not change the underlying hash state.
+	// It resets the Hash to its initial state.
 	Sum(b []byte) ([]byte, error)
 }
 
@@ -63,242 +104,272 @@ func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) (Hash
 	return &hashWriter{ionWriter: ionWriter, hasher: *newHasher}, nil
 }
 
-func (hashWriter *hashWriter) FieldName(val string) error {
-	hashWriter.currentFieldName = val
-	return hashWriter.ionWriter.FieldName(val)
+// FieldName sets the field name for the next value written.
+// It may only be called while writing a struct.
+func (hw *hashWriter) FieldName(val string) error {
+	hw.currentFieldName = val
+	return hw.ionWriter.FieldName(val)
 }
 
-func (hashWriter *hashWriter) Annotation(val string) error {
-	hashWriter.annotations = append(hashWriter.annotations, val)
-	return hashWriter.ionWriter.Annotations(val)
+// Annotation adds an annotation to the next value written.
+func (hw *hashWriter) Annotation(val string) error {
+	hw.annotations = append(hw.annotations, val)
+	return hw.ionWriter.Annotations(val)
 }
 
-func (hashWriter *hashWriter) Annotations(vals ...string) error {
-	hashWriter.annotations = append(hashWriter.annotations, vals...)
-	return hashWriter.ionWriter.Annotations(vals...)
+// Annotations adds one or more annotations to the next value written.
+func (hw *hashWriter) Annotations(vals ...string) error {
+	hw.annotations = append(hw.annotations, vals...)
+	return hw.ionWriter.Annotations(vals...)
 }
 
-func (hashWriter *hashWriter) WriteNull() error {
-	err := hashWriter.hashScalar(ion.NullType, nil)
+// WriteNull writes an untyped null value.
+func (hw *hashWriter) WriteNull() error {
+	err := hw.hashScalar(ion.NullType, nil)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteNull()
+	return hw.ionWriter.WriteNull()
 }
 
-func (hashWriter *hashWriter) WriteNullType(ionType ion.Type) error {
-	err := hashWriter.hashScalar(ionType, nil)
+// WriteNullType writes a null value with a type qualifier, e.g. null.bool.
+func (hw *hashWriter) WriteNullType(ionType ion.Type) error {
+	err := hw.hashScalar(ionType, nil)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteNullType(ionType)
+	return hw.ionWriter.WriteNullType(ionType)
 }
 
-func (hashWriter *hashWriter) WriteBool(val bool) error {
-	err := hashWriter.hashScalar(ion.BoolType, val)
+// WriteBool writes a boolean value.
+func (hw *hashWriter) WriteBool(val bool) error {
+	err := hw.hashScalar(ion.BoolType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteBool(val)
+	return hw.ionWriter.WriteBool(val)
 }
 
-func (hashWriter *hashWriter) WriteInt(val int64) error {
-	err := hashWriter.hashScalar(ion.IntType, val)
+// WriteInt writes an integer value.
+func (hw *hashWriter) WriteInt(val int64) error {
+	err := hw.hashScalar(ion.IntType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteInt(val)
+	return hw.ionWriter.WriteInt(val)
 }
 
-func (hashWriter *hashWriter) WriteUint(val uint64) error {
-	err := hashWriter.hashScalar(ion.IntType, val)
+// WriteUint writes an unsigned integer value.
+func (hw *hashWriter) WriteUint(val uint64) error {
+	err := hw.hashScalar(ion.IntType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteUint(val)
+	return hw.ionWriter.WriteUint(val)
 }
 
-func (hashWriter *hashWriter) WriteBigInt(val *big.Int) error {
-	err := hashWriter.hashScalar(ion.IntType, val)
+// WriteBigInt writes a big integer value.
+func (hw *hashWriter) WriteBigInt(val *big.Int) error {
+	err := hw.hashScalar(ion.IntType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteBigInt(val)
+	return hw.ionWriter.WriteBigInt(val)
 }
 
-func (hashWriter *hashWriter) WriteFloat(val float64) error {
-	err := hashWriter.hashScalar(ion.FloatType, val)
+// WriteFloat writes a floating-point value.
+func (hw *hashWriter) WriteFloat(val float64) error {
+	err := hw.hashScalar(ion.FloatType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteFloat(val)
+	return hw.ionWriter.WriteFloat(val)
 }
 
-func (hashWriter *hashWriter) WriteDecimal(val *ion.Decimal) error {
-	err := hashWriter.hashScalar(ion.DecimalType, val)
+// WriteDecimal writes an arbitrary-precision decimal value.
+func (hw *hashWriter) WriteDecimal(val *ion.Decimal) error {
+	err := hw.hashScalar(ion.DecimalType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteDecimal(val)
+	return hw.ionWriter.WriteDecimal(val)
 }
 
-func (hashWriter *hashWriter) WriteTimestamp(val ion.Timestamp) error {
-	err := hashWriter.hashScalar(ion.TimestampType, val)
+// WriteTimestamp writes a timestamp value.
+func (hw *hashWriter) WriteTimestamp(val ion.Timestamp) error {
+	err := hw.hashScalar(ion.TimestampType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteTimestamp(val)
+	return hw.ionWriter.WriteTimestamp(val)
 }
 
-func (hashWriter *hashWriter) WriteSymbol(val string) error {
-	err := hashWriter.hashScalar(ion.SymbolType, val)
+// WriteSymbol writes a symbol value.
+func (hw *hashWriter) WriteSymbol(val string) error {
+	err := hw.hashScalar(ion.SymbolType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteSymbol(val)
+	return hw.ionWriter.WriteSymbol(val)
 }
 
-func (hashWriter *hashWriter) WriteString(val string) error {
-	err := hashWriter.hashScalar(ion.StringType, val)
+// WriteString writes a string value.
+func (hw *hashWriter) WriteString(val string) error {
+	err := hw.hashScalar(ion.StringType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteString(val)
+	return hw.ionWriter.WriteString(val)
 }
 
-func (hashWriter *hashWriter) WriteClob(val []byte) error {
-	err := hashWriter.hashScalar(ion.ClobType, val)
+// WriteClob writes a clob value.
+func (hw *hashWriter) WriteClob(val []byte) error {
+	err := hw.hashScalar(ion.ClobType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteClob(val)
+	return hw.ionWriter.WriteClob(val)
 }
 
-func (hashWriter *hashWriter) WriteBlob(val []byte) error {
-	err := hashWriter.hashScalar(ion.BlobType, val)
+// WriteBlob writes a blob value.
+func (hw *hashWriter) WriteBlob(val []byte) error {
+	err := hw.hashScalar(ion.BlobType, val)
 	if err != nil {
 		return err
 	}
-	return hashWriter.ionWriter.WriteBlob(val)
+	return hw.ionWriter.WriteBlob(val)
 }
 
-func (hashWriter *hashWriter) BeginList() error {
-	err := hashWriter.stepIn(ion.ListType)
-	if err != nil {
-		return err
-	}
-
-	return hashWriter.ionWriter.BeginList()
-}
-
-func (hashWriter *hashWriter) EndList() error {
-	err := hashWriter.hasher.stepOut()
-	if err != nil {
-		return err
-	}
-
-	return hashWriter.ionWriter.EndList()
-}
-
-func (hashWriter *hashWriter) BeginSexp() error {
-	err := hashWriter.stepIn(ion.SexpType)
-	if err != nil {
-		return err
-	}
-
-	return hashWriter.ionWriter.BeginSexp()
-}
-
-func (hashWriter *hashWriter) EndSexp() error {
-	err := hashWriter.hasher.stepOut()
+// BeginList begins writing a list value.
+func (hw *hashWriter) BeginList() error {
+	err := hw.stepIn(ion.ListType)
 	if err != nil {
 		return err
 	}
 
-	return hashWriter.ionWriter.EndSexp()
+	return hw.ionWriter.BeginList()
 }
 
-func (hashWriter *hashWriter) BeginStruct() error {
-	err := hashWriter.stepIn(ion.StructType)
+// EndList finishes writing a list value.
+func (hw *hashWriter) EndList() error {
+	err := hw.hasher.stepOut()
 	if err != nil {
 		return err
 	}
 
-	return hashWriter.ionWriter.BeginStruct()
+	return hw.ionWriter.EndList()
 }
 
-func (hashWriter *hashWriter) EndStruct() error {
-	err := hashWriter.hasher.stepOut()
+// BeginSexp begins writing an s-expression value.
+func (hw *hashWriter) BeginSexp() error {
+	err := hw.stepIn(ion.SexpType)
 	if err != nil {
 		return err
 	}
 
-	return hashWriter.ionWriter.EndStruct()
+	return hw.ionWriter.BeginSexp()
 }
 
-func (hashWriter *hashWriter) Finish() error {
-	return hashWriter.ionWriter.Finish()
+// EndSexp finishes writing an s-expression value.
+func (hw *hashWriter) EndSexp() error {
+	err := hw.hasher.stepOut()
+	if err != nil {
+		return err
+	}
+
+	return hw.ionWriter.EndSexp()
 }
 
-func (hashWriter *hashWriter) Sum(b []byte) ([]byte, error) {
-	return hashWriter.hasher.sum(b)
+// BeginStruct begins writing a struct value.
+func (hw *hashWriter) BeginStruct() error {
+	err := hw.stepIn(ion.StructType)
+	if err != nil {
+		return err
+	}
+
+	return hw.ionWriter.BeginStruct()
+}
+
+// EndStruct finishes writing a struct value.
+func (hw *hashWriter) EndStruct() error {
+	err := hw.hasher.stepOut()
+	if err != nil {
+		return err
+	}
+
+	return hw.ionWriter.EndStruct()
+}
+
+// Finish finishes writing values and flushes any buffered data.
+func (hw *hashWriter) Finish() error {
+	return hw.ionWriter.Finish()
+}
+
+// Sum appends the current hash to b and returns the resulting slice.
+// It resets the Hash to its initial state.
+func (hw *hashWriter) Sum(b []byte) ([]byte, error) {
+	return hw.hasher.sum(b)
 }
 
 // The following implements hashValue interface.
 
-func (hashWriter *hashWriter) getFieldName() *string {
-	return &hashWriter.currentFieldName
+func (hw *hashWriter) getFieldName() *string {
+	return &hw.currentFieldName
 }
 
-func (hashWriter *hashWriter) getAnnotations() []string {
-	return hashWriter.annotations
+func (hw *hashWriter) getAnnotations() []string {
+	return hw.annotations
 }
 
-func (hashWriter *hashWriter) IsNull() bool {
-	return hashWriter.currentIsNull
+// IsNull returns true if the current value is an explicit null. This may be true
+// even if the Type is not NullType (for example, null.struct has type Struct).
+func (hw *hashWriter) IsNull() bool {
+	return hw.currentIsNull
 }
 
-func (hashWriter *hashWriter) Type() ion.Type {
-	return hashWriter.currentType
+// Type returns the type of the Ion value the hashWriter is currently positioned on.
+// It returns NoType if the hashWriter is positioned before or after a value.
+func (hw *hashWriter) Type() ion.Type {
+	return hw.currentType
 }
 
-func (hashWriter *hashWriter) value() (interface{}, error) {
-	return hashWriter.currentValue, nil
+func (hw *hashWriter) value() (interface{}, error) {
+	return hw.currentValue, nil
 }
 
-// IsInStruct implements both the ion.Writer and hashValue interfaces.
-func (hashWriter *hashWriter) IsInStruct() bool {
-	return hashWriter.ionWriter.IsInStruct()
+// IsInStruct indicates if the writer is currently positioned inside a struct.
+func (hw *hashWriter) IsInStruct() bool {
+	return hw.ionWriter.IsInStruct()
 }
 
-func (hashWriter *hashWriter) hashScalar(ionType ion.Type, value interface{}) error {
-	hashWriter.currentType = ionType
-	hashWriter.currentValue = value
-	hashWriter.currentIsNull = value == nil
+func (hw *hashWriter) hashScalar(ionType ion.Type, value interface{}) error {
+	hw.currentType = ionType
+	hw.currentValue = value
+	hw.currentIsNull = value == nil
 
-	err := hashWriter.hasher.scalar(hashWriter)
+	err := hw.hasher.scalar(hw)
 	if err != nil {
 		return err
 	}
 
-	hashWriter.currentFieldName = ""
-	hashWriter.annotations = nil
+	hw.currentFieldName = ""
+	hw.annotations = nil
 
 	return nil
 }
 
-func (hashWriter *hashWriter) stepIn(ionType ion.Type) error {
-	hashWriter.currentType = ionType
-	hashWriter.currentValue = nil
-	hashWriter.currentIsNull = false
+func (hw *hashWriter) stepIn(ionType ion.Type) error {
+	hw.currentType = ionType
+	hw.currentValue = nil
+	hw.currentIsNull = false
 
-	err := hashWriter.hasher.stepIn(hashWriter)
+	err := hw.hasher.stepIn(hw)
 	if err != nil {
 		return err
 	}
 
-	hashWriter.currentFieldName = ""
-	hashWriter.annotations = nil
+	hw.currentFieldName = ""
+	hw.annotations = nil
 
 	return nil
 }

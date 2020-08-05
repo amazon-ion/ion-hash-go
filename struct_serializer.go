@@ -39,59 +39,59 @@ func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider
 		scalarSerializer: newScalarSerializer(newHasher, depth+1)}, nil
 }
 
-func (structSerializer *structSerializer) scalar(ionValue interface{}) error {
-	err := structSerializer.scalarSerializer.handleFieldName(ionValue)
+func (ss *structSerializer) scalar(ionValue interface{}) error {
+	err := ss.scalarSerializer.handleFieldName(ionValue)
 	if err != nil {
 		return err
 	}
 
-	err = structSerializer.scalarSerializer.scalar(ionValue)
+	err = ss.scalarSerializer.scalar(ionValue)
 	if err != nil {
 		return err
 	}
 
-	sum := structSerializer.scalarSerializer.sum(nil)
-	structSerializer.appendFieldHash(sum)
+	sum := ss.scalarSerializer.sum(nil)
+	ss.appendFieldHash(sum)
 
 	return nil
 }
 
-func (structSerializer *structSerializer) stepOut() error {
-	// Sort fieldHashes using the sortableBytes sorting interface
-	sort.Sort(sortableBytes(structSerializer.fieldHashes))
+func (ss *structSerializer) stepOut() error {
+	// Sort fieldHashes using the sortableBytes sorting interface.
+	sort.Sort(sortableBytes(ss.fieldHashes))
 
-	for _, digest := range structSerializer.fieldHashes {
-		err := structSerializer.write(escape(digest))
+	for _, digest := range ss.fieldHashes {
+		err := ss.write(escape(digest))
 		if err != nil {
 			return err
 		}
 	}
 
-	return structSerializer.baseSerializer.stepOut()
+	return ss.baseSerializer.stepOut()
 }
 
-func (structSerializer *structSerializer) stepIn(ionValue interface{}) error {
-	return structSerializer.baseSerializer.stepIn(ionValue.(hashValue))
+func (ss *structSerializer) stepIn(ionValue interface{}) error {
+	return ss.baseSerializer.stepIn(ionValue.(hashValue))
 }
 
-func (structSerializer *structSerializer) handleFieldName(ionValue interface{}) error {
-	return structSerializer.baseSerializer.handleFieldName(ionValue.(hashValue))
+func (ss *structSerializer) handleFieldName(ionValue interface{}) error {
+	return ss.baseSerializer.handleFieldName(ionValue.(hashValue))
 }
 
-func (structSerializer *structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
-	return structSerializer.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
+func (ss *structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
+	return ss.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
 }
 
-func (structSerializer *structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
-	return structSerializer.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
+func (ss *structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
+	return ss.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
 }
 
-func (structSerializer *structSerializer) appendFieldHash(sum []byte) {
-	structSerializer.fieldHashes = append(structSerializer.fieldHashes, sum)
+func (ss *structSerializer) appendFieldHash(sum []byte) {
+	ss.fieldHashes = append(ss.fieldHashes, sum)
 }
 
-func (structSerializer *structSerializer) scalarOrNullSplitParts(
+func (ss *structSerializer) scalarOrNullSplitParts(
 	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
 
-	return structSerializer.baseSerializer.scalarOrNullSplitParts(ionType, isNull, bytes)
+	return ss.baseSerializer.scalarOrNullSplitParts(ionType, isNull, bytes)
 }
