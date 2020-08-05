@@ -1,4 +1,4 @@
-** This package is consider beta. While the API is relatively stable it is still subject to change. **
+** This package is considered beta. While the API is relatively stable it is still subject to change. **
 
 # Amazon Ion Hash Go
 
