@@ -28,7 +28,7 @@ hasherProvider := ionhash.NewCryptoHasherProvider("MD5")
 // Create an Ion reader over the input [1,2,3]
 ionReader := ion.NewReaderString("[1,2,3]")
 
-// Create a hash Reader
+// Create a hash reader
 hashReader, err := ionhash.NewHashReader( ionReader, hasherProvider)
 if err != nil {
 	panic(err)
@@ -60,7 +60,7 @@ hasherProvider := ionhash.NewCryptoHasherProvider("MD5")
 // Create an Ion writer
 ionWriter := ion.NewTextWriter(new(bytes.Buffer))
 
-// Create a hash Writer
+// Create a hash writer
 hashWriter, err := ionhash.NewHashWriter(ionWriter, hasherProvider)
 if err != nil {
 	panic(err)
