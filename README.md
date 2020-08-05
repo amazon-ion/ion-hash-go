@@ -13,9 +13,11 @@ An implementation of [Amazon Ion Hash](http://amzn.github.io/ion-hash) in Go.
 You can start using ion-hash-go by simply importing it, e.g.,
 
 ```Go
+
 import (
 	ionhash "github.com/amzn/ion-hash-go"
 )
+
 ```
 
 ## Generating a hash while reading
@@ -29,7 +31,7 @@ hasherProvider := ionhash.NewCryptoHasherProvider("MD5")
 ionReader := ion.NewReaderString("[1,2,3]")
 
 // Create a hash reader
-hashReader, err := ionhash.NewHashReader( ionReader, hasherProvider)
+hashReader, err := ionhash.NewHashReader(ionReader, hasherProvider)
 if err != nil {
 	panic(err)
 }
@@ -67,7 +69,6 @@ if err != nil {
 }
 
 // Write the list [1,2,3]
-
 hashWriter.BeginList()
 hashWriter.WriteInt(1)
 hashWriter.WriteInt(2)
