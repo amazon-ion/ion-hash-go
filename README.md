@@ -64,6 +64,7 @@ func bytesToHex(b []byte) string {
 ```
 
 Upon execution, the above code produces the following output:
+
 ```
 writer
 37 82 6e 71 92 a1 e4 e1 24 aa 73 f9 85 0f f1 0f 1c b5 cc ca f2 07 b0 9e 65 af 42 56 ae 8c 80 55 
@@ -97,7 +98,6 @@ $ git submodule update
 
 Any tests commented out in [ion_hash_tests.ion](https://github.com/amzn/ion-hash-go/blob/master/ion_hash_tests.ion)
 are not expected to work at this time.
-    
 
 ## License
 
