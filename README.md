@@ -81,7 +81,7 @@ if err != nil {
 }
 
 // Print out the hash in Hex
-fmt.Printf("Digest = %x\n", res) / prints: Digest = 8f3bf4b1935cf469c9c10c31524b2625/
+fmt.Printf("Digest = %x\n", res) // prints: Digest = 8f3bf4b1935cf469c9c10c31524b2625/
 
 ```
 
