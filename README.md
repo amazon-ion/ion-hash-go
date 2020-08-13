@@ -6,7 +6,7 @@ An implementation of [Amazon Ion Hash](http://amzn.github.io/ion-hash) in Go.
 
 [![build](https://github.com/amzn/ion-hash-go/workflows/Build/badge.svg)](https://github.com/amzn/ion-hash-go/actions?query=workflow%3ABuild)
 [![license](https://img.shields.io/hexpm/l/plug.svg)](https://github.com/amzn/ion-hash-go/blob/master/LICENSE)
-[![docs](https://img.shields.io/badge/docs-api-green.svg?style=flat-square)](https://pkg.go.dev/github.com/amzn/ion-hash-go?tab=doc)
+[![docs](https://img.shields.io/badge/docs-api-green.svg)](https://pkg.go.dev/github.com/amzn/ion-hash-go?tab=doc)
 
 ## Getting Started
 
