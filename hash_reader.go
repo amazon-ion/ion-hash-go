@@ -287,6 +287,12 @@ func (hr *hashReader) StringValue() (string, error) {
 	return hr.ionReader.StringValue()
 }
 
+// StringValue returns the current value as a symbol token.
+// It returns an error if the current value is not an Ion symbol or an Ion string.
+func (hr *hashReader) SymbolValue() (ion.SymbolToken, error) {
+	return hr.ionReader.SymbolValue()
+}
+
 // ByteValue returns the current value as a byte slice.
 // It returns an error if the current value is not an Ion clob or an Ion blob.
 func (hr *hashReader) ByteValue() ([]byte, error) {
@@ -320,6 +326,14 @@ func (hr *hashReader) traverse() error {
 	}
 
 	return hr.Err()
+}
+
+func (hr *hashReader) FieldNameSymbol() (ion.SymbolToken, error) {
+	return hr.ionReader.FieldNameSymbol()
+}
+
+func (hr *hashReader) Clear() {
+	hr.ionReader.Clear()
 }
 
 // The following implements hashValue interface.
@@ -366,7 +380,7 @@ func (hr *hashReader) value() (interface{}, error) {
 	case ion.StringType:
 		return hr.StringValue()
 	case ion.SymbolType:
-		return hr.StringValue()
+		return hr.SymbolValue()
 	case ion.TimestampType:
 		return hr.TimestampValue()
 	case ion.NoType:

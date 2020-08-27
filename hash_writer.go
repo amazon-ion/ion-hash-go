@@ -311,6 +311,10 @@ func (hw *hashWriter) Sum(b []byte) ([]byte, error) {
 	return hw.hasher.sum(b)
 }
 
+func (hw *hashWriter) FieldNameSymbol(val ion.SymbolToken) error {
+	return hw.ionWriter.FieldNameSymbol(val)
+}
+
 // The following implements hashValue interface.
 
 func (hw *hashWriter) getFieldName() *string {

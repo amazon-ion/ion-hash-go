@@ -84,10 +84,20 @@ func (bs *baseSerializer) sum(b []byte) []byte {
 func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if bs.depth > 0 && ionValue.IsInStruct() {
 		fieldName := ionValue.getFieldName()
-
-		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available.
-
 		if fieldName != nil {
+			if *fieldName == "" {
+				if hr, ok := ionValue.(*hashReader); ok {
+					token, err := hr.FieldNameSymbol()
+					if err != nil {
+						return err
+					}
+
+					if token.Text == nil && token.LocalSID != 0 {
+						return &UnknownSymbolError{token.LocalSID}
+					}
+				}
+			}
+
 			return bs.writeSymbol(*fieldName)
 		}
 	}
@@ -165,14 +175,21 @@ func (bs *baseSerializer) writeSymbol(token string) error {
 		return err
 	}
 
-	// TODO: Add SymbolToken logic here once SymbolTokens are available.
+	var sid int64
+	if token == "" {
+		sid = 0
+	} else {
+		sid = ion.SymbolIDUnknown
+	}
 
-	scalarBytes, err := bs.getBytes(ion.SymbolType, token, false)
+	symbolToken := ion.SymbolToken{Text: &token, LocalSID: sid}
+
+	scalarBytes, err := bs.getBytes(ion.SymbolType, symbolToken, false)
 	if err != nil {
 		return err
 	}
 
-	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, false, scalarBytes)
+	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, &symbolToken, false, scalarBytes)
 	if err != nil {
 		return err
 	}
@@ -262,7 +279,7 @@ func (bs *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 }
 
 func (bs *baseSerializer) scalarOrNullSplitParts(
-	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
+	ionType ion.Type, symbolToken *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
 
 	offset, err := bs.getLengthFieldLength(bytes)
 	if err != nil {
@@ -286,10 +303,9 @@ func (bs *baseSerializer) scalarOrNullSplitParts(
 		tq = 0x70
 		if isNull {
 			tq = tq | 0x0F
+		} else if symbolToken != nil && symbolToken.Text == nil && symbolToken.LocalSID == 0 {
+			tq = 0x71
 		}
-
-		// TODO: Add SymbolToken logic here once SymbolTokens are available.
-
 	} else if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
 		// Not a symbol, bool, or null value.
 		// Zero - out the L nibble.
@@ -383,13 +399,15 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	case ion.StringType:
 		return writer.WriteString(ionValue.(string))
 	case ion.SymbolType:
-		ionValueStr, ok := ionValue.(string)
-		if ok {
+		if ionValueSymbol, ok := ionValue.(ion.SymbolToken); ok && ionValueSymbol.Text != nil {
+			return writer.WriteString(*ionValueSymbol.Text)
+		}
+
+		if ionValueStr, ok := ionValue.(string); ok {
 			return writer.WriteString(ionValueStr)
 		}
 
-		ionValueSymbol, ok := ionValue.(ion.SymbolTable)
-		if ok {
+		if ionValueSymbol, ok := ionValue.(ion.SymbolTable); ok {
 			symbols := ionValueSymbol.Symbols()
 			if len(symbols) > 0 {
 				return writer.WriteString(symbols[0])

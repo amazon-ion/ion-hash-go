@@ -91,7 +91,7 @@ func (ss *structSerializer) appendFieldHash(sum []byte) {
 }
 
 func (ss *structSerializer) scalarOrNullSplitParts(
-	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
+	ionType ion.Type, symbolToken *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
 
-	return ss.baseSerializer.scalarOrNullSplitParts(ionType, isNull, bytes)
+	return ss.baseSerializer.scalarOrNullSplitParts(ionType, symbolToken, isNull, bytes)
 }
