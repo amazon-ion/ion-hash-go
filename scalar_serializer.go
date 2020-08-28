@@ -56,15 +56,15 @@ func (ss *scalarSerializer) scalar(ionValue interface{}) error {
 		return err
 	}
 
-	var symbolToken *ion.SymbolToken
-	symbolToken = nil
+	var symbol *ion.SymbolToken
+	symbol = nil
 	if ionHashValue.Type() == ion.SymbolType {
 		if token, ok := ionVal.(ion.SymbolToken); ok {
-			symbolToken = &token
+			symbol = &token
 		}
 	}
 
-	tq, representation, err := ss.scalarOrNullSplitParts(ionType, symbolToken, ionHashValue.IsNull(), scalarBytes)
+	tq, representation, err := ss.scalarOrNullSplitParts(ionType, symbol, ionHashValue.IsNull(), scalarBytes)
 	if err != nil {
 		return err
 	}

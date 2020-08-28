@@ -83,23 +83,20 @@ func (bs *baseSerializer) sum(b []byte) []byte {
 
 func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if bs.depth > 0 && ionValue.IsInStruct() {
-		fieldName := ionValue.getFieldName()
-		if fieldName != nil {
-			if *fieldName == "" {
-				if hr, ok := ionValue.(*hashReader); ok {
-					token, err := hr.FieldNameSymbol()
-					if err != nil {
-						return err
-					}
-
-					if token.Text == nil && token.LocalSID != 0 {
-						return &UnknownSymbolError{token.LocalSID}
-					}
-				}
+		if hr, ok := ionValue.(*hashReader); ok {
+			token, err := hr.FieldNameSymbol()
+			if err != nil {
+				return err
 			}
 
-			return bs.writeSymbol(*fieldName)
+			if token.Text == nil && token.LocalSID != 0 {
+				return &UnknownSymbolError{token.LocalSID}
+			}
+
+			return bs.writeSymbol(token.Text)
 		}
+
+		return bs.writeSymbol(ionValue.getFieldName())
 	}
 
 	return nil
@@ -138,7 +135,7 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 		}
 
 		for _, annotation := range annotations {
-			err = bs.writeSymbol(annotation)
+			err = bs.writeSymbol(&annotation)
 			if err != nil {
 				return err
 			}
@@ -169,27 +166,27 @@ func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer b
 	return nil
 }
 
-func (bs *baseSerializer) writeSymbol(token string) error {
+func (bs *baseSerializer) writeSymbol(token *string) error {
 	err := bs.beginMarker()
 	if err != nil {
 		return err
 	}
 
 	var sid int64
-	if token == "" {
+	if token == nil {
 		sid = 0
 	} else {
 		sid = ion.SymbolIDUnknown
 	}
 
-	symbolToken := ion.SymbolToken{Text: &token, LocalSID: sid}
+	symbol := ion.SymbolToken{Text: token, LocalSID: sid}
 
-	scalarBytes, err := bs.getBytes(ion.SymbolType, symbolToken, false)
+	scalarBytes, err := bs.getBytes(ion.SymbolType, symbol, false)
 	if err != nil {
 		return err
 	}
 
-	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, &symbolToken, false, scalarBytes)
+	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, &symbol, false, scalarBytes)
 	if err != nil {
 		return err
 	}
@@ -279,7 +276,7 @@ func (bs *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 }
 
 func (bs *baseSerializer) scalarOrNullSplitParts(
-	ionType ion.Type, symbolToken *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
+	ionType ion.Type, symbol *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
 
 	offset, err := bs.getLengthFieldLength(bytes)
 	if err != nil {
@@ -303,7 +300,7 @@ func (bs *baseSerializer) scalarOrNullSplitParts(
 		tq = 0x70
 		if isNull {
 			tq = tq | 0x0F
-		} else if symbolToken != nil && symbolToken.Text == nil && symbolToken.LocalSID == 0 {
+		} else if symbol != nil && (symbol.Text == nil || *symbol.Text == "") && symbol.LocalSID == 0 {
 			tq = 0x71
 		}
 	} else if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
@@ -399,8 +396,11 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	case ion.StringType:
 		return writer.WriteString(ionValue.(string))
 	case ion.SymbolType:
-		if ionValueSymbol, ok := ionValue.(ion.SymbolToken); ok && ionValueSymbol.Text != nil {
-			return writer.WriteString(*ionValueSymbol.Text)
+		if ionValueSymbol, ok := ionValue.(ion.SymbolToken); ok {
+			if ionValueSymbol.Text != nil {
+				return writer.WriteString(*ionValueSymbol.Text)
+			}
+			return writer.WriteString("")
 		}
 
 		if ionValueStr, ok := ionValue.(string); ok {

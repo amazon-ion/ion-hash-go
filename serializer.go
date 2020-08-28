@@ -38,11 +38,11 @@ type serializer interface {
 
 	handleAnnotationsEnd(ionValue interface{}, isContainer bool) error
 
-	writeSymbol(token string) error
+	writeSymbol(token *string) error
 
 	getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error)
 
 	getLengthFieldLength(bytes []byte) (int, error)
 
-	scalarOrNullSplitParts(ionType ion.Type, symbolToken *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error)
+	scalarOrNullSplitParts(ionType ion.Type, symbol *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error)
 }

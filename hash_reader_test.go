@@ -87,30 +87,13 @@ func TestConsumeRemainderNext(t *testing.T) {
 	consume(t, ConsumeRemainderNext)
 }
 
-func TestReaderUnresolvedSid(t *testing.T) {
-	t.Skip() // Skipping test until SymbolToken is implemented
-
-	reader := ion.NewReaderBytes([]byte{0xd3, 0x8a, 0x21, 0x01})
-	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(reader, tihp.getInstance())
-	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
-
-	assert.False(t, ionHashReader.Next())
-
-	require.False(t, ionHashReader.Next())
-	require.Error(t, ionHashReader.Err())
-	assert.IsType(t, &UnknownSymbolError{}, ionHashReader.Err())
-}
-
 func TestIonReaderContract(t *testing.T) {
-	t.Skip() // Skipping test until SymbolToken is implemented
-
-	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
+	file, err := ioutil.ReadFile("ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	reader := ion.NewReaderBytes(file)
 	tihp := newTestIonHasherProvider("identity")
-	ionHashReader, err := NewHashReader(reader, tihp.getInstance())
+	ionHashReader, err := NewHashReader(ion.NewReaderBytes(file), tihp.getInstance())
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	compareReaders(t, reader, ionHashReader)

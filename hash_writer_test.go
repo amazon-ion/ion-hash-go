@@ -333,11 +333,7 @@ func TestExtraEndContainer(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValue(t *testing.T) {
-	// Skipping test until FieldNameSymbol logic is available.
-	// Test currently fails with empty field name ie. {'':1}
-	t.Skip()
-
-	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
+	file, err := ioutil.ReadFile("ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriterAfterNext)
@@ -352,11 +348,7 @@ func TestIonWriterContractWriteValue(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValues(t *testing.T) {
-	// Skipping test until FieldNameSymbol logic is available.
-	// Test currently fails with empty field name ie. {'':1}
-	t.Skip()
-
-	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
+	file, err := ioutil.ReadFile("ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriter)
@@ -368,12 +360,6 @@ func TestIonWriterContractWriteValues(t *testing.T) {
 	assert.Greater(t, len(actual), 1000, "Expected the ion writer to write more than 1000 bytes")
 
 	assert.Equal(t, expected, actual, "sum did not match expectation")
-}
-
-func TestWriterUnresolvedSid(t *testing.T) {
-	t.Skip() // Skipping test until test is implemented once SymbolToken is available
-
-	// TODO: Implement test once SymbolToken is available.
 }
 
 func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, function writeFunction) []byte {
