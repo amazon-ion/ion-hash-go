@@ -38,7 +38,7 @@ type serializer interface {
 
 	handleAnnotationsEnd(ionValue interface{}, isContainer bool) error
 
-	writeSymbol(token *string) error
+	writeSymbol(val string) error
 
 	getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error)
 

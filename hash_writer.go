@@ -73,7 +73,7 @@ type HashWriter interface {
 
 	// Remaining hashValue methods.
 	getFieldName() *string
-	getAnnotations() []string
+	getAnnotations() []ion.SymbolToken
 	IsNull() bool
 	Type() ion.Type
 	value() (interface{}, error)
@@ -91,7 +91,7 @@ type hashWriter struct {
 	currentType      ion.Type
 	currentValue     interface{}
 	currentIsNull    bool
-	annotations      []string
+	annotations      []ion.SymbolToken
 }
 
 // NewHashWriter takes an Ion Writer and a hash provider and returns a new HashWriter.
@@ -113,14 +113,29 @@ func (hw *hashWriter) FieldName(val string) error {
 
 // Annotation adds an annotation to the next value written.
 func (hw *hashWriter) Annotation(val string) error {
-	hw.annotations = append(hw.annotations, val)
+	symbol, err := ion.NewSymbolToken(nil, val)
+	if err != nil {
+		return err
+	}
+
+	hw.annotations = append(hw.annotations, symbol)
 	return hw.ionWriter.Annotations(val)
 }
 
 // Annotations adds one or more annotations to the next value written.
 func (hw *hashWriter) Annotations(vals ...string) error {
-	hw.annotations = append(hw.annotations, vals...)
+	symbols, err := ion.NewSymbolTokens(nil, vals)
+	if err != nil {
+		return err
+	}
+
+	hw.annotations = append(hw.annotations, symbols...)
 	return hw.ionWriter.Annotations(vals...)
+}
+
+func (hw *hashWriter) AnnotationsAsSymbols(values ...ion.SymbolToken) error {
+	hw.annotations = append(hw.annotations, values...)
+	return hw.ionWriter.AnnotationsAsSymbols(values...)
 }
 
 // WriteNull writes an untyped null value.
@@ -321,7 +336,7 @@ func (hw *hashWriter) getFieldName() *string {
 	return &hw.currentFieldName
 }
 
-func (hw *hashWriter) getAnnotations() []string {
+func (hw *hashWriter) getAnnotations() []ion.SymbolToken {
 	return hw.annotations
 }
 

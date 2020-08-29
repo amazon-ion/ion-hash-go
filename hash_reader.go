@@ -81,7 +81,7 @@ type HashReader interface {
 
 	// hashValue methods.
 	getFieldName() *string
-	getAnnotations() []string
+	getAnnotations() []ion.SymbolToken
 	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
@@ -180,6 +180,10 @@ func (hr *hashReader) FieldName() *string {
 // It returns nil if there is no current value or the current value has no annotations.
 func (hr *hashReader) Annotations() []string {
 	return hr.ionReader.Annotations()
+}
+
+func (hr *hashReader) AnnotationsAsSymbols() []ion.SymbolToken {
+	return hr.ionReader.AnnotationsAsSymbols()
 }
 
 // StepIn steps in to the current value if it is a container. It returns an error if there
@@ -287,7 +291,7 @@ func (hr *hashReader) StringValue() (string, error) {
 	return hr.ionReader.StringValue()
 }
 
-// StringValue returns the current value as a symbol token.
+// SymbolValue returns the current value as a symbol token.
 // It returns an error if the current value is not an Ion symbol or an Ion string.
 func (hr *hashReader) SymbolValue() (ion.SymbolToken, error) {
 	return hr.ionReader.SymbolValue()
@@ -342,8 +346,8 @@ func (hr *hashReader) getFieldName() *string {
 	return hr.FieldName()
 }
 
-func (hr *hashReader) getAnnotations() []string {
-	return hr.Annotations()
+func (hr *hashReader) getAnnotations() []ion.SymbolToken {
+	return hr.ionReader.AnnotationsAsSymbols()
 }
 
 func (hr *hashReader) value() (interface{}, error) {

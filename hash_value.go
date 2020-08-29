@@ -20,7 +20,7 @@ import "github.com/amzn/ion-go/ion"
 type hashValue interface {
 	getFieldName() *string
 
-	getAnnotations() []string
+	getAnnotations() []ion.SymbolToken
 
 	IsNull() bool
 

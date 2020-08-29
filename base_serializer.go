@@ -83,6 +83,7 @@ func (bs *baseSerializer) sum(b []byte) []byte {
 
 func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if bs.depth > 0 && ionValue.IsInStruct() {
+		// TODO: Remove type cast once FieldNameSymbol is available for ion.Writer/hashWriter
 		if hr, ok := ionValue.(*hashReader); ok {
 			token, err := hr.FieldNameSymbol()
 			if err != nil {
@@ -93,10 +94,16 @@ func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
 				return &UnknownSymbolError{token.LocalSID}
 			}
 
-			return bs.writeSymbol(token.Text)
+			return bs.writeSymbolAsToken(token)
 		}
 
-		return bs.writeSymbol(ionValue.getFieldName())
+		// TODO: Remove this logic once FieldNameSymbol is available for ion.Writer/hashWriter
+		fieldName := ionValue.getFieldName()
+		if fieldName != nil {
+			return bs.writeSymbol(*fieldName)
+		} else {
+			return bs.writeSymbol("")
+		}
 	}
 
 	return nil
@@ -135,7 +142,7 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 		}
 
 		for _, annotation := range annotations {
-			err = bs.writeSymbol(&annotation)
+			err = bs.writeSymbolAsToken(annotation)
 			if err != nil {
 				return err
 			}
@@ -166,20 +173,20 @@ func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer b
 	return nil
 }
 
-func (bs *baseSerializer) writeSymbol(token *string) error {
-	err := bs.beginMarker()
+func (bs *baseSerializer) writeSymbol(val string) error {
+	symbol, err := ion.NewSymbolToken(nil, val)
 	if err != nil {
 		return err
 	}
 
-	var sid int64
-	if token == nil {
-		sid = 0
-	} else {
-		sid = ion.SymbolIDUnknown
-	}
+	return bs.writeSymbolAsToken(symbol)
+}
 
-	symbol := ion.SymbolToken{Text: token, LocalSID: sid}
+func (bs *baseSerializer) writeSymbolAsToken(symbol ion.SymbolToken) error {
+	err := bs.beginMarker()
+	if err != nil {
+		return err
+	}
 
 	scalarBytes, err := bs.getBytes(ion.SymbolType, symbol, false)
 	if err != nil {
@@ -300,7 +307,7 @@ func (bs *baseSerializer) scalarOrNullSplitParts(
 		tq = 0x70
 		if isNull {
 			tq = tq | 0x0F
-		} else if symbol != nil && (symbol.Text == nil || *symbol.Text == "") && symbol.LocalSID == 0 {
+		} else if symbol != nil && symbol.Text == nil && symbol.LocalSID == 0 {
 			tq = 0x71
 		}
 	} else if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
