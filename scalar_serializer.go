@@ -61,6 +61,8 @@ func (ss *scalarSerializer) scalar(ionValue interface{}) error {
 	if ionHashValue.Type() == ion.SymbolType {
 		if token, ok := ionVal.(ion.SymbolToken); ok {
 			symbol = &token
+		} else if token, ok := ionVal.(*ion.SymbolToken); ok {
+			symbol = token
 		}
 	}
 

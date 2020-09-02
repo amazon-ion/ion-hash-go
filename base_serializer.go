@@ -142,7 +142,7 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 		}
 
 		for _, annotation := range annotations {
-			err = bs.writeSymbolAsToken(annotation)
+			err = bs.writeSymbolAsToken(&annotation)
 			if err != nil {
 				return err
 			}
@@ -179,21 +179,21 @@ func (bs *baseSerializer) writeSymbol(val string) error {
 		return err
 	}
 
-	return bs.writeSymbolAsToken(symbol)
+	return bs.writeSymbolAsToken(&symbol)
 }
 
-func (bs *baseSerializer) writeSymbolAsToken(symbol ion.SymbolToken) error {
+func (bs *baseSerializer) writeSymbolAsToken(symbol *ion.SymbolToken) error {
 	err := bs.beginMarker()
 	if err != nil {
 		return err
 	}
 
-	scalarBytes, err := bs.getBytes(ion.SymbolType, symbol, false)
+	scalarBytes, err := bs.getBytes(ion.SymbolType, *symbol, false)
 	if err != nil {
 		return err
 	}
 
-	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, &symbol, false, scalarBytes)
+	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, symbol, false, scalarBytes)
 	if err != nil {
 		return err
 	}
@@ -369,39 +369,41 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	case ion.FloatType:
 		return writer.WriteFloat(ionValue.(float64))
 	case ion.IntType:
-		ionValInt64, ok := ionValue.(int64)
-		if ok {
+		if ionValInt64, ok := ionValue.(int64); ok {
 			return writer.WriteInt(ionValInt64)
 		}
 
-		ionValUint64, ok := ionValue.(uint64)
-		if ok {
+		if ionValUint64, ok := ionValue.(uint64); ok {
 			return writer.WriteUint(ionValUint64)
 		}
 
-		ionValInt32, ok := ionValue.(int32)
-		if ok {
+		if ionValInt32, ok := ionValue.(int32); ok {
 			return writer.WriteInt(int64(ionValInt32))
 		}
 
-		ionValUint32, ok := ionValue.(uint32)
-		if ok {
+		if ionValUint32, ok := ionValue.(uint32); ok {
 			return writer.WriteUint(uint64(ionValUint32))
 		}
 
-		ionValInt, ok := ionValue.(int)
-		if ok {
+		if ionValInt, ok := ionValue.(int); ok {
 			return writer.WriteInt(int64(ionValInt))
 		}
 
-		ionValBigInt, ok := ionValue.(*big.Int)
-		if ok {
+		if ionValBigInt, ok := ionValue.(*big.Int); ok {
 			return writer.WriteBigInt(ionValBigInt)
 		}
 
 		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.StringType:
-		return writer.WriteString(ionValue.(string))
+		if ionValueStr, ok := ionValue.(string); ok {
+			return writer.WriteString(ionValueStr)
+		}
+
+		if ionValueStr, ok := ionValue.(*string); ok {
+			return writer.WriteString(*ionValueStr)
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.SymbolType:
 		if ionValueSymbol, ok := ionValue.(ion.SymbolToken); ok {
 			if ionValueSymbol.Text != nil {
@@ -410,15 +412,15 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 			return writer.WriteString("")
 		}
 
-		if ionValueStr, ok := ionValue.(string); ok {
-			return writer.WriteString(ionValueStr)
+		if ionValueSymbol, ok := ionValue.(*ion.SymbolToken); ok {
+			if ionValueSymbol.Text != nil {
+				return writer.WriteString(*ionValueSymbol.Text)
+			}
+			return writer.WriteString("")
 		}
 
-		if ionValueSymbol, ok := ionValue.(ion.SymbolTable); ok {
-			symbols := ionValueSymbol.Symbols()
-			if len(symbols) > 0 {
-				return writer.WriteString(symbols[0])
-			}
+		if ionValueStr, ok := ionValue.(string); ok {
+			return writer.WriteString(ionValueStr)
 		}
 
 		return &InvalidArgumentError{"ionValue", ionValue}
