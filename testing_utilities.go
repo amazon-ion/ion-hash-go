@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
+func compareReaders(t *testing.T, reader1, reader2 ion.Reader) {
 	for hasNext(t, reader1, reader2) {
 		type1 := reader1.Type()
 		type2 := reader2.Type()
@@ -44,8 +44,6 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 		compareAnnotations(t, reader1, reader2)
 
 		compareAnnotationSymbols(t, reader1, reader2)
-
-		compareHasAnnotations(t, reader1, reader2)
 
 		isNull1 := reader1.IsNull()
 		isNull2 := reader2.IsNull()
@@ -77,7 +75,7 @@ func compareReaders(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
 }
 
 // hasNext() checks that the readers have a Next value.
-func hasNext(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) bool {
+func hasNext(t *testing.T, reader1, reader2 ion.Reader) bool {
 	next1 := reader1.Next()
 	next2 := reader2.Next()
 	assert.Equal(t, next1, next2, "next results don't match")
@@ -93,25 +91,45 @@ func hasNext(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) bool {
 	return next1 && next2
 }
 
-func compareFieldNames(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available.
+func compareFieldNames(t *testing.T, reader1, reader2 ion.Reader) {
+	token1, err := reader1.FieldNameSymbol()
+	require.NoError(t, err, "Something went wrong executing reader1.FieldNameSymbol()")
+	token2, err := reader2.FieldNameSymbol()
+	require.NoError(t, err, "Something went wrong executing reader2.FieldNameSymbol()")
+
+	require.Equal(t, token1.Text == nil, token2.Text == nil, "Expected the text of both tokens to be null or both not null")
+
+	if token1.Text != nil {
+		assert.Equal(t, *token1.Text, *token2.Text, "Expected tokens to have matching text")
+
+		if *token1.Text != "" {
+			field1 := reader1.FieldName()
+			field2 := reader2.FieldName()
+
+			require.NotNil(t, field1)
+			require.NotNil(t, field2)
+
+			assert.Equal(t, *field1, *field2, "Expected field names to match")
+		}
+	}
 }
 
-func compareAnnotations(t *testing.T, reader1 ion.Reader, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available.
-
+func compareAnnotations(t *testing.T, reader1, reader2 ion.Reader) {
 	assert.Equal(t, reader1.Annotations(), reader2.Annotations(), "Expected symbol sequences to match")
 }
 
 func compareAnnotationSymbols(t *testing.T, reader1, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available.
+	an1 := reader1.AnnotationsAsSymbols()
+	an2 := reader2.AnnotationsAsSymbols()
+
+	require.Equal(t, len(an1), len(an2), "Expected readers to have same number of annotations")
+
+	for i := 0; i < len(an1); i++ {
+		assert.True(t,an1[i].Equal(&an2[i]))
+	}
 }
 
-func compareHasAnnotations(t *testing.T, reader1, reader2 ion.Reader) {
-	// TODO: Add SymbolToken logic here once SymbolTokens are available.
-}
-
-func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 ion.Reader) {
+func compareScalars(t *testing.T, ionType ion.Type, reader1, reader2 ion.Reader) {
 	isNull1 := reader1.IsNull()
 	isNull2 := reader2.IsNull()
 
@@ -206,8 +224,25 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1 ion.Reader, reader2 
 
 		assert.Equal(t, str1, str2, "Expected string values to match")
 	case ion.SymbolType:
-		// TODO: Add SymbolToken logic here once SymbolTokens are available.
-		t.Fatal("No SymbolToken support yet")
+		token1, err := reader1.SymbolValue()
+		require.NoError(t, err, "Something went wrong executing reader1.SymbolValue()")
+
+		token2, err := reader2.SymbolValue()
+		require.NoError(t, err, "Something went wrong executing reader2.SymbolValue()")
+
+		if isNull1 {
+			assert.Nil(t, token1.Text, "Expected token1 to have null text")
+			assert.Nil(t, token2.Text, "Expected token2 to have null text")
+		} else {
+			require.Equal(t, token1.Text == nil, token2.Text == nil,
+				"Expected the text of both tokens to be null or both not null")
+
+			if token1.Text == nil {
+				assert.Equal(t, token1.LocalSID, token2.LocalSID, "Expected token SIDs to match")
+			} else {
+				assert.Equal(t, token1.Text, token2.Text, "Expected token to have matching text")
+			}
+		}
 	case ion.BlobType, ion.ClobType:
 		b1, err := reader1.ByteValue()
 		assert.NoError(t, err, "Something went wrong executing reader1.ByteValue()")
@@ -249,9 +284,9 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 			require.NoError(t, writer.FieldName(*name), "Something went wrong executing writer.FieldName(*name)")
 		}
 
-		an := reader.Annotations()
+		an := reader.AnnotationsAsSymbols()
 		if len(an) > 0 {
-			require.NoError(t, writer.Annotations(an...), "Something went wrong executing writer.Annotations(an...)")
+			require.NoError(t, writer.AnnotationsAsSymbols(an...), "Something went wrong executing writer.Annotations(an...)")
 		}
 
 		currentType := reader.Type()
@@ -306,15 +341,16 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 
 			assert.NoError(t, writer.WriteTimestamp(val), "Something went wrong when writing Timestamp value")
 		case ion.SymbolType:
-			val, err := reader.StringValue()
+			val, err := reader.SymbolValue()
 			assert.NoError(t, err, "Something went wrong when reading Symbol value")
 
-			assert.NoError(t, writer.WriteSymbol(val), "Something went wrong when writing Symbol value")
+			assert.NoError(t, writer.WriteSymbol(val.ResolveToString()), "Something went wrong when writing Symbol value")
 		case ion.StringType:
 			val, err := reader.StringValue()
 			assert.NoError(t, err, "Something went wrong when reading String value")
 
-			assert.NoError(t, writer.WriteString(val), "Something went wrong when writing String value")
+			require.NotNil(t, val)
+			assert.NoError(t, writer.WriteString(*val), "Something went wrong when writing String value")
 		case ion.ClobType:
 			val, err := reader.ByteValue()
 			assert.NoError(t, err, "Something went wrong when reading Clob value")
@@ -364,17 +400,17 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 	ionType := reader.Type()
 
-	if reader.Annotations() != nil {
+	if reader.AnnotationsAsSymbols() != nil {
 		for _, writer := range writers {
-			require.NoError(t, writer.Annotations(reader.Annotations()...),
+			require.NoError(t, writer.AnnotationsAsSymbols(reader.AnnotationsAsSymbols()...),
 				"Something went wrong executing writer.Annotations(reader.Annotations()...)")
 		}
 	}
 
-	fieldName := reader.FieldName()
-	if fieldName != nil && *fieldName != "ion" && *fieldName != "10n" {
+	fieldName, err := reader.FieldNameSymbol()
+	if err == nil && fieldName.Text != nil && *fieldName.Text != "ion" && *fieldName.Text != "10n" {
 		for _, writer := range writers {
-			require.NoError(t, writer.FieldName(*fieldName),
+			require.NoError(t, writer.FieldName(*fieldName.Text),
 				"Something went wrong executing writer.FieldName(*fieldName)")
 		}
 	}
@@ -384,147 +420,150 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 			require.NoError(t, writer.WriteNullType(reader.Type()),
 				"Something went wrong executing writer.WriteNullType(reader.Type())")
 		}
-	} else {
-		switch ionType {
-		case ion.NullType:
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteNull(), "Something went wrong executing writer.WriteNull()")
-			}
-		case ion.BoolType:
-			boolValue, err := reader.BoolValue()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteBool(boolValue),
-					"Something went wrong executing writer.WriteBool(boolValue)")
-			}
-		case ion.BlobType:
-			byteValue, err := reader.ByteValue()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteBlob(byteValue),
-					"Something went wrong executing writer.WriteBlob(byteValue)")
-			}
-		case ion.ClobType:
-			byteValue, err := reader.ByteValue()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteClob(byteValue),
-					"Something went wrong executing writer.WriteClob(byteValue)")
-			}
-		case ion.DecimalType:
-			decimalValue, err := reader.DecimalValue()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteDecimal(decimalValue),
-					"Something went wrong executing writer.WriteDecimal(decimalValue)")
-			}
-		case ion.FloatType:
-			floatValue, err := reader.FloatValue()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteFloat(floatValue),
-					"Something went wrong executing writer.WriteFloat(floatValue)")
-			}
-		case ion.IntType:
-			intSize, err := reader.IntSize()
-			require.NoError(t, err)
 
-			switch intSize {
-			case ion.Int32, ion.Int64:
-				intValue, err := reader.Int64Value()
-				require.NoError(t, err)
-				for _, writer := range writers {
-					require.NoError(t, writer.WriteInt(intValue),
-						"Something went wrong executing writer.WriteInt(intValue)")
-				}
-			case ion.Uint64:
-				uintValue, err := reader.Uint64Value()
-				require.NoError(t, err)
-				for _, writer := range writers {
-					require.NoError(t, writer.WriteUint(uintValue),
-						"Something went wrong executing writer.WriteUint(uintValue)")
-				}
-			case ion.BigInt:
-				bigIntValue, err := reader.BigIntValue()
-				require.NoError(t, err)
-				for _, writer := range writers {
-					require.NoError(t, writer.WriteBigInt(bigIntValue),
-						"Something went wrong executing writer.WriteBigInt(bigIntValue)")
-				}
-			default:
-				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
-			}
+		return
+	}
 
-		case ion.StringType:
-			stringValue, err := reader.StringValue()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteString(stringValue),
-					"Something went wrong executing writer.WriteString(stringValue)")
-			}
-		case ion.SymbolType:
-			stringValue, err := reader.StringValue()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteSymbol(stringValue),
-					"Something went wrong executing writer.WriteSymbol(stringValue)")
-			}
-		case ion.TimestampType:
-			timestampValue, err := reader.TimestampValue()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteTimestamp(timestampValue),
-					"Something went wrong executing writer.WriterTimestamp(timestampValue)")
-			}
-
-		case ion.SexpType:
-			require.NoError(t, reader.StepIn())
-			for _, writer := range writers {
-				require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
-			}
-			for reader.Next() {
-				writeToWriters(t, reader, writers...)
-			}
-			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
-
-			require.NoError(t, reader.StepOut())
-			for _, writer := range writers {
-				require.NoError(t, writer.EndSexp(), "Something went wrong executing writer.EndSexp()")
-			}
-		case ion.ListType:
-			require.NoError(t, reader.StepIn())
-			for _, writer := range writers {
-				require.NoError(t, writer.BeginList(), "Something went wrong executing writer.BeginList()")
-			}
-
-			for reader.Next() {
-				writeToWriters(t, reader, writers...)
-			}
-			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
-
-			require.NoError(t, reader.StepOut())
-			for _, writer := range writers {
-				require.NoError(t, writer.EndList(), "Something went wrong executing writer.EndList()")
-			}
-		case ion.StructType:
-			require.NoError(t, reader.StepIn())
-			for _, writer := range writers {
-				require.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
-			}
-
-			for reader.Next() {
-				writeToWriters(t, reader, writers...)
-			}
-			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
-
-			require.NoError(t, reader.StepOut())
-			for _, writer := range writers {
-				require.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
-			}
-
-		default:
-			t.Fatal(InvalidIonTypeError{ionType})
+	switch ionType {
+	case ion.NullType:
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteNull(), "Something went wrong executing writer.WriteNull()")
 		}
+	case ion.BoolType:
+		boolValue, err := reader.BoolValue()
+		require.NoError(t, err)
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteBool(boolValue),
+				"Something went wrong executing writer.WriteBool(boolValue)")
+		}
+	case ion.BlobType:
+		byteValue, err := reader.ByteValue()
+		require.NoError(t, err)
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteBlob(byteValue),
+				"Something went wrong executing writer.WriteBlob(byteValue)")
+		}
+	case ion.ClobType:
+		byteValue, err := reader.ByteValue()
+		require.NoError(t, err)
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteClob(byteValue),
+				"Something went wrong executing writer.WriteClob(byteValue)")
+		}
+	case ion.DecimalType:
+		decimalValue, err := reader.DecimalValue()
+		require.NoError(t, err)
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteDecimal(decimalValue),
+				"Something went wrong executing writer.WriteDecimal(decimalValue)")
+		}
+	case ion.FloatType:
+		floatValue, err := reader.FloatValue()
+		require.NoError(t, err)
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteFloat(floatValue),
+				"Something went wrong executing writer.WriteFloat(floatValue)")
+		}
+	case ion.IntType:
+		intSize, err := reader.IntSize()
+		require.NoError(t, err)
+
+		switch intSize {
+		case ion.Int32, ion.Int64:
+			intValue, err := reader.Int64Value()
+			require.NoError(t, err)
+			for _, writer := range writers {
+				require.NoError(t, writer.WriteInt(intValue),
+					"Something went wrong executing writer.WriteInt(intValue)")
+			}
+		case ion.Uint64:
+			uintValue, err := reader.Uint64Value()
+			require.NoError(t, err)
+			for _, writer := range writers {
+				require.NoError(t, writer.WriteUint(uintValue),
+					"Something went wrong executing writer.WriteUint(uintValue)")
+			}
+		case ion.BigInt:
+			bigIntValue, err := reader.BigIntValue()
+			require.NoError(t, err)
+			for _, writer := range writers {
+				require.NoError(t, writer.WriteBigInt(bigIntValue),
+					"Something went wrong executing writer.WriteBigInt(bigIntValue)")
+			}
+		default:
+			t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
+		}
+
+	case ion.StringType:
+		stringValue, err := reader.StringValue()
+		require.NoError(t, err)
+		require.NotNil(t, stringValue)
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteString(*stringValue),
+				"Something went wrong executing writer.WriteString(stringValue)")
+		}
+	case ion.SymbolType:
+		symbolValue, err := reader.SymbolValue()
+		require.NoError(t, err)
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteSymbol(symbolValue.ResolveToString()),
+				"Something went wrong executing writer.WriteSymbol(symbolValue.ResolveToString())")
+		}
+	case ion.TimestampType:
+		timestampValue, err := reader.TimestampValue()
+		require.NoError(t, err)
+		for _, writer := range writers {
+			require.NoError(t, writer.WriteTimestamp(timestampValue),
+				"Something went wrong executing writer.WriterTimestamp(timestampValue)")
+		}
+
+	case ion.SexpType:
+		require.NoError(t, reader.StepIn())
+		for _, writer := range writers {
+			require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
+		}
+		for reader.Next() {
+			writeToWriters(t, reader, writers...)
+		}
+		require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
+
+		require.NoError(t, reader.StepOut())
+		for _, writer := range writers {
+			require.NoError(t, writer.EndSexp(), "Something went wrong executing writer.EndSexp()")
+		}
+	case ion.ListType:
+		require.NoError(t, reader.StepIn())
+		for _, writer := range writers {
+			require.NoError(t, writer.BeginList(), "Something went wrong executing writer.BeginList()")
+		}
+
+		for reader.Next() {
+			writeToWriters(t, reader, writers...)
+		}
+		require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
+
+		require.NoError(t, reader.StepOut())
+		for _, writer := range writers {
+			require.NoError(t, writer.EndList(), "Something went wrong executing writer.EndList()")
+		}
+	case ion.StructType:
+		require.NoError(t, reader.StepIn())
+		for _, writer := range writers {
+			require.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
+		}
+
+		for reader.Next() {
+			writeToWriters(t, reader, writers...)
+		}
+		require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
+
+		require.NoError(t, reader.StepOut())
+		for _, writer := range writers {
+			require.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
+		}
+
+	default:
+		t.Fatal(InvalidIonTypeError{ionType})
 	}
 }
 

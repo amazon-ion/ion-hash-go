@@ -174,7 +174,7 @@ func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer b
 }
 
 func (bs *baseSerializer) writeSymbol(val string) error {
-	symbol, err := ion.NewSymbolToken(nil, val)
+	symbol, err := ion.NewSymbolToken(ion.V1SystemSymbolTable, val)
 	if err != nil {
 		return err
 	}

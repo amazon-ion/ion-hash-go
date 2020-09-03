@@ -113,7 +113,7 @@ func (hw *hashWriter) FieldName(val string) error {
 
 // Annotation adds an annotation to the next value written.
 func (hw *hashWriter) Annotation(val string) error {
-	symbol, err := ion.NewSymbolToken(nil, val)
+	symbol, err := ion.NewSymbolToken(ion.V1SystemSymbolTable, val)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (hw *hashWriter) Annotation(val string) error {
 
 // Annotations adds one or more annotations to the next value written.
 func (hw *hashWriter) Annotations(vals ...string) error {
-	symbols, err := ion.NewSymbolTokens(nil, vals)
+	symbols, err := ion.NewSymbolTokens(ion.V1SystemSymbolTable, vals)
 	if err != nil {
 		return err
 	}
