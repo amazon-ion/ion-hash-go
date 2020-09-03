@@ -133,6 +133,11 @@ func (hw *hashWriter) Annotations(vals ...string) error {
 	return hw.ionWriter.Annotations(vals...)
 }
 
+func (hw *hashWriter) AnnotationAsSymbol(val ion.SymbolToken) error {
+	hw.annotations = append(hw.annotations, val)
+	return hw.ionWriter.AnnotationAsSymbol(val)
+}
+
 func (hw *hashWriter) AnnotationsAsSymbols(values ...ion.SymbolToken) error {
 	hw.annotations = append(hw.annotations, values...)
 	return hw.ionWriter.AnnotationsAsSymbols(values...)

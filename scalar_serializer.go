@@ -56,8 +56,7 @@ func (ss *scalarSerializer) scalar(ionValue interface{}) error {
 		return err
 	}
 
-	var symbol *ion.SymbolToken
-	symbol = nil
+	var symbol *ion.SymbolToken = nil
 	if ionHashValue.Type() == ion.SymbolType {
 		if token, ok := ionVal.(ion.SymbolToken); ok {
 			symbol = &token
