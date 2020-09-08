@@ -388,7 +388,7 @@ func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, functio
 		require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 	}
 
-	function(t, reader, writer, true)
+	function(t, reader, writer, false)
 
 	assert.NoError(t, writer.Finish(), "Something went wrong executing writer.Finish()")
 
