@@ -156,7 +156,7 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 	assert.NoError(t, ionHashWriter.FieldName("field_name"),
 		"Something went wrong executing ionHashWriter.FieldName(\"field_name\")")
 
-	writeFromReaderToWriter(t, reader, ionHashWriter)
+	writeFromReaderToWriter(t, reader, ionHashWriter, false)
 
 	actualBytes, err := ionHashWriter.Sum(nil)
 	require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
