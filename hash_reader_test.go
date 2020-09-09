@@ -103,7 +103,7 @@ func TestReaderUnresolvedSid(t *testing.T) {
 }
 
 func TestIonReaderContract(t *testing.T) {
-	// t.Skip() // Skipping test until SymbolToken is implemented
+	t.Skip() // Skipping test until SymbolToken is implemented
 
 	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
