@@ -28,8 +28,6 @@ import (
 )
 
 func TestNaughtyStrings(t *testing.T) {
-	t.Skip() // Skipping test until ion text reader SymbolTable() is implemented
-
 	file, err := os.Open("ion-hash-test/big_list_of_naughty_strings.txt")
 	require.NoError(t, err, "Something went wrong loading big_list_of_naughty_strings.txt")
 
@@ -65,7 +63,7 @@ func TestNaughtyStrings(t *testing.T) {
 		NaughtyStrings(t, tv, tv.asSymbol()+"::{"+tv.asSymbol()+":"+tv.asClob()+"}")
 		NaughtyStrings(t, tv, tv.asSymbol()+"::{"+tv.asSymbol()+":"+tv.asBlob()+"}")
 
-		if tv.isValidIon() {
+		if tv.validIon {
 			NaughtyStrings(t, tv, tv.asIon())
 			NaughtyStrings(t, tv, tv.asSymbol()+"::"+tv.asIon())
 			NaughtyStrings(t, tv, tv.asSymbol()+"::{"+tv.asSymbol()+":"+tv.asIon()+"}")
@@ -73,7 +71,7 @@ func TestNaughtyStrings(t *testing.T) {
 		}
 
 		list := tv.asSymbol() + "::[" + tv.asSymbol() + ", " + tv.asString() + ", " + tv.asLongString() + ", " + tv.asClob() + ", " + tv.asBlob() + ", "
-		if tv.isValidIon() {
+		if tv.validIon {
 			list += tv.asIon()
 		}
 		list += "]"
@@ -81,7 +79,7 @@ func TestNaughtyStrings(t *testing.T) {
 		NaughtyStrings(t, tv, list)
 
 		sexp := tv.asSymbol() + "::(" + tv.asSymbol() + " " + tv.asString() + " " + tv.asLongString() + " " + tv.asClob() + " " + tv.asBlob() + " "
-		if tv.isValidIon() {
+		if tv.validIon {
 			sexp += tv.asIon()
 		}
 		sexp += ")"
@@ -105,7 +103,7 @@ func NaughtyStrings(t *testing.T, tv testValue, s string) {
 	ionHashWriter, ok := hw.(*hashWriter)
 	require.True(t, ok, "Expected hw to be of type hashWriter")
 
-	writeFromReaderToWriter(t, ion.NewReaderString(s), ionHashWriter)
+	writeFromReaderToWriter(t, ion.NewReaderString(s), ionHashWriter, !tv.validIon)
 
 	hr, err := NewHashReader(ion.NewReaderString(s), hasherProvider)
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
@@ -113,15 +111,15 @@ func NaughtyStrings(t *testing.T, tv testValue, s string) {
 	ionHashReader, ok := hr.(*hashReader)
 	require.True(t, ok, "Expected hr to be of type hashReader")
 
-	if !ionHashReader.Next() {
-		assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
-	}
+	if tv.validIon {
+		if !ionHashReader.Next() {
+			assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
+		}
 
-	if !ionHashReader.Next() {
-		assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
-	}
+		if !ionHashReader.Next() {
+			assert.NoError(t, ionHashReader.Err(), "Something went wrong executing ionHashReader.Next()")
+		}
 
-	if tv.isValidIon() {
 		writerSum, err := ionHashWriter.Sum(nil)
 		require.NoError(t, err, "Something went wrong executing ionHashWriter.Sum(nil)")
 
@@ -207,8 +205,4 @@ func (tv *testValue) asBlob() string {
 	bytes := []byte(tv.asIon())
 
 	return "{{" + base64.StdEncoding.EncodeToString(bytes) + "}}"
-}
-
-func (tv *testValue) isValidIon() bool {
-	return tv.validIon
 }
