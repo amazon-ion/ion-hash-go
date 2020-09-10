@@ -80,8 +80,8 @@ type HashReader interface {
 	ion.Reader
 
 	// hashValue methods.
-	getFieldName() *string
-	getAnnotations() []ion.SymbolToken
+	getFieldName() (*ion.SymbolToken, error)
+	getAnnotations() ([]ion.SymbolToken, error)
 	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
@@ -172,18 +172,14 @@ func (hr *hashReader) IsNull() bool {
 
 // FieldName returns the field name associated with the current value as a pointer. It returns
 // nil if there is no current value or the current value has no field name.
-func (hr *hashReader) FieldName() *string {
+func (hr *hashReader) FieldName() (*ion.SymbolToken, error) {
 	return hr.ionReader.FieldName()
 }
 
 // Annotations returns the set of annotations associated with the current value.
 // It returns nil if there is no current value or the current value has no annotations.
-func (hr *hashReader) Annotations() []string {
+func (hr *hashReader) Annotations() ([]ion.SymbolToken, error) {
 	return hr.ionReader.Annotations()
-}
-
-func (hr *hashReader) AnnotationsAsSymbols() []ion.SymbolToken {
-	return hr.ionReader.AnnotationsAsSymbols()
 }
 
 // StepIn steps in to the current value if it is a container. It returns an error if there
@@ -332,18 +328,14 @@ func (hr *hashReader) traverse() error {
 	return hr.Err()
 }
 
-func (hr *hashReader) FieldNameSymbol() (*ion.SymbolToken, error) {
-	return hr.ionReader.FieldNameSymbol()
-}
-
 // The following implements hashValue interface.
 
-func (hr *hashReader) getFieldName() *string {
+func (hr *hashReader) getFieldName() (*ion.SymbolToken, error) {
 	return hr.FieldName()
 }
 
-func (hr *hashReader) getAnnotations() []ion.SymbolToken {
-	return hr.ionReader.AnnotationsAsSymbols()
+func (hr *hashReader) getAnnotations() ([]ion.SymbolToken, error) {
+	return hr.ionReader.Annotations()
 }
 
 func (hr *hashReader) value() (interface{}, error) {

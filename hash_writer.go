@@ -72,8 +72,8 @@ type HashWriter interface {
 	ion.Writer
 
 	// Remaining hashValue methods.
-	getFieldName() *string
-	getAnnotations() []ion.SymbolToken
+	getFieldName() (*ion.SymbolToken, error)
+	getAnnotations() ([]ion.SymbolToken, error)
 	IsNull() bool
 	Type() ion.Type
 	value() (interface{}, error)
@@ -87,7 +87,7 @@ type hashWriter struct {
 	ionWriter ion.Writer
 	hasher    hasher
 
-	currentFieldName string
+	currentFieldName *ion.SymbolToken
 	currentType      ion.Type
 	currentValue     interface{}
 	currentIsNull    bool
@@ -107,40 +107,26 @@ func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) (Hash
 // FieldName sets the field name for the next value written.
 // It may only be called while writing a struct.
 func (hw *hashWriter) FieldName(val string) error {
-	hw.currentFieldName = val
+	token, err := ion.NewSymbolToken(ion.V1SystemSymbolTable, val)
+	if err != nil {
+		return err
+	}
+
+	hw.currentFieldName = &token
+
 	return hw.ionWriter.FieldName(val)
 }
 
 // Annotation adds an annotation to the next value written.
-func (hw *hashWriter) Annotation(val string) error {
-	symbol, err := ion.NewSymbolToken(ion.V1SystemSymbolTable, val)
-	if err != nil {
-		return err
-	}
-
-	hw.annotations = append(hw.annotations, symbol)
-	return hw.ionWriter.Annotations(val)
+func (hw *hashWriter) Annotation(val ion.SymbolToken) error {
+	hw.annotations = append(hw.annotations, val)
+	return hw.ionWriter.Annotation(val)
 }
 
 // Annotations adds one or more annotations to the next value written.
-func (hw *hashWriter) Annotations(vals ...string) error {
-	symbols, err := ion.NewSymbolTokens(ion.V1SystemSymbolTable, vals)
-	if err != nil {
-		return err
-	}
-
-	hw.annotations = append(hw.annotations, symbols...)
-	return hw.ionWriter.Annotations(vals...)
-}
-
-func (hw *hashWriter) AnnotationAsSymbol(val ion.SymbolToken) error {
-	hw.annotations = append(hw.annotations, val)
-	return hw.ionWriter.AnnotationAsSymbol(val)
-}
-
-func (hw *hashWriter) AnnotationsAsSymbols(values ...ion.SymbolToken) error {
+func (hw *hashWriter) Annotations(values ...ion.SymbolToken) error {
 	hw.annotations = append(hw.annotations, values...)
-	return hw.ionWriter.AnnotationsAsSymbols(values...)
+	return hw.ionWriter.Annotations(values...)
 }
 
 // WriteNull writes an untyped null value.
@@ -337,12 +323,12 @@ func (hw *hashWriter) FieldNameSymbol(val ion.SymbolToken) error {
 
 // The following implements hashValue interface.
 
-func (hw *hashWriter) getFieldName() *string {
-	return &hw.currentFieldName
+func (hw *hashWriter) getFieldName() (*ion.SymbolToken, error) {
+	return hw.currentFieldName, nil
 }
 
-func (hw *hashWriter) getAnnotations() []ion.SymbolToken {
-	return hw.annotations
+func (hw *hashWriter) getAnnotations() ([]ion.SymbolToken, error) {
+	return hw.annotations, nil
 }
 
 // IsNull returns true if the current value is an explicit null. This may be true
@@ -376,7 +362,7 @@ func (hw *hashWriter) hashScalar(ionType ion.Type, value interface{}) error {
 		return err
 	}
 
-	hw.currentFieldName = ""
+	hw.currentFieldName = nil
 	hw.annotations = nil
 
 	return nil
@@ -392,7 +378,7 @@ func (hw *hashWriter) stepIn(ionType ion.Type) error {
 		return err
 	}
 
-	hw.currentFieldName = ""
+	hw.currentFieldName = nil
 	hw.annotations = nil
 
 	return nil

@@ -18,9 +18,9 @@ package ionhash
 import "github.com/amzn/ion-go/ion"
 
 type hashValue interface {
-	getFieldName() *string
+	getFieldName() (*ion.SymbolToken, error)
 
-	getAnnotations() []ion.SymbolToken
+	getAnnotations() ([]ion.SymbolToken, error)
 
 	IsNull() bool
 

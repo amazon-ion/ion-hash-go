@@ -57,8 +57,6 @@ func compareReaders(t *testing.T, reader1, reader2 ion.Reader) {
 
 		compareAnnotations(t, reader1, reader2)
 
-		compareAnnotationSymbols(t, reader1, reader2)
-
 		isNull1 := reader1.IsNull()
 		isNull2 := reader2.IsNull()
 		require.Equal(t, isNull1, isNull2, "Expected readers to have matching IsNull() values")
@@ -106,35 +104,20 @@ func hasNext(t *testing.T, reader1, reader2 ion.Reader) bool {
 }
 
 func compareFieldNames(t *testing.T, reader1, reader2 ion.Reader) {
-	token1, err := reader1.FieldNameSymbol()
-	require.NoError(t, err, "Something went wrong executing reader1.FieldNameSymbol()")
-	token2, err := reader2.FieldNameSymbol()
-	require.NoError(t, err, "Something went wrong executing reader2.FieldNameSymbol()")
+	token1, err := reader1.FieldName()
+	require.NoError(t, err, "Something went wrong executing reader1.FieldName()")
+	token2, err := reader2.FieldName()
+	require.NoError(t, err, "Something went wrong executing reader2.FieldName()")
 
-	require.Equal(t, token1.Text == nil, token2.Text == nil, "Expected the text of both tokens to be null or both not null")
-
-	if token1.Text != nil {
-		assert.Equal(t, *token1.Text, *token2.Text, "Expected tokens to have matching text")
-
-		if *token1.Text != "" {
-			field1 := reader1.FieldName()
-			field2 := reader2.FieldName()
-
-			require.NotNil(t, field1)
-			require.NotNil(t, field2)
-
-			assert.Equal(t, *field1, *field2, "Expected field names to match")
-		}
-	}
+	require.True(t, token1.Equal(token2), "Expected field names to match")
 }
 
 func compareAnnotations(t *testing.T, reader1, reader2 ion.Reader) {
-	assert.Equal(t, reader1.Annotations(), reader2.Annotations(), "Expected symbol sequences to match")
-}
+	an1, err := reader1.Annotations()
+	require.NoError(t, err, "Something went wrong executing reader1.Annotations()")
 
-func compareAnnotationSymbols(t *testing.T, reader1, reader2 ion.Reader) {
-	an1 := reader1.AnnotationsAsSymbols()
-	an2 := reader2.AnnotationsAsSymbols()
+	an2, err := reader2.Annotations()
+	require.NoError(t, err, "Something went wrong executing reader2.Annotations()")
 
 	require.Equal(t, len(an1), len(an2), "Expected readers to have same number of annotations")
 
@@ -293,14 +276,17 @@ func decimalStrictEquals(t *testing.T, decimal1, decimal2 *ion.Decimal) {
 // Read all the values in the reader and write them in the writer.
 func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer) {
 	for reader.Next() {
-		name := reader.FieldName()
-		if name != nil {
-			require.NoError(t, writer.FieldName(*name), "Something went wrong executing writer.FieldName(*name)")
+		name, err := reader.FieldName()
+		require.NoError(t, err, "Something went wrong executing reader.Annotations()")
+		if name.Text != nil {
+			require.NoError(t, writer.FieldName(*name.Text), "Something went wrong executing writer.FieldName(*name)")
 		}
 
-		an := reader.AnnotationsAsSymbols()
+		an, err := reader.Annotations()
+		require.NoError(t, err, "Something went wrong executing reader.Annotations()")
+
 		if len(an) > 0 {
-			require.NoError(t, writer.AnnotationsAsSymbols(an...), "Something went wrong executing writer.Annotations(an...)")
+			require.NoError(t, writer.Annotations(an...), "Something went wrong executing writer.Annotations(an...)")
 		}
 
 		currentType := reader.Type()
@@ -414,14 +400,17 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 	ionType := reader.Type()
 
-	if reader.AnnotationsAsSymbols() != nil {
+	an, err := reader.Annotations()
+	require.NoError(t, err, "Something went wrong executing reader.Annotations()")
+
+	if len(an) > 0 {
 		for _, writer := range writers {
-			require.NoError(t, writer.AnnotationsAsSymbols(reader.AnnotationsAsSymbols()...),
-				"Something went wrong executing writer.Annotations(reader.Annotations()...)")
+			require.NoError(t, writer.Annotations(an...),
+				"Something went wrong executing writer.Annotations(an...)")
 		}
 	}
 
-	fieldName, err := reader.FieldNameSymbol()
+	fieldName, err := reader.FieldName()
 	if err == nil && fieldName.Text != nil && *fieldName.Text != "ion" && *fieldName.Text != "10n" {
 		for _, writer := range writers {
 			require.NoError(t, writer.FieldName(*fieldName.Text),

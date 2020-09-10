@@ -85,7 +85,7 @@ func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if bs.depth > 0 && ionValue.IsInStruct() {
 		// TODO: Remove type cast once FieldNameSymbol is available for ion.Writer/hashWriter
 		if hr, ok := ionValue.(*hashReader); ok {
-			token, err := hr.FieldNameSymbol()
+			token, err := hr.FieldName()
 			if err != nil {
 				return err
 			}
@@ -98,9 +98,13 @@ func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
 		}
 
 		// TODO: Remove this logic once FieldNameSymbol is available for ion.Writer/hashWriter
-		fieldName := ionValue.getFieldName()
-		if fieldName != nil {
-			return bs.writeSymbol(*fieldName)
+		fieldName, err := ionValue.getFieldName()
+		if err != nil {
+			return err
+		}
+
+		if fieldName != nil && fieldName.Text != nil {
+			return bs.writeSymbol(*fieldName.Text)
 		} else {
 			return bs.writeSymbol("")
 		}
@@ -129,7 +133,11 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 		return &InvalidArgumentError{"ionValue", ionValue}
 	}
 
-	annotations := ionValue.getAnnotations()
+	annotations, err := ionValue.getAnnotations()
+	if err != nil {
+		return err
+	}
+
 	if len(annotations) > 0 {
 		err := bs.beginMarker()
 		if err != nil {
@@ -157,16 +165,21 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 }
 
 func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) error {
-	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) ||
-		(isContainer && bs.hasContainerAnnotation) {
-
-		err := bs.endMarker()
+	if ionValue != nil {
+		an, err := ionValue.getAnnotations()
 		if err != nil {
 			return err
 		}
 
-		if isContainer {
-			bs.hasContainerAnnotation = false
+		if len(an) > 0 || (isContainer && bs.hasContainerAnnotation) {
+			err := bs.endMarker()
+			if err != nil {
+				return err
+			}
+
+			if isContainer {
+				bs.hasContainerAnnotation = false
+			}
 		}
 	}
 
