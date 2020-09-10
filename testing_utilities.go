@@ -16,6 +16,7 @@
 package ionhash
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -23,6 +24,19 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// SymbolTokenString returns a SymbolToken's text value or "$<sid>"
+func SymbolTokenString(st ion.SymbolToken) string {
+	if st.Text != nil {
+		return *st.Text
+	}
+
+	if st.LocalSID != ion.SymbolIDUnknown {
+		return fmt.Sprintf("$%v", st.LocalSID)
+	}
+
+	return ""
+}
 
 func compareReaders(t *testing.T, reader1, reader2 ion.Reader) {
 	for hasNext(t, reader1, reader2) {
@@ -344,7 +358,7 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 			val, err := reader.SymbolValue()
 			assert.NoError(t, err, "Something went wrong when reading Symbol value")
 
-			assert.NoError(t, writer.WriteSymbol(val.ResolveToString()), "Something went wrong when writing Symbol value")
+			assert.NoError(t, writer.WriteSymbol(SymbolTokenString(*val)), "Something went wrong when writing Symbol value")
 		case ion.StringType:
 			val, err := reader.StringValue()
 			assert.NoError(t, err, "Something went wrong when reading String value")
@@ -506,8 +520,8 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 		symbolValue, err := reader.SymbolValue()
 		require.NoError(t, err)
 		for _, writer := range writers {
-			require.NoError(t, writer.WriteSymbol(symbolValue.ResolveToString()),
-				"Something went wrong executing writer.WriteSymbol(symbolValue.ResolveToString())")
+			require.NoError(t, writer.WriteSymbol(SymbolTokenString(*symbolValue)),
+				"Something went wrong executing writer.WriteSymbol(SymbolTokenString(*symbolValue))")
 		}
 	case ion.TimestampType:
 		timestampValue, err := reader.TimestampValue()
