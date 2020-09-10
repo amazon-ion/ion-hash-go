@@ -275,11 +275,11 @@ func TestWriteContainers(t *testing.T) {
 	assert.NoError(t, ionHashWriter.FieldName("hello"),
 		"Something went wrong executing ionHashWriter.FieldName(\"hello\")")
 
-	assert.NoError(t, ionHashWriter.Annotation("ion"),
-		"Something went wrong executing ionHashWriter.Annotation(\"ion\")")
+	assert.NoError(t, ionHashWriter.Annotation(ion.SymbolToken{Text: newString("ion"), LocalSID: ion.SymbolIDUnknown}),
+		"Something went wrong executing ionHashWriter.Annotation(...)")
 
-	assert.NoError(t, ionHashWriter.Annotation("hash"),
-		"Something went wrong executing ionHashWriter.Annotation(\"hash\")")
+	assert.NoError(t, ionHashWriter.Annotation(ion.SymbolToken{Text: newString("hash"), LocalSID: ion.SymbolIDUnknown}),
+		"Something went wrong executing ionHashWriter.Annotation(...)")
 
 	assert.NoError(t, ionHashWriter.WriteSymbol("world"),
 		"Something went wrong executing ionHashWriter.WriteSymbol(\"world\")")

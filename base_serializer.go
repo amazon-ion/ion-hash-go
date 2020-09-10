@@ -165,21 +165,23 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 }
 
 func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) error {
+	var annotations []ion.SymbolToken
 	if ionValue != nil {
-		an, err := ionValue.getAnnotations()
+		var err error
+		annotations, err = ionValue.getAnnotations()
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(annotations) > 0 || (isContainer && bs.hasContainerAnnotation) {
+		err := bs.endMarker()
 		if err != nil {
 			return err
 		}
 
-		if len(an) > 0 || (isContainer && bs.hasContainerAnnotation) {
-			err := bs.endMarker()
-			if err != nil {
-				return err
-			}
-
-			if isContainer {
-				bs.hasContainerAnnotation = false
-			}
+		if isContainer {
+			bs.hasContainerAnnotation = false
 		}
 	}
 

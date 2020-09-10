@@ -25,6 +25,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func newString(value string) *string {
+	return &value
+}
+
 // SymbolTokenString returns a SymbolToken's text value or "$<sid>"
 func SymbolTokenString(st ion.SymbolToken) string {
 	if st.Text != nil {
@@ -278,15 +282,16 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 	for reader.Next() {
 		name, err := reader.FieldName()
 		require.NoError(t, err, "Something went wrong executing reader.Annotations()")
-		if name.Text != nil {
+
+		if name != nil && name.Text != nil {
 			require.NoError(t, writer.FieldName(*name.Text), "Something went wrong executing writer.FieldName(*name)")
 		}
 
-		an, err := reader.Annotations()
+		annotations, err := reader.Annotations()
 		require.NoError(t, err, "Something went wrong executing reader.Annotations()")
 
-		if len(an) > 0 {
-			require.NoError(t, writer.Annotations(an...), "Something went wrong executing writer.Annotations(an...)")
+		if len(annotations) > 0 {
+			require.NoError(t, writer.Annotations(annotations...), "Something went wrong executing writer.Annotations(annotations...)")
 		}
 
 		currentType := reader.Type()
@@ -400,13 +405,13 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 	ionType := reader.Type()
 
-	an, err := reader.Annotations()
+	annotations, err := reader.Annotations()
 	require.NoError(t, err, "Something went wrong executing reader.Annotations()")
 
-	if len(an) > 0 {
+	if len(annotations) > 0 {
 		for _, writer := range writers {
-			require.NoError(t, writer.Annotations(an...),
-				"Something went wrong executing writer.Annotations(an...)")
+			require.NoError(t, writer.Annotations(annotations...),
+				"Something went wrong executing writer.Annotations(annotations...)")
 		}
 	}
 
