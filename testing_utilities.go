@@ -126,7 +126,7 @@ func compareAnnotations(t *testing.T, reader1, reader2 ion.Reader) {
 	require.Equal(t, len(an1), len(an2), "Expected readers to have same number of annotations")
 
 	for i := 0; i < len(an1); i++ {
-		assert.True(t,an1[i].Equal(&an2[i]))
+		assert.True(t, an1[i].Equal(&an2[i]))
 	}
 }
 
@@ -169,14 +169,6 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1, reader2 ion.Reader)
 			assert.NoError(t, err, "Something went wrong executing reader2.Int64Value()")
 
 			assert.Equal(t, int1, int2, "Expected int values to match")
-		case ion.Uint64:
-			uint1, err := reader1.Uint64Value()
-			assert.NoError(t, err, "Something went wrong executing reader1.Uint64Value()")
-
-			uint2, err := reader2.Uint64Value()
-			assert.NoError(t, err, "Something went wrong executing reader2.Uint64Value()")
-
-			assert.Equal(t, uint1, uint2, "Expected uint values to match")
 		case ion.BigInt:
 			bigInt1, err := reader1.BigIntValue()
 			assert.NoError(t, err, "Something went wrong executing reader1.BigIntValue()")
@@ -195,10 +187,15 @@ func compareScalars(t *testing.T, ionType ion.Type, reader1, reader2 ion.Reader)
 		float2, err := reader2.FloatValue()
 		assert.NoError(t, err, "Something went wrong executing reader2.FloatValue()")
 
-		if !math.IsNaN(float1) && !math.IsNaN(float2) {
-			assert.Equal(t, float1, float2, "Expected float values to match")
-		} else if !math.IsNaN(float1) || !math.IsNaN(float2) {
-			assert.NotEqual(t, float1, float2, "Expected IsNaN float value to differ from a non-IsNaN float value")
+		require.True(t, (float1 == nil) == (float2 == nil),
+			"Expected float values to be either both null or both not null")
+
+		if float1 != nil {
+			if !math.IsNaN(*float1) && !math.IsNaN(*float2) {
+				assert.Equal(t, float1, float2, "Expected float values to match")
+			} else if !math.IsNaN(*float1) || !math.IsNaN(*float2) {
+				assert.NotEqual(t, float1, float2, "Expected IsNaN float value to differ from a non-IsNaN float value")
+			}
 		}
 	case ion.DecimalType:
 		decimal1, err := reader1.DecimalValue()
@@ -302,11 +299,19 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 		}
 
 		switch currentType {
+		case ion.NullType:
+			assert.NoError(t, writer.WriteNullType(ion.NullType), "Something went wrong while writing a Null value")
+
 		case ion.BoolType:
 			val, err := reader.BoolValue()
 			assert.NoError(t, err, "Something went wrong when reading Boolean value")
 
-			assert.NoError(t, writer.WriteBool(val), "Something went wrong when writing Boolean value")
+			if val == nil {
+				assert.NoError(t, writer.WriteNullType(ion.BoolType))
+			} else {
+				assert.NoError(t, writer.WriteBool(*val), "Something went wrong while writing a Boolean value")
+			}
+
 		case ion.IntType:
 			intSize, err := reader.IntSize()
 			require.NoError(t, err, "Something went wrong when retrieving the Int size")
@@ -316,12 +321,7 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 				val, err := reader.Int64Value()
 				assert.NoError(t, err, "Something went wrong when reading Int value")
 
-				assert.NoError(t, writer.WriteInt(val), "Something went wrong when writing Int value")
-			case ion.Uint64:
-				val, err := reader.Uint64Value()
-				assert.NoError(t, err, "Something went wrong when reading UInt value")
-
-				assert.NoError(t, writer.WriteUint(val), "Something went wrong when writing UInt value")
+				assert.NoError(t, writer.WriteInt(*val), "Something went wrong when writing Int value")
 			case ion.BigInt:
 				val, err := reader.BigIntValue()
 				assert.NoError(t, err, "Something went wrong when reading Big Int value")
@@ -330,71 +330,75 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 			default:
 				t.Error("Expected intSize to be one of Int32, Int64, Uint64, or BigInt")
 			}
+
 		case ion.FloatType:
 			val, err := reader.FloatValue()
 			assert.NoError(t, err, "Something went wrong when reading Float value")
 
-			assert.NoError(t, writer.WriteFloat(val), "Something went wrong when writing Float value")
+			assert.NoError(t, writer.WriteFloat(*val), "Something went wrong when writing Float value")
+
 		case ion.DecimalType:
 			val, err := reader.DecimalValue()
 			assert.NoError(t, err, "Something went wrong when reading Decimal value")
 
 			assert.NoError(t, writer.WriteDecimal(val), "Something went wrong when writing Decimal value")
+
 		case ion.TimestampType:
 			val, err := reader.TimestampValue()
 			assert.NoError(t, err, "Something went wrong when reading Timestamp value")
 
-			assert.NoError(t, writer.WriteTimestamp(val), "Something went wrong when writing Timestamp value")
+			assert.NoError(t, writer.WriteTimestamp(*val), "Something went wrong when writing Timestamp value")
+
 		case ion.SymbolType:
 			val, err := reader.SymbolValue()
 			assert.NoError(t, err, "Something went wrong when reading Symbol value")
 
 			assert.NoError(t, writer.WriteSymbol(SymbolTokenString(*val)), "Something went wrong when writing Symbol value")
+
 		case ion.StringType:
 			val, err := reader.StringValue()
 			assert.NoError(t, err, "Something went wrong when reading String value")
 
 			require.NotNil(t, val)
 			assert.NoError(t, writer.WriteString(*val), "Something went wrong when writing String value")
+
 		case ion.ClobType:
 			val, err := reader.ByteValue()
 			assert.NoError(t, err, "Something went wrong when reading Clob value")
 
 			assert.NoError(t, writer.WriteClob(val), "Something went wrong when writing Clob value")
+
 		case ion.BlobType:
 			val, err := reader.ByteValue()
 			assert.NoError(t, err, "Something went wrong when reading Blob value")
 
 			assert.NoError(t, writer.WriteBlob(val), "Something went wrong when writing Blob value")
+
 		case ion.SexpType:
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
-
 			require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
 
 			writeFromReaderToWriter(t, reader, writer)
 
 			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
-
 			require.NoError(t, writer.EndSexp(), "Something went wrong executing writer.EndSexp()")
+
 		case ion.ListType:
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
-
 			require.NoError(t, writer.BeginList(), "Something went wrong executing writer.BeginList()")
 
 			writeFromReaderToWriter(t, reader, writer)
 
 			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
-
 			require.NoError(t, writer.EndList(), "Something went wrong executing writer.EndList()")
+
 		case ion.StructType:
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
-
 			require.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
 
 			writeFromReaderToWriter(t, reader, writer)
 
 			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
-
 			require.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
 		}
 	}
@@ -441,8 +445,8 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 		boolValue, err := reader.BoolValue()
 		require.NoError(t, err)
 		for _, writer := range writers {
-			require.NoError(t, writer.WriteBool(boolValue),
-				"Something went wrong executing writer.WriteBool(boolValue)")
+			require.NoError(t, writer.WriteBool(*boolValue),
+				"Something went wrong executing writer.WriteBool(*boolValue)")
 		}
 	case ion.BlobType:
 		byteValue, err := reader.ByteValue()
@@ -469,8 +473,8 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 		floatValue, err := reader.FloatValue()
 		require.NoError(t, err)
 		for _, writer := range writers {
-			require.NoError(t, writer.WriteFloat(floatValue),
-				"Something went wrong executing writer.WriteFloat(floatValue)")
+			require.NoError(t, writer.WriteFloat(*floatValue),
+				"Something went wrong executing writer.WriteFloat(*floatValue)")
 		}
 	case ion.IntType:
 		intSize, err := reader.IntSize()
@@ -481,15 +485,8 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 			intValue, err := reader.Int64Value()
 			require.NoError(t, err)
 			for _, writer := range writers {
-				require.NoError(t, writer.WriteInt(intValue),
-					"Something went wrong executing writer.WriteInt(intValue)")
-			}
-		case ion.Uint64:
-			uintValue, err := reader.Uint64Value()
-			require.NoError(t, err)
-			for _, writer := range writers {
-				require.NoError(t, writer.WriteUint(uintValue),
-					"Something went wrong executing writer.WriteUint(uintValue)")
+				require.NoError(t, writer.WriteInt(*intValue),
+					"Something went wrong executing writer.WriteInt(*intValue)")
 			}
 		case ion.BigInt:
 			bigIntValue, err := reader.BigIntValue()
@@ -521,8 +518,8 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 		timestampValue, err := reader.TimestampValue()
 		require.NoError(t, err)
 		for _, writer := range writers {
-			require.NoError(t, writer.WriteTimestamp(timestampValue),
-				"Something went wrong executing writer.WriterTimestamp(timestampValue)")
+			require.NoError(t, writer.WriteTimestamp(*timestampValue),
+				"Something went wrong executing writer.WriterTimestamp(*timestampValue)")
 		}
 
 	case ion.SexpType:
@@ -581,7 +578,7 @@ func readSexpAndAppendToList(t *testing.T, reader ion.Reader) []byte {
 	for reader.Next() {
 		intValue, err := reader.Int64Value()
 		require.NoError(t, err, "Something went wrong executing reader.Int64Value()")
-		updateBytes = append(updateBytes, byte(intValue))
+		updateBytes = append(updateBytes, byte(*intValue))
 	}
 	require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 	require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")

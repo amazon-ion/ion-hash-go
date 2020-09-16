@@ -263,23 +263,23 @@ func (bs *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNul
 		return nil, err
 	}
 
-	bytes := buf.Bytes()[4:]
+	b := buf.Bytes()[4:]
 
-	if ionType == ion.FloatType && len(bytes) == 5 {
+	if ionType == ion.FloatType && len(b) == 5 {
 		// As per the ion-hash spec (https://amzn.github.io/ion-hash/docs/spec.html#4-float),
 		// Floats are to be encoded in 64 bits (8 bytes) but we got back a 32 bit (4 byte) float.
 		// Let's create the data for the equivalent float64 instead.
-		float32bits := binary.BigEndian.Uint32(bytes[1:])
+		float32bits := binary.BigEndian.Uint32(b[1:])
 		newFloat64 := float64(math.Float32frombits(float32bits))
 		float64Bits := math.Float64bits(newFloat64)
 
-		bytes = make([]byte, 9)
-		bytes[0] = 0x48
+		b = make([]byte, 9)
+		b[0] = 0x48
 
-		binary.BigEndian.PutUint64(bytes[1:], float64Bits)
+		binary.BigEndian.PutUint64(b[1:], float64Bits)
 	}
 
-	return bytes, nil
+	return b, nil
 }
 
 func (bs *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
@@ -374,7 +374,15 @@ func escape(bytes []byte) []byte {
 func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) error {
 	switch ionType {
 	case ion.BoolType:
-		return writer.WriteBool(ionValue.(bool))
+		if ionBool, ok := ionValue.(bool); ok {
+			return writer.WriteBool(ionBool)
+		}
+
+		if ionBool, ok := ionValue.(*bool); ok {
+			return writer.WriteBool(*ionBool)
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.BlobType:
 		return writer.WriteBlob(ionValue.([]byte))
 	case ion.ClobType:
@@ -382,26 +390,62 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	case ion.DecimalType:
 		return writer.WriteDecimal(ionValue.(*ion.Decimal))
 	case ion.FloatType:
-		return writer.WriteFloat(ionValue.(float64))
+		if ionFloat, ok := ionValue.(float64); ok {
+			return writer.WriteFloat(ionFloat)
+		}
+
+		if ionFloat, ok := ionValue.(*float64); ok {
+			return writer.WriteFloat(*ionFloat)
+		}
+
+		if ionFloat, ok := ionValue.(float32); ok {
+			return writer.WriteFloat(float64(ionFloat))
+		}
+
+		if ionFloat, ok := ionValue.(*float32); ok {
+			return writer.WriteFloat(float64(*ionFloat))
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.IntType:
+		if ionValInt, ok := ionValue.(int); ok {
+			return writer.WriteInt(int64(ionValInt))
+		}
+
+		if ionValInt, ok := ionValue.(*int); ok {
+			return writer.WriteInt(int64(*ionValInt))
+		}
+
 		if ionValInt64, ok := ionValue.(int64); ok {
 			return writer.WriteInt(ionValInt64)
+		}
+
+		if ionValInt64, ok := ionValue.(*int64); ok {
+			return writer.WriteInt(*ionValInt64)
 		}
 
 		if ionValUint64, ok := ionValue.(uint64); ok {
 			return writer.WriteUint(ionValUint64)
 		}
 
+		if ionValUint64, ok := ionValue.(*uint64); ok {
+			return writer.WriteUint(*ionValUint64)
+		}
+
 		if ionValInt32, ok := ionValue.(int32); ok {
 			return writer.WriteInt(int64(ionValInt32))
+		}
+
+		if ionValInt32, ok := ionValue.(*int32); ok {
+			return writer.WriteInt(int64(*ionValInt32))
 		}
 
 		if ionValUint32, ok := ionValue.(uint32); ok {
 			return writer.WriteUint(uint64(ionValUint32))
 		}
 
-		if ionValInt, ok := ionValue.(int); ok {
-			return writer.WriteInt(int64(ionValInt))
+		if ionValUint32, ok := ionValue.(*uint32); ok {
+			return writer.WriteUint(uint64(*ionValUint32))
 		}
 
 		if ionValBigInt, ok := ionValue.(*big.Int); ok {
@@ -440,7 +484,15 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 
 		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.TimestampType:
-		return writer.WriteTimestamp(ionValue.(ion.Timestamp))
+		if ionTimestamp, ok := ionValue.(ion.Timestamp); ok {
+			return writer.WriteTimestamp(ionTimestamp)
+		}
+
+		if ionTimestamp, ok := ionValue.(*ion.Timestamp); ok {
+			return writer.WriteTimestamp(*ionTimestamp)
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.NullType:
 		return writer.WriteNull()
 	}

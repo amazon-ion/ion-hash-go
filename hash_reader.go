@@ -226,7 +226,7 @@ func (hr *hashReader) StepOut() error {
 
 // BoolValue returns the current value as a boolean if the current value is an Ion boolean.
 // It returns an error if the current value is not an Ion bool.
-func (hr *hashReader) BoolValue() (bool, error) {
+func (hr *hashReader) BoolValue() (*bool, error) {
 	return hr.ionReader.BoolValue()
 }
 
@@ -239,22 +239,15 @@ func (hr *hashReader) IntSize() (ion.IntSize, error) {
 // IntValue returns the current value as a 32-bit integer.
 // It returns an error if the current value is not an Ion integer or requires more than
 // 32 bits to represent the Ion integer.
-func (hr *hashReader) IntValue() (int, error) {
+func (hr *hashReader) IntValue() (*int, error) {
 	return hr.ionReader.IntValue()
 }
 
 // Int64Value returns the current value as a 64-bit integer.
 // It returns an error if the current value is not an Ion integer or requires more than
 // 64 bits to represent the Ion integer.
-func (hr *hashReader) Int64Value() (int64, error) {
+func (hr *hashReader) Int64Value() (*int64, error) {
 	return hr.ionReader.Int64Value()
-}
-
-// Uint64Value returns the current value as an unsigned 64-bit integer.
-// It returns an error if the current value is not an Ion integer, is negative,
-// or requires more than 64 bits to represent to represent the Ion integer.
-func (hr *hashReader) Uint64Value() (uint64, error) {
-	return hr.ionReader.Uint64Value()
 }
 
 // BigIntValue returns the current value as a big.Integer.
@@ -265,7 +258,7 @@ func (hr *hashReader) BigIntValue() (*big.Int, error) {
 
 // FloatValue returns the current value as a 64-bit floating point number.
 // It returns an error if the current value is not an Ion float.
-func (hr *hashReader) FloatValue() (float64, error) {
+func (hr *hashReader) FloatValue() (*float64, error) {
 	return hr.ionReader.FloatValue()
 }
 
@@ -277,7 +270,7 @@ func (hr *hashReader) DecimalValue() (*ion.Decimal, error) {
 
 // TimeValue returns the current value as a timestamp.
 // It returns an error if the current value is not an Ion timestamp.
-func (hr *hashReader) TimestampValue() (ion.Timestamp, error) {
+func (hr *hashReader) TimestampValue() (*ion.Timestamp, error) {
 	return hr.ionReader.TimestampValue()
 }
 
@@ -361,8 +354,6 @@ func (hr *hashReader) value() (interface{}, error) {
 			return hr.IntValue()
 		case ion.Int64:
 			return hr.Int64Value()
-		case ion.Uint64:
-			return hr.Uint64Value()
 		case ion.BigInt:
 			return hr.BigIntValue()
 		default:

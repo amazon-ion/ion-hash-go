@@ -48,8 +48,7 @@ func TestTopLevelValues(t *testing.T) {
 	require.NoError(t, err, "Expected NewHashReader() to successfully create a HashReader")
 
 	expectedTypes := []ion.Type{ion.IntType, ion.IntType, ion.IntType, ion.NoType, ion.NoType}
-	expectedSums := [][]byte{[]byte{}, []byte{0x0b, 0x20, 0x01, 0x0e}, []byte{0x0b, 0x20, 0x02, 0x0e},
-		[]byte{0x0b, 0x20, 0x03, 0x0e}, []byte{}}
+	expectedSums := [][]byte{{}, {0x0b, 0x20, 0x01, 0x0e}, {0x0b, 0x20, 0x02, 0x0e}, {0x0b, 0x20, 0x03, 0x0e}, {}}
 
 	for i, expectedType := range expectedTypes {
 		if expectedType == ion.NoType {
