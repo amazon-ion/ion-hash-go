@@ -80,8 +80,8 @@ type HashReader interface {
 	ion.Reader
 
 	// hashValue methods.
-	getFieldName() *string
-	getAnnotations() []string
+	getFieldName() (*ion.SymbolToken, error)
+	getAnnotations() ([]ion.SymbolToken, error)
 	value() (interface{}, error)
 
 	// Sum appends the current hash to b and returns the resulting slice.
@@ -172,13 +172,13 @@ func (hr *hashReader) IsNull() bool {
 
 // FieldName returns the field name associated with the current value as a pointer. It returns
 // nil if there is no current value or the current value has no field name.
-func (hr *hashReader) FieldName() *string {
+func (hr *hashReader) FieldName() (*ion.SymbolToken, error) {
 	return hr.ionReader.FieldName()
 }
 
 // Annotations returns the set of annotations associated with the current value.
 // It returns nil if there is no current value or the current value has no annotations.
-func (hr *hashReader) Annotations() []string {
+func (hr *hashReader) Annotations() ([]ion.SymbolToken, error) {
 	return hr.ionReader.Annotations()
 }
 
@@ -226,7 +226,7 @@ func (hr *hashReader) StepOut() error {
 
 // BoolValue returns the current value as a boolean if the current value is an Ion boolean.
 // It returns an error if the current value is not an Ion bool.
-func (hr *hashReader) BoolValue() (bool, error) {
+func (hr *hashReader) BoolValue() (*bool, error) {
 	return hr.ionReader.BoolValue()
 }
 
@@ -239,22 +239,15 @@ func (hr *hashReader) IntSize() (ion.IntSize, error) {
 // IntValue returns the current value as a 32-bit integer.
 // It returns an error if the current value is not an Ion integer or requires more than
 // 32 bits to represent the Ion integer.
-func (hr *hashReader) IntValue() (int, error) {
+func (hr *hashReader) IntValue() (*int, error) {
 	return hr.ionReader.IntValue()
 }
 
 // Int64Value returns the current value as a 64-bit integer.
 // It returns an error if the current value is not an Ion integer or requires more than
 // 64 bits to represent the Ion integer.
-func (hr *hashReader) Int64Value() (int64, error) {
+func (hr *hashReader) Int64Value() (*int64, error) {
 	return hr.ionReader.Int64Value()
-}
-
-// Uint64Value returns the current value as an unsigned 64-bit integer.
-// It returns an error if the current value is not an Ion integer, is negative,
-// or requires more than 64 bits to represent to represent the Ion integer.
-func (hr *hashReader) Uint64Value() (uint64, error) {
-	return hr.ionReader.Uint64Value()
 }
 
 // BigIntValue returns the current value as a big.Integer.
@@ -265,7 +258,7 @@ func (hr *hashReader) BigIntValue() (*big.Int, error) {
 
 // FloatValue returns the current value as a 64-bit floating point number.
 // It returns an error if the current value is not an Ion float.
-func (hr *hashReader) FloatValue() (float64, error) {
+func (hr *hashReader) FloatValue() (*float64, error) {
 	return hr.ionReader.FloatValue()
 }
 
@@ -277,14 +270,20 @@ func (hr *hashReader) DecimalValue() (*ion.Decimal, error) {
 
 // TimeValue returns the current value as a timestamp.
 // It returns an error if the current value is not an Ion timestamp.
-func (hr *hashReader) TimestampValue() (ion.Timestamp, error) {
+func (hr *hashReader) TimestampValue() (*ion.Timestamp, error) {
 	return hr.ionReader.TimestampValue()
 }
 
 // StringValue returns the current value as a string.
 // It returns an error if the current value is not an Ion symbol or an Ion string.
-func (hr *hashReader) StringValue() (string, error) {
+func (hr *hashReader) StringValue() (*string, error) {
 	return hr.ionReader.StringValue()
+}
+
+// SymbolValue returns the current value as a symbol token.
+// It returns an error if the current value is not an Ion symbol or an Ion string.
+func (hr *hashReader) SymbolValue() (*ion.SymbolToken, error) {
+	return hr.ionReader.SymbolValue()
 }
 
 // ByteValue returns the current value as a byte slice.
@@ -324,12 +323,12 @@ func (hr *hashReader) traverse() error {
 
 // The following implements hashValue interface.
 
-func (hr *hashReader) getFieldName() *string {
+func (hr *hashReader) getFieldName() (*ion.SymbolToken, error) {
 	return hr.FieldName()
 }
 
-func (hr *hashReader) getAnnotations() []string {
-	return hr.Annotations()
+func (hr *hashReader) getAnnotations() ([]ion.SymbolToken, error) {
+	return hr.ionReader.Annotations()
 }
 
 func (hr *hashReader) value() (interface{}, error) {
@@ -355,8 +354,6 @@ func (hr *hashReader) value() (interface{}, error) {
 			return hr.IntValue()
 		case ion.Int64:
 			return hr.Int64Value()
-		case ion.Uint64:
-			return hr.Uint64Value()
 		case ion.BigInt:
 			return hr.BigIntValue()
 		default:
@@ -366,7 +363,7 @@ func (hr *hashReader) value() (interface{}, error) {
 	case ion.StringType:
 		return hr.StringValue()
 	case ion.SymbolType:
-		return hr.StringValue()
+		return hr.SymbolValue()
 	case ion.TimestampType:
 		return hr.TimestampValue()
 	case ion.NoType:
