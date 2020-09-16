@@ -374,17 +374,17 @@ func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, functio
 		require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 	}
 
-	function(t, reader, writer)
+	function(t, reader, writer, false)
 
 	assert.NoError(t, writer.Finish(), "Something went wrong executing writer.Finish()")
 
 	return buf.Bytes()
 }
 
-type writeFunction func(*testing.T, ion.Reader, ion.Writer)
+type writeFunction func(*testing.T, ion.Reader, ion.Writer, bool)
 
-func writeFromReaderToWriterAfterNext(t *testing.T, reader ion.Reader, writer ion.Writer) {
+func writeFromReaderToWriterAfterNext(t *testing.T, reader ion.Reader, writer ion.Writer, errExpected bool) {
 	require.True(t, reader.Next())
 
-	writeFromReaderToWriter(t, reader, writer)
+	writeFromReaderToWriter(t, reader, writer, errExpected)
 }

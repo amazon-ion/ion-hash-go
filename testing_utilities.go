@@ -275,7 +275,7 @@ func decimalStrictEquals(t *testing.T, decimal1, decimal2 *ion.Decimal) {
 }
 
 // Read all the values in the reader and write them in the writer.
-func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer) {
+func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer, errExpected bool) {
 	for reader.Next() {
 		name, err := reader.FieldName()
 		require.NoError(t, err, "Something went wrong executing reader.Annotations()")
@@ -378,32 +378,46 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer)
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 			require.NoError(t, writer.BeginSexp(), "Something went wrong executing writer.BeginSexp()")
 
-			writeFromReaderToWriter(t, reader, writer)
+			writeFromReaderToWriter(t, reader, writer, errExpected)
 
-			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
+			err := reader.StepOut()
+			if !errExpected {
+				require.NoError(t, err, "Something went wrong executing reader.StepOut()")
+			}
+
 			require.NoError(t, writer.EndSexp(), "Something went wrong executing writer.EndSexp()")
 
 		case ion.ListType:
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 			require.NoError(t, writer.BeginList(), "Something went wrong executing writer.BeginList()")
 
-			writeFromReaderToWriter(t, reader, writer)
+			writeFromReaderToWriter(t, reader, writer, errExpected)
 
-			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
+			err := reader.StepOut()
+			if !errExpected {
+				require.NoError(t, err, "Something went wrong executing reader.StepOut()")
+			}
+
 			require.NoError(t, writer.EndList(), "Something went wrong executing writer.EndList()")
 
 		case ion.StructType:
 			require.NoError(t, reader.StepIn(), "Something went wrong executing reader.StepIn()")
 			require.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
 
-			writeFromReaderToWriter(t, reader, writer)
+			writeFromReaderToWriter(t, reader, writer, errExpected)
 
-			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
+			err := reader.StepOut()
+			if !errExpected {
+				require.NoError(t, err, "Something went wrong executing reader.StepOut()")
+			}
+
 			require.NoError(t, writer.EndStruct(), "Something went wrong executing writer.EndStruct()")
 		}
 	}
 
-	assert.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
+	if !errExpected {
+		assert.NoError(t, reader.Err(), "Something went wrong writing from reader to writer")
+	}
 }
 
 func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
