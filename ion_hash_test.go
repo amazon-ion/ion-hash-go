@@ -109,7 +109,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 			for reader.Next() {
 				intValue, err := reader.Int64Value()
 				require.NoError(t, err, "Something went wrong executing reader.IntValue()")
-				testCase = append(testCase, byte(intValue))
+				testCase = append(testCase, byte(*intValue))
 			}
 			require.NoError(t, reader.Err(), "Something went wrong executing reader.Next()")
 			require.NoError(t, reader.StepOut(), "Something went wrong executing reader.StepOut()")
