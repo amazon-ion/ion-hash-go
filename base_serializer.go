@@ -83,31 +83,16 @@ func (bs *baseSerializer) sum(b []byte) []byte {
 
 func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if bs.depth > 0 && ionValue.IsInStruct() {
-		// TODO: Remove type cast once FieldNameSymbol is available for ion.Writer/hashWriter
-		if hr, ok := ionValue.(*hashReader); ok {
-			token, err := hr.FieldName()
-			if err != nil {
-				return err
-			}
-
-			if token.Text == nil && token.LocalSID != 0 {
-				return &UnknownSymbolError{token.LocalSID}
-			}
-
-			return bs.writeSymbolAsToken(token)
-		}
-
-		// TODO: Remove this logic once FieldNameSymbol is available for ion.Writer/hashWriter
-		fieldName, err := ionValue.getFieldName()
+		token, err := ionValue.getFieldName()
 		if err != nil {
 			return err
 		}
 
-		if fieldName != nil && fieldName.Text != nil {
-			return bs.writeSymbol(*fieldName.Text)
-		} else {
-			return bs.writeSymbol("")
+		if token.Text == nil && token.LocalSID != 0 {
+			return &UnknownSymbolError{token.LocalSID}
 		}
+
+		return bs.writeSymbolAsToken(token)
 	}
 
 	return nil
