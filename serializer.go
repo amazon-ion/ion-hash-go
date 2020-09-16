@@ -38,12 +38,11 @@ type serializer interface {
 
 	handleAnnotationsEnd(ionValue interface{}, isContainer bool) error
 
-	writeSymbol(token string) error
+	writeSymbol(val string) error
 
 	getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error)
 
 	getLengthFieldLength(bytes []byte) (int, error)
 
-	// TODO: Add symbolToken argument to signature once SymbolTokens are available.
-	scalarOrNullSplitParts(ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error)
+	scalarOrNullSplitParts(ionType ion.Type, symbol *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error)
 }

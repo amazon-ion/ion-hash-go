@@ -83,13 +83,16 @@ func (bs *baseSerializer) sum(b []byte) []byte {
 
 func (bs *baseSerializer) handleFieldName(ionValue hashValue) error {
 	if bs.depth > 0 && ionValue.IsInStruct() {
-		fieldName := ionValue.getFieldName()
-
-		// TODO: Add logic returning UnknownSymbolError once SymbolToken is available.
-
-		if fieldName != nil {
-			return bs.writeSymbol(*fieldName)
+		token, err := ionValue.getFieldName()
+		if err != nil {
+			return err
 		}
+
+		if token.Text == nil && token.LocalSID != 0 {
+			return &UnknownSymbolError{token.LocalSID}
+		}
+
+		return bs.writeSymbolAsToken(token)
 	}
 
 	return nil
@@ -115,7 +118,11 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 		return &InvalidArgumentError{"ionValue", ionValue}
 	}
 
-	annotations := ionValue.getAnnotations()
+	annotations, err := ionValue.getAnnotations()
+	if err != nil {
+		return err
+	}
+
 	if len(annotations) > 0 {
 		err := bs.beginMarker()
 		if err != nil {
@@ -128,7 +135,7 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 		}
 
 		for _, annotation := range annotations {
-			err = bs.writeSymbol(annotation)
+			err = bs.writeSymbolAsToken(&annotation)
 			if err != nil {
 				return err
 			}
@@ -143,9 +150,16 @@ func (bs *baseSerializer) handleAnnotationsBegin(ionValue hashValue, isContainer
 }
 
 func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer bool) error {
-	if (ionValue != nil && len(ionValue.getAnnotations()) > 0) ||
-		(isContainer && bs.hasContainerAnnotation) {
+	var annotations []ion.SymbolToken
+	if ionValue != nil {
+		var err error
+		annotations, err = ionValue.getAnnotations()
+		if err != nil {
+			return err
+		}
+	}
 
+	if len(annotations) > 0 || (isContainer && bs.hasContainerAnnotation) {
 		err := bs.endMarker()
 		if err != nil {
 			return err
@@ -159,20 +173,27 @@ func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer b
 	return nil
 }
 
-func (bs *baseSerializer) writeSymbol(token string) error {
+func (bs *baseSerializer) writeSymbol(val string) error {
+	symbol, err := ion.NewSymbolToken(ion.V1SystemSymbolTable, val)
+	if err != nil {
+		return err
+	}
+
+	return bs.writeSymbolAsToken(&symbol)
+}
+
+func (bs *baseSerializer) writeSymbolAsToken(symbol *ion.SymbolToken) error {
 	err := bs.beginMarker()
 	if err != nil {
 		return err
 	}
 
-	// TODO: Add SymbolToken logic here once SymbolTokens are available.
-
-	scalarBytes, err := bs.getBytes(ion.SymbolType, token, false)
+	scalarBytes, err := bs.getBytes(ion.SymbolType, *symbol, false)
 	if err != nil {
 		return err
 	}
 
-	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, false, scalarBytes)
+	tq, representation, err := bs.scalarOrNullSplitParts(ion.SymbolType, symbol, false, scalarBytes)
 	if err != nil {
 		return err
 	}
@@ -227,23 +248,23 @@ func (bs *baseSerializer) getBytes(ionType ion.Type, ionValue interface{}, isNul
 		return nil, err
 	}
 
-	bytes := buf.Bytes()[4:]
+	b := buf.Bytes()[4:]
 
-	if ionType == ion.FloatType && len(bytes) == 5 {
+	if ionType == ion.FloatType && len(b) == 5 {
 		// As per the ion-hash spec (https://amzn.github.io/ion-hash/docs/spec.html#4-float),
 		// Floats are to be encoded in 64 bits (8 bytes) but we got back a 32 bit (4 byte) float.
 		// Let's create the data for the equivalent float64 instead.
-		float32bits := binary.BigEndian.Uint32(bytes[1:])
+		float32bits := binary.BigEndian.Uint32(b[1:])
 		newFloat64 := float64(math.Float32frombits(float32bits))
 		float64Bits := math.Float64bits(newFloat64)
 
-		bytes = make([]byte, 9)
-		bytes[0] = 0x48
+		b = make([]byte, 9)
+		b[0] = 0x48
 
-		binary.BigEndian.PutUint64(bytes[1:], float64Bits)
+		binary.BigEndian.PutUint64(b[1:], float64Bits)
 	}
 
-	return bytes, nil
+	return b, nil
 }
 
 func (bs *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
@@ -262,7 +283,7 @@ func (bs *baseSerializer) getLengthFieldLength(bytes []byte) (int, error) {
 }
 
 func (bs *baseSerializer) scalarOrNullSplitParts(
-	ionType ion.Type, isNull bool, bytes []byte) (byte, []byte, error) {
+	ionType ion.Type, symbol *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
 
 	offset, err := bs.getLengthFieldLength(bytes)
 	if err != nil {
@@ -286,10 +307,9 @@ func (bs *baseSerializer) scalarOrNullSplitParts(
 		tq = 0x70
 		if isNull {
 			tq = tq | 0x0F
+		} else if symbol != nil && symbol.Text == nil && symbol.LocalSID == 0 {
+			tq = 0x71
 		}
-
-		// TODO: Add SymbolToken logic here once SymbolTokens are available.
-
 	} else if ionType != ion.BoolType && (tq&0x0F) != 0x0F {
 		// Not a symbol, bool, or null value.
 		// Zero - out the L nibble.
@@ -339,7 +359,15 @@ func escape(bytes []byte) []byte {
 func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) error {
 	switch ionType {
 	case ion.BoolType:
-		return writer.WriteBool(ionValue.(bool))
+		if ionBool, ok := ionValue.(bool); ok {
+			return writer.WriteBool(ionBool)
+		}
+
+		if ionBool, ok := ionValue.(*bool); ok {
+			return writer.WriteBool(*ionBool)
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.BlobType:
 		return writer.WriteBlob(ionValue.([]byte))
 	case ion.ClobType:
@@ -347,58 +375,109 @@ func serializers(ionType ion.Type, ionValue interface{}, writer ion.Writer) erro
 	case ion.DecimalType:
 		return writer.WriteDecimal(ionValue.(*ion.Decimal))
 	case ion.FloatType:
-		return writer.WriteFloat(ionValue.(float64))
+		if ionFloat, ok := ionValue.(float64); ok {
+			return writer.WriteFloat(ionFloat)
+		}
+
+		if ionFloat, ok := ionValue.(*float64); ok {
+			return writer.WriteFloat(*ionFloat)
+		}
+
+		if ionFloat, ok := ionValue.(float32); ok {
+			return writer.WriteFloat(float64(ionFloat))
+		}
+
+		if ionFloat, ok := ionValue.(*float32); ok {
+			return writer.WriteFloat(float64(*ionFloat))
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.IntType:
-		ionValInt64, ok := ionValue.(int64)
-		if ok {
-			return writer.WriteInt(ionValInt64)
-		}
-
-		ionValUint64, ok := ionValue.(uint64)
-		if ok {
-			return writer.WriteUint(ionValUint64)
-		}
-
-		ionValInt32, ok := ionValue.(int32)
-		if ok {
-			return writer.WriteInt(int64(ionValInt32))
-		}
-
-		ionValUint32, ok := ionValue.(uint32)
-		if ok {
-			return writer.WriteUint(uint64(ionValUint32))
-		}
-
-		ionValInt, ok := ionValue.(int)
-		if ok {
+		if ionValInt, ok := ionValue.(int); ok {
 			return writer.WriteInt(int64(ionValInt))
 		}
 
-		ionValBigInt, ok := ionValue.(*big.Int)
-		if ok {
+		if ionValInt, ok := ionValue.(*int); ok {
+			return writer.WriteInt(int64(*ionValInt))
+		}
+
+		if ionValInt64, ok := ionValue.(int64); ok {
+			return writer.WriteInt(ionValInt64)
+		}
+
+		if ionValInt64, ok := ionValue.(*int64); ok {
+			return writer.WriteInt(*ionValInt64)
+		}
+
+		if ionValUint64, ok := ionValue.(uint64); ok {
+			return writer.WriteUint(ionValUint64)
+		}
+
+		if ionValUint64, ok := ionValue.(*uint64); ok {
+			return writer.WriteUint(*ionValUint64)
+		}
+
+		if ionValInt32, ok := ionValue.(int32); ok {
+			return writer.WriteInt(int64(ionValInt32))
+		}
+
+		if ionValInt32, ok := ionValue.(*int32); ok {
+			return writer.WriteInt(int64(*ionValInt32))
+		}
+
+		if ionValUint32, ok := ionValue.(uint32); ok {
+			return writer.WriteUint(uint64(ionValUint32))
+		}
+
+		if ionValUint32, ok := ionValue.(*uint32); ok {
+			return writer.WriteUint(uint64(*ionValUint32))
+		}
+
+		if ionValBigInt, ok := ionValue.(*big.Int); ok {
 			return writer.WriteBigInt(ionValBigInt)
 		}
 
 		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.StringType:
-		return writer.WriteString(ionValue.(string))
-	case ion.SymbolType:
-		ionValueStr, ok := ionValue.(string)
-		if ok {
+		if ionValueStr, ok := ionValue.(string); ok {
 			return writer.WriteString(ionValueStr)
 		}
 
-		ionValueSymbol, ok := ionValue.(ion.SymbolTable)
-		if ok {
-			symbols := ionValueSymbol.Symbols()
-			if len(symbols) > 0 {
-				return writer.WriteString(symbols[0])
+		if ionValueStr, ok := ionValue.(*string); ok {
+			return writer.WriteString(*ionValueStr)
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
+	case ion.SymbolType:
+		if ionValueSymbol, ok := ionValue.(ion.SymbolToken); ok {
+			if ionValueSymbol.Text != nil {
+				return writer.WriteString(*ionValueSymbol.Text)
 			}
+			return writer.WriteString("")
+		}
+
+		if ionValueSymbol, ok := ionValue.(*ion.SymbolToken); ok {
+			if ionValueSymbol.Text != nil {
+				return writer.WriteString(*ionValueSymbol.Text)
+			}
+			return writer.WriteString("")
+		}
+
+		if ionValueStr, ok := ionValue.(string); ok {
+			return writer.WriteString(ionValueStr)
 		}
 
 		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.TimestampType:
-		return writer.WriteTimestamp(ionValue.(ion.Timestamp))
+		if ionTimestamp, ok := ionValue.(ion.Timestamp); ok {
+			return writer.WriteTimestamp(ionTimestamp)
+		}
+
+		if ionTimestamp, ok := ionValue.(*ion.Timestamp); ok {
+			return writer.WriteTimestamp(*ionTimestamp)
+		}
+
+		return &InvalidArgumentError{"ionValue", ionValue}
 	case ion.NullType:
 		return writer.WriteNull()
 	}
