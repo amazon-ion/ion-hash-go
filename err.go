@@ -57,7 +57,7 @@ func (e *InvalidIonTypeError) Error() string {
 
 // UnknownSymbolError is returned when processing an unknown field name symbol.
 type UnknownSymbolError struct {
-	sid int
+	sid int64
 }
 
 func (e *UnknownSymbolError) Error() string {
