@@ -16,7 +16,6 @@
 package ionhash
 
 import (
-	"fmt"
 	"math"
 	"testing"
 
@@ -24,23 +23,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func newString(value string) *string {
-	return &value
-}
-
-// SymbolTokenString returns a SymbolToken's text value or "$<sid>"
-func SymbolTokenString(st ion.SymbolToken) string {
-	if st.Text != nil {
-		return *st.Text
-	}
-
-	if st.LocalSID != ion.SymbolIDUnknown {
-		return fmt.Sprintf("$%v", st.LocalSID)
-	}
-
-	return ""
-}
 
 func compareReaders(t *testing.T, reader1, reader2 ion.Reader) {
 	for hasNext(t, reader1, reader2) {
@@ -280,13 +262,12 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer,
 		name, err := reader.FieldName()
 		require.NoError(t, err, "Something went wrong executing reader.Annotations()")
 
-		if name != nil && name.Text != nil {
-			require.NoError(t, writer.FieldName(*name.Text), "Something went wrong executing writer.FieldName(*name)")
+		if name != nil {
+			require.NoError(t, writer.FieldName(*name), "Something went wrong executing writer.FieldNameSymbol(*name)")
 		}
 
 		annotations, err := reader.Annotations()
 		require.NoError(t, err, "Something went wrong executing reader.Annotations()")
-
 		if len(annotations) > 0 {
 			require.NoError(t, writer.Annotations(annotations...), "Something went wrong executing writer.Annotations(annotations...)")
 		}
@@ -353,7 +334,7 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer,
 			val, err := reader.SymbolValue()
 			assert.NoError(t, err, "Something went wrong when reading Symbol value")
 
-			assert.NoError(t, writer.WriteSymbol(SymbolTokenString(*val)), "Something went wrong when writing Symbol value")
+			assert.NoError(t, writer.WriteSymbol(*val), "Something went wrong when writing Symbol value")
 
 		case ion.StringType:
 			val, err := reader.StringValue()
@@ -434,9 +415,9 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 	}
 
 	fieldName, err := reader.FieldName()
-	if err == nil && fieldName.Text != nil && *fieldName.Text != "ion" && *fieldName.Text != "10n" {
+	if err == nil && fieldName != nil && (fieldName.Text == nil || (*fieldName.Text != "ion" && *fieldName.Text != "10n")) {
 		for _, writer := range writers {
-			require.NoError(t, writer.FieldName(*fieldName.Text),
+			require.NoError(t, writer.FieldName(*fieldName),
 				"Something went wrong executing writer.FieldName(*fieldName)")
 		}
 	}
@@ -525,8 +506,8 @@ func writeToWriters(t *testing.T, reader ion.Reader, writers ...ion.Writer) {
 		symbolValue, err := reader.SymbolValue()
 		require.NoError(t, err)
 		for _, writer := range writers {
-			require.NoError(t, writer.WriteSymbol(SymbolTokenString(*symbolValue)),
-				"Something went wrong executing writer.WriteSymbol(SymbolTokenString(*symbolValue))")
+			require.NoError(t, writer.WriteSymbol(*symbolValue),
+				"Something went wrong executing writer.WriteSymbol(*symbolValue)")
 		}
 	case ion.TimestampType:
 		timestampValue, err := reader.TimestampValue()

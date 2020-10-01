@@ -106,7 +106,7 @@ var scalarTests = []struct {
 	},
 	{
 		ion.SymbolType,
-		"symbol",
+		ion.NewSimpleSymbolToken("symbol"),
 		[]byte{0x0b, 0x70, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x0e},
 		"symbol",
 	},
@@ -203,7 +203,7 @@ func TestWriteScalars(t *testing.T) {
 			assert.NoError(t, ionHashWriter.WriteTimestamp(test.value.(ion.Timestamp)),
 				"Something went wrong executing ionHashWriter.WriteTimestamp(...)")
 		case ion.SymbolType:
-			assert.NoErrorf(t, ionHashWriter.WriteSymbol(test.value.(string)),
+			assert.NoErrorf(t, ionHashWriter.WriteSymbol(test.value.(ion.SymbolToken)),
 				"Something went wrong executing ionHashWriter.WriteSymbol(\"%s\")", test.String)
 		case ion.StringType:
 			assert.NoErrorf(t, ionHashWriter.WriteString(test.value.(string)),
@@ -272,17 +272,17 @@ func TestWriteContainers(t *testing.T) {
 
 	assert.True(t, ionHashWriter.IsInStruct())
 
-	assert.NoError(t, ionHashWriter.FieldName("hello"),
-		"Something went wrong executing ionHashWriter.FieldName(\"hello\")")
+	assert.NoError(t, ionHashWriter.FieldName(ion.NewSimpleSymbolToken("hello")),
+		"Something went wrong executing ionHashWriter.FieldName(...)")
 
-	assert.NoError(t, ionHashWriter.Annotation(ion.SymbolToken{Text: newString("ion"), LocalSID: ion.SymbolIDUnknown}),
+	assert.NoError(t, ionHashWriter.Annotation(ion.NewSimpleSymbolToken("ion")),
 		"Something went wrong executing ionHashWriter.Annotation(...)")
 
-	assert.NoError(t, ionHashWriter.Annotation(ion.SymbolToken{Text: newString("hash"), LocalSID: ion.SymbolIDUnknown}),
+	assert.NoError(t, ionHashWriter.Annotation(ion.NewSimpleSymbolToken("hash")),
 		"Something went wrong executing ionHashWriter.Annotation(...)")
 
-	assert.NoError(t, ionHashWriter.WriteSymbol("world"),
-		"Something went wrong executing ionHashWriter.WriteSymbol(\"world\")")
+	assert.NoError(t, ionHashWriter.WriteSymbolFromString("world"),
+		"Something went wrong executing ionHashWriter.WriteSymbolFromString(\"world\")")
 
 	assert.NoError(t, ionHashWriter.EndStruct(), "Something went wrong executing ionHashWriter.EndStruct()")
 
@@ -333,7 +333,7 @@ func TestExtraEndContainer(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValue(t *testing.T) {
-	file, err := ioutil.ReadFile("ion_hash_tests.ion")
+	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriterAfterNext)
@@ -348,7 +348,7 @@ func TestIonWriterContractWriteValue(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValues(t *testing.T) {
-	file, err := ioutil.ReadFile("ion_hash_tests.ion")
+	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriter)

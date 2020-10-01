@@ -87,7 +87,7 @@ func TestConsumeRemainderNext(t *testing.T) {
 }
 
 func TestIonReaderContract(t *testing.T) {
-	file, err := ioutil.ReadFile("ion_hash_tests.ion")
+	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	reader := ion.NewReaderBytes(file)

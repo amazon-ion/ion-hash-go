@@ -44,12 +44,12 @@ func TestFieldNameAsymmetry(t *testing.T) {
 	// We use the ion writer to write the outer struct (ie. {a:_})
 	assert.NoError(t, writer.BeginStruct(), "Something went wrong executing writer.BeginStruct()")
 
-	assert.NoError(t, writer.FieldName("a"), "Something went wrong executing writer.FieldName(\"a\")")
+	assert.NoError(t, writer.FieldName(ion.NewSimpleSymbolToken("a")), "Something went wrong executing writer.FieldName(...)")
 
 	// We use the ion hash writer to write the inner struct (ie. {b:1} inside {a:{b:1}})
 	assert.NoError(t, ionHashWriter.BeginStruct(), "Something went wrong executing ionHashWriter.BeginStruct()")
 
-	assert.NoError(t, ionHashWriter.FieldName("b"), "Something went wrong executing ionHashWriter.FieldName(\"b\")")
+	assert.NoError(t, ionHashWriter.FieldName(ion.NewSimpleSymbolToken("b")), "Something went wrong executing ionHashWriter.FieldName(...)")
 
 	assert.NoError(t, ionHashWriter.WriteInt(1), "Something went wrong executing ionHashWriter.WriteInt(1)")
 
@@ -153,8 +153,8 @@ func AssertNoFieldnameInCurrentHash(t *testing.T, value string, expectedBytes []
 	ionHashWriter, ok := hw.(*hashWriter)
 	require.True(t, ok, "Expected hw to be of type hashWriter")
 
-	assert.NoError(t, ionHashWriter.FieldName("field_name"),
-		"Something went wrong executing ionHashWriter.FieldName(\"field_name\")")
+	assert.NoError(t, ionHashWriter.FieldName(ion.NewSimpleSymbolToken("field_name")),
+		"Something went wrong executing ionHashWriter.FieldName(...)")
 
 	writeFromReaderToWriter(t, reader, ionHashWriter, false)
 
