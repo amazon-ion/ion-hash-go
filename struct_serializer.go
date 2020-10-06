@@ -17,8 +17,6 @@ package ionhash
 
 import (
 	"sort"
-
-	"github.com/amzn/ion-go/ion"
 )
 
 type structSerializer struct {
@@ -39,7 +37,7 @@ func newStructSerializer(hashFunction IonHasher, depth int, hashFunctionProvider
 		scalarSerializer: newScalarSerializer(newHasher, depth+1)}, nil
 }
 
-func (ss *structSerializer) scalar(ionValue interface{}) error {
+func (ss *structSerializer) scalar(ionValue hashValue) error {
 	err := ss.scalarSerializer.handleFieldName(ionValue)
 	if err != nil {
 		return err
@@ -70,28 +68,10 @@ func (ss *structSerializer) stepOut() error {
 	return ss.baseSerializer.stepOut()
 }
 
-func (ss *structSerializer) stepIn(ionValue interface{}) error {
-	return ss.baseSerializer.stepIn(ionValue.(hashValue))
-}
-
-func (ss *structSerializer) handleFieldName(ionValue interface{}) error {
-	return ss.baseSerializer.handleFieldName(ionValue.(hashValue))
-}
-
-func (ss *structSerializer) handleAnnotationsBegin(ionValue interface{}) error {
-	return ss.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
-}
-
-func (ss *structSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
-	return ss.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
+func (ss *structSerializer) handleAnnotationsBegin(ionValue hashValue) error {
+	return ss.baseSerializer.handleAnnotationsBegin(ionValue, false)
 }
 
 func (ss *structSerializer) appendFieldHash(sum []byte) {
 	ss.fieldHashes = append(ss.fieldHashes, sum)
-}
-
-func (ss *structSerializer) scalarOrNullSplitParts(
-	ionType ion.Type, symbol *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error) {
-
-	return ss.baseSerializer.scalarOrNullSplitParts(ionType, symbol, isNull, bytes)
 }

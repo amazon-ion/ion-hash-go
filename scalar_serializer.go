@@ -25,10 +25,8 @@ func newScalarSerializer(hashFunction IonHasher, depth int) serializer {
 	return &scalarSerializer{baseSerializer{hashFunction: hashFunction, depth: depth}}
 }
 
-func (ss *scalarSerializer) scalar(ionValue interface{}) error {
-	ionHashValue := ionValue.(hashValue)
-
-	err := ss.handleAnnotationsBegin(ionHashValue)
+func (ss *scalarSerializer) scalar(ionValue hashValue) error {
+	err := ss.handleAnnotationsBegin(ionValue)
 	if err != nil {
 		return err
 	}
@@ -40,24 +38,24 @@ func (ss *scalarSerializer) scalar(ionValue interface{}) error {
 
 	var ionVal interface{}
 	var ionType ion.Type
-	if ionHashValue.IsNull() {
+	if ionValue.IsNull() {
 		ionVal = nil
 		ionType = ion.NoType
 	} else {
-		ionVal, err = ionHashValue.value()
+		ionVal, err = ionValue.value()
 		if err != nil {
 			return err
 		}
-		ionType = ionHashValue.Type()
+		ionType = ionValue.Type()
 	}
 
-	scalarBytes, err := ss.getBytes(ionHashValue.Type(), ionVal, ionHashValue.IsNull())
+	scalarBytes, err := ss.getBytes(ionValue.Type(), ionVal, ionValue.IsNull())
 	if err != nil {
 		return err
 	}
 
 	var symbol *ion.SymbolToken = nil
-	if ionHashValue.Type() == ion.SymbolType {
+	if ionValue.Type() == ion.SymbolType {
 		if token, ok := ionVal.(ion.SymbolToken); ok {
 			symbol = &token
 		} else if token, ok := ionVal.(*ion.SymbolToken); ok {
@@ -65,7 +63,7 @@ func (ss *scalarSerializer) scalar(ionValue interface{}) error {
 		}
 	}
 
-	tq, representation, err := ss.scalarOrNullSplitParts(ionType, symbol, ionHashValue.IsNull(), scalarBytes)
+	tq, representation, err := ss.scalarOrNullSplitParts(ionType, symbol, ionValue.IsNull(), scalarBytes)
 	if err != nil {
 		return err
 	}
@@ -87,7 +85,7 @@ func (ss *scalarSerializer) scalar(ionValue interface{}) error {
 		return err
 	}
 
-	err = ss.handleAnnotationsEnd(ionHashValue, false)
+	err = ss.handleAnnotationsEnd(ionValue, false)
 	if err != nil {
 		return err
 	}
@@ -95,18 +93,6 @@ func (ss *scalarSerializer) scalar(ionValue interface{}) error {
 	return nil
 }
 
-func (ss *scalarSerializer) stepIn(ionValue interface{}) error {
-	return ss.baseSerializer.stepIn(ionValue.(hashValue))
-}
-
-func (ss *scalarSerializer) handleFieldName(ionValue interface{}) error {
-	return ss.baseSerializer.handleFieldName(ionValue.(hashValue))
-}
-
-func (ss *scalarSerializer) handleAnnotationsBegin(ionValue interface{}) error {
-	return ss.baseSerializer.handleAnnotationsBegin(ionValue.(hashValue), false)
-}
-
-func (ss *scalarSerializer) handleAnnotationsEnd(ionValue interface{}, isContainer bool) error {
-	return ss.baseSerializer.handleAnnotationsEnd(ionValue.(hashValue), isContainer)
+func (ss *scalarSerializer) handleAnnotationsBegin(ionValue hashValue) error {
+	return ss.baseSerializer.handleAnnotationsBegin(ionValue, false)
 }

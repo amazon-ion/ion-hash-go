@@ -98,7 +98,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 
 		require.True(t, reader.Next()) // Read the initial Ion value.
 
-		testCase := []byte{}
+		var testCase []byte
 		fieldName, err := reader.FieldName()
 		require.NoError(t, err, "Something went wrong executing reader.FieldName()")
 
@@ -131,9 +131,7 @@ func ionHashDataSource(t *testing.T) []testObject {
 			if testName == "unknown" {
 				testName = str.String()
 			}
-			if len(testCase) == 0 {
-				testCase = buf.Bytes()
-			}
+			testCase = buf.Bytes()
 		}
 
 		require.True(t, reader.Next()) // Iterate through expected/ digest bytes.
@@ -154,11 +152,11 @@ func ionHashDataSource(t *testing.T) []testObject {
 
 				hasherName := *hasherFieldName.Text
 
-				identityUpdateList := [][]byte{}
-				identityDigestList := [][]byte{}
-				identityFinalDigestList := []byte{}
-				md5UpdateList := [][]byte{}
-				md5DigestList := [][]byte{}
+				var identityUpdateList [][]byte
+				var identityDigestList [][]byte
+				var identityFinalDigestList []byte
+				var md5UpdateList [][]byte
+				var md5DigestList [][]byte
 
 				switch hasherName {
 				case "identity":

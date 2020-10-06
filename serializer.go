@@ -15,34 +15,14 @@
 
 package ionhash
 
-import "github.com/amzn/ion-go/ion"
-
 type serializer interface {
-	scalar(ionValue interface{}) error
+	scalar(ionValue hashValue) error
 
-	stepIn(ionValue interface{}) error
+	stepIn(ionValue hashValue) error
 
 	stepOut() error
 
 	sum(b []byte) []byte
 
-	handleFieldName(ionValue interface{}) error
-
-	write(bytes []byte) error
-
-	beginMarker() error
-
-	endMarker() error
-
-	handleAnnotationsBegin(ionValue interface{}) error
-
-	handleAnnotationsEnd(ionValue interface{}, isContainer bool) error
-
-	writeSymbol(val string) error
-
-	getBytes(ionType ion.Type, ionValue interface{}, isNull bool) ([]byte, error)
-
-	getLengthFieldLength(bytes []byte) (int, error)
-
-	scalarOrNullSplitParts(ionType ion.Type, symbol *ion.SymbolToken, isNull bool, bytes []byte) (byte, []byte, error)
+	handleFieldName(ionValue hashValue) error
 }

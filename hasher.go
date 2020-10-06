@@ -103,8 +103,7 @@ func (h *hasher) stepOut() error {
 
 	h.currentHasher = peekedHasher.(serializer)
 
-	structHasher, ok := h.currentHasher.(*structSerializer)
-	if ok {
+	if structHasher, ok := h.currentHasher.(*structSerializer); ok {
 		sum := poppedHasher.(serializer).sum(nil)
 		structHasher.appendFieldHash(sum)
 	}
