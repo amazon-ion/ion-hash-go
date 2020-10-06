@@ -263,7 +263,7 @@ func writeFromReaderToWriter(t *testing.T, reader ion.Reader, writer ion.Writer,
 		require.NoError(t, err, "Something went wrong executing reader.Annotations()")
 
 		if name != nil {
-			require.NoError(t, writer.FieldName(*name), "Something went wrong executing writer.FieldNameSymbol(*name)")
+			require.NoError(t, writer.FieldName(*name), "Something went wrong executing writer.FieldName(*name)")
 		}
 
 		annotations, err := reader.Annotations()

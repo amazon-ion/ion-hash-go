@@ -205,7 +205,7 @@ func (hw *hashWriter) WriteTimestamp(val ion.Timestamp) error {
 	return hw.ionWriter.WriteTimestamp(val)
 }
 
-// WriteSymbol writes a symbol value.
+// WriteSymbol writes a symbol value given a symbol token.
 func (hw *hashWriter) WriteSymbol(val ion.SymbolToken) error {
 	err := hw.hashScalar(ion.SymbolType, val)
 	if err != nil {
@@ -214,6 +214,7 @@ func (hw *hashWriter) WriteSymbol(val ion.SymbolToken) error {
 	return hw.ionWriter.WriteSymbol(val)
 }
 
+// WriteSymbolFromString writes a symbol value given a string.
 func (hw *hashWriter) WriteSymbolFromString(val string) error {
 	err := hw.hashScalar(ion.SymbolType, val)
 	if err != nil {
