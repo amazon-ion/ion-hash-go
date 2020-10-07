@@ -362,7 +362,7 @@ func TestIonWriterContractWriteValues(t *testing.T) {
 	assert.Equal(t, expected, actual, "sum did not match expectation")
 }
 
-func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, function writeFunction) []byte {
+func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, fn func(*testing.T, ion.Reader, ion.Writer, bool)) []byte {
 	var err error
 
 	buf := bytes.Buffer{}
@@ -374,14 +374,12 @@ func ExerciseWriter(t *testing.T, reader ion.Reader, useHashWriter bool, functio
 		require.NoError(t, err, "Expected NewHashWriter() to successfully create a HashWriter")
 	}
 
-	function(t, reader, writer, false)
+	fn(t, reader, writer, false)
 
 	assert.NoError(t, writer.Finish(), "Something went wrong executing writer.Finish()")
 
 	return buf.Bytes()
 }
-
-type writeFunction func(*testing.T, ion.Reader, ion.Writer, bool)
 
 func writeFromReaderToWriterAfterNext(t *testing.T, reader ion.Reader, writer ion.Writer, errExpected bool) {
 	require.True(t, reader.Next())
