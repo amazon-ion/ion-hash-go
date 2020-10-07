@@ -47,8 +47,7 @@ func (h *hasher) scalar(ionValue hashValue) error {
 func (h *hasher) stepIn(ionValue hashValue) error {
 	var hashFunction IonHasher
 
-	_, ok := h.currentHasher.(*structSerializer)
-	if ok {
+	if _, ok := h.currentHasher.(*structSerializer); ok {
 		newHasher, err := h.hasherProvider.NewHasher()
 		if err != nil {
 			return err
