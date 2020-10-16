@@ -106,7 +106,7 @@ var scalarTests = []struct {
 	},
 	{
 		ion.SymbolType,
-		ion.NewSimpleSymbolToken("symbol"),
+		ion.NewSymbolTokenFromString("symbol"),
 		[]byte{0x0b, 0x70, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x0e},
 		"symbol",
 	},
@@ -272,13 +272,13 @@ func TestWriteContainers(t *testing.T) {
 
 	assert.True(t, ionHashWriter.IsInStruct())
 
-	assert.NoError(t, ionHashWriter.FieldName(ion.NewSimpleSymbolToken("hello")),
+	assert.NoError(t, ionHashWriter.FieldName(ion.NewSymbolTokenFromString("hello")),
 		"Something went wrong executing ionHashWriter.FieldName(...)")
 
-	assert.NoError(t, ionHashWriter.Annotation(ion.NewSimpleSymbolToken("ion")),
+	assert.NoError(t, ionHashWriter.Annotation(ion.NewSymbolTokenFromString("ion")),
 		"Something went wrong executing ionHashWriter.Annotation(...)")
 
-	assert.NoError(t, ionHashWriter.Annotation(ion.NewSimpleSymbolToken("hash")),
+	assert.NoError(t, ionHashWriter.Annotation(ion.NewSymbolTokenFromString("hash")),
 		"Something went wrong executing ionHashWriter.Annotation(...)")
 
 	assert.NoError(t, ionHashWriter.WriteSymbolFromString("world"),
