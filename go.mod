@@ -3,7 +3,7 @@ module github.com/amzn/ion-hash-go
 go 1.13
 
 require (
-  github.com/amzn/ion-go v1.0.2-0.20201109205222-c1fd17e8273b
+	github.com/amzn/ion-go v1.0.2-0.20201109205222-c1fd17e8273b
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
