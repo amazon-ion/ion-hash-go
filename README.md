@@ -114,9 +114,7 @@ It is recommended that you hook this in your favorite IDE (`Tools` > `File Watch
 
 ## Known Issues
 
-Any tests commented out in
-[ion_hash_tests.ion](https://github.com/amzn/ion-hash-go/blob/master/ion_hash_tests.ion)
-are not expected to work at this time.
+< No current known issues >
 
 ## License
 

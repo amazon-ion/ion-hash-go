@@ -106,13 +106,8 @@ func NewHashWriter(ionWriter ion.Writer, hasherProvider IonHasherProvider) (Hash
 
 // FieldName sets the field name for the next value written.
 // It may only be called while writing a struct.
-func (hw *hashWriter) FieldName(val string) error {
-	token, err := ion.NewSymbolToken(ion.V1SystemSymbolTable, val)
-	if err != nil {
-		return err
-	}
-
-	hw.currentFieldName = &token
+func (hw *hashWriter) FieldName(val ion.SymbolToken) error {
+	hw.currentFieldName = &val
 
 	return hw.ionWriter.FieldName(val)
 }
@@ -210,13 +205,22 @@ func (hw *hashWriter) WriteTimestamp(val ion.Timestamp) error {
 	return hw.ionWriter.WriteTimestamp(val)
 }
 
-// WriteSymbol writes a symbol value.
-func (hw *hashWriter) WriteSymbol(val string) error {
+// WriteSymbol writes a symbol value given a symbol token.
+func (hw *hashWriter) WriteSymbol(val ion.SymbolToken) error {
 	err := hw.hashScalar(ion.SymbolType, val)
 	if err != nil {
 		return err
 	}
 	return hw.ionWriter.WriteSymbol(val)
+}
+
+// WriteSymbolFromString writes a symbol value given a string.
+func (hw *hashWriter) WriteSymbolFromString(val string) error {
+	err := hw.hashScalar(ion.SymbolType, val)
+	if err != nil {
+		return err
+	}
+	return hw.ionWriter.WriteSymbolFromString(val)
 }
 
 // WriteString writes a string value.
@@ -315,10 +319,6 @@ func (hw *hashWriter) Finish() error {
 // It resets the Hash to its initial state.
 func (hw *hashWriter) Sum(b []byte) ([]byte, error) {
 	return hw.hasher.sum(b)
-}
-
-func (hw *hashWriter) FieldNameSymbol(val ion.SymbolToken) error {
-	return hw.ionWriter.FieldNameSymbol(val)
 }
 
 // The following implements hashValue interface.
