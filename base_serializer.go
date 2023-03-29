@@ -173,6 +173,7 @@ func (bs *baseSerializer) handleAnnotationsEnd(ionValue hashValue, isContainer b
 	return nil
 }
 
+//nolint:unused
 func (bs *baseSerializer) writeSymbol(val string) error {
 	symbol, err := ion.NewSymbolToken(ion.V1SystemSymbolTable, val)
 	if err != nil {

@@ -68,6 +68,7 @@ func (ss *structSerializer) stepOut() error {
 	return ss.baseSerializer.stepOut()
 }
 
+//nolint:unused
 func (ss *structSerializer) handleAnnotationsBegin(ionValue hashValue) error {
 	return ss.baseSerializer.handleAnnotationsBegin(ionValue, false)
 }
