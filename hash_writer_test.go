@@ -247,14 +247,14 @@ func TestWriteContainers(t *testing.T) {
 
 	assert.NoError(t, ionHashWriter.BeginList(), "Something went wrong executing ionHashWriter.BeginList()")
 
-	sum, err = ionHashWriter.Sum(nil)
+	_, err = ionHashWriter.Sum(nil)
 	assert.Error(t, err, "Expected ionHashWriter.Sum(nil) to return an error")
 	assert.IsType(t, &InvalidOperationError{}, err,
 		"Expected ionHashWriter.Sum(nil) to return an InvalidOperationError")
 
 	assert.NoError(t, ionHashWriter.WriteBool(true), "Something went wrong executing ionHashWriter.WriteBool(true)")
 
-	sum, err = ionHashWriter.Sum(nil)
+	_, err = ionHashWriter.Sum(nil)
 	assert.Error(t, err, "Expected ionHashWriter.Sum(nil) to return an error")
 	assert.IsType(t, &InvalidOperationError{}, err,
 		"Expected ionHashWriter.Sum(nil) to return an InvalidOperationError")

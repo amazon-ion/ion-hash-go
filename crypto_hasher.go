@@ -24,8 +24,8 @@ import (
 
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
-	"golang.org/x/crypto/md4"
-	"golang.org/x/crypto/ripemd160"
+	"golang.org/x/crypto/md4"       //nolint: staticcheck
+	"golang.org/x/crypto/ripemd160" //nolint: staticcheck
 	"golang.org/x/crypto/sha3"
 )
 
@@ -35,23 +35,23 @@ type Algorithm string
 // Constants for each of the algorithm names supported.
 const (
 	MD4        Algorithm = "MD4"
-	MD5                  = "MD5"
-	SHA1                 = "SHA1"
-	SHA224               = "SHA224"
-	SHA256               = "SHA256"
-	SHA384               = "SHA384"
-	SHA512               = "SHA512"
-	RIPEMD160            = "RIPMD160"
-	SHA3s224             = "SHA3_224"
-	SHA3s256             = "SHA3_256"
-	SHA3s384             = "SHA3_384"
-	SHA3s512             = "SHA3_512"
-	SHA512s224           = "SHA512_224"
-	SHA512s256           = "SHA512_256"
-	BLAKE2s256           = "BLAKE2s_256"
-	BLAKE2b256           = "BLAKE2b_256"
-	BLAKE2b384           = "BLAKE2b_384"
-	BLAKE2b512           = "BLAKE2b_512"
+	MD5        Algorithm = "MD5"
+	SHA1       Algorithm = "SHA1"
+	SHA224     Algorithm = "SHA224"
+	SHA256     Algorithm = "SHA256"
+	SHA384     Algorithm = "SHA384"
+	SHA512     Algorithm = "SHA512"
+	RIPEMD160  Algorithm = "RIPMD160"
+	SHA3s224   Algorithm = "SHA3_224"
+	SHA3s256   Algorithm = "SHA3_256"
+	SHA3s384   Algorithm = "SHA3_384"
+	SHA3s512   Algorithm = "SHA3_512"
+	SHA512s224 Algorithm = "SHA512_224"
+	SHA512s256 Algorithm = "SHA512_256"
+	BLAKE2s256 Algorithm = "BLAKE2s_256"
+	BLAKE2b256 Algorithm = "BLAKE2b_256"
+	BLAKE2b384 Algorithm = "BLAKE2b_384"
+	BLAKE2b512 Algorithm = "BLAKE2b_512"
 )
 
 // cryptoHasher computes the hash using given algorithm.

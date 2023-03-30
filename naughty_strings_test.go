@@ -146,8 +146,8 @@ func newTestValue(ion string) testValue {
 	if strings.HasPrefix(ion, prefix) {
 		validIon = true
 		ion = ion[len(prefix):]
-	} else if strings.HasPrefix(ion, invalidPrefix) {
-		ion = ion[len(invalidPrefix):]
+	} else {
+		ion = strings.TrimPrefix(ion, invalidPrefix)
 	}
 
 	return testValue{ionPrefix: prefix, invalidIonPrefix: invalidPrefix, ion: ion, validIon: validIon}
