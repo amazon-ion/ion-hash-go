@@ -49,7 +49,7 @@ jobs:
           go-version: stable
       - uses: actions/checkout@v4
       - name: check
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
-          version: 'v1.60'
+          version: v2.2
           only-new-issues: true
