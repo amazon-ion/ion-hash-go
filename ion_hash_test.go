@@ -17,7 +17,7 @@ package ionhash
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -80,7 +80,7 @@ func TraverseReader(t *testing.T, hr HashReader) {
 func ionHashDataSource(t *testing.T) []testObject {
 	var dataList []testObject
 
-	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
+	file, err := os.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	reader := ion.NewReaderBytes(file)

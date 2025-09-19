@@ -17,8 +17,8 @@ package ionhash
 
 import (
 	"bytes"
-	"io/ioutil"
 	"math/big"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -333,7 +333,7 @@ func TestExtraEndContainer(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValue(t *testing.T) {
-	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
+	file, err := os.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriterAfterNext)
@@ -348,7 +348,7 @@ func TestIonWriterContractWriteValue(t *testing.T) {
 }
 
 func TestIonWriterContractWriteValues(t *testing.T) {
-	file, err := ioutil.ReadFile("ion-hash-test/ion_hash_tests.ion")
+	file, err := os.ReadFile("ion-hash-test/ion_hash_tests.ion")
 	require.NoError(t, err, "Something went wrong loading ion_hash_tests.ion")
 
 	expected := ExerciseWriter(t, ion.NewReaderBytes(file), false, writeFromReaderToWriter)
