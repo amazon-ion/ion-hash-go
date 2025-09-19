@@ -159,8 +159,8 @@ func (tv *testValue) asIon() string {
 
 func (tv *testValue) asSymbol() string {
 	s := tv.ion
-	s = strings.Replace(s, "\\", "\\\\", -1)
-	s = strings.Replace(s, "'", "\\'", -1)
+	s = strings.ReplaceAll(s, "\\", "\\\\")
+	s = strings.ReplaceAll(s, "'", "\\'")
 	s = "'" + s + "'"
 
 	return s
@@ -168,8 +168,8 @@ func (tv *testValue) asSymbol() string {
 
 func (tv *testValue) asString() string {
 	s := tv.ion
-	s = strings.Replace(s, "\\", "\\\\", -1)
-	s = strings.Replace(s, "\"", "\\\"", -1)
+	s = strings.ReplaceAll(s, "\\", "\\\\")
+	s = strings.ReplaceAll(s, "\"", "\\\"")
 	s = "\"" + s + "\""
 
 	return s
@@ -177,8 +177,8 @@ func (tv *testValue) asString() string {
 
 func (tv *testValue) asLongString() string {
 	s := tv.ion
-	s = strings.Replace(s, "\\", "\\\\", -1)
-	s = strings.Replace(s, "'", "\\'", -1)
+	s = strings.ReplaceAll(s, "\\", "\\\\")
+	s = strings.ReplaceAll(s, "'", "\\'")
 	s = "'''" + s + "'''"
 
 	return s

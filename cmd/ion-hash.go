@@ -19,7 +19,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -48,7 +47,7 @@ func main() {
 	algorithm := os.Args[1]
 	fileName := os.Args[2]
 
-	data, err := ioutil.ReadFile(fileName)
+	data, err := os.ReadFile(fileName)
 	check(err)
 
 	ionReader := ion.NewReaderBytes(data)
